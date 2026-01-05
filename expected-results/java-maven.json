@@ -1,0 +1,40 @@
+{
+  "testcase": "java-maven",
+  "description": "Spring Boot app with Maven dependencies",
+  
+  "reachable_cves": {
+    "min": 2,
+    "expected": ["CVE-2022-22965", "CVE-2022-1471"]
+  },
+  
+  "unreachable_cves": {
+    "min": 1,
+    "comment": "H2 CVE should be unreachable (test scope + no call path)"
+  },
+  
+  "specific_cves": {
+    "CVE-2022-22965": "reachable",
+    "CVE-2022-1471": "reachable",
+    "CVE-2021-42392": "unreachable"
+  },
+  
+  "secrets": {
+    "min": 1,
+    "types": ["password", "api-key"]
+  },
+  
+  "entrypoints": {
+    "min": 4,
+    "expected_types": ["http"],
+    "annotations": ["@PostMapping", "@GetMapping"]
+  },
+  
+  "risk_level": {
+    "max": "HIGH"
+  },
+  
+  "java_specific": {
+    "build_system": "maven",
+    "framework": "spring-boot"
+  }
+}

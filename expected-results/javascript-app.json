@@ -1,0 +1,33 @@
+{
+  "testcase": "javascript-app",
+  "description": "Express.js app with npm vulnerabilities",
+  
+  "reachable_cves": {
+    "min": 2,
+    "expected": ["CVE-2021-23337", "CVE-2022-23529"]
+  },
+  
+  "unreachable_cves": {
+    "min": 1,
+    "comment": "glob-parent is in deps but never imported"
+  },
+  
+  "specific_cves": {
+    "CVE-2021-23337": "reachable",
+    "CVE-2020-28469": "unreachable"
+  },
+  
+  "secrets": {
+    "min": 2,
+    "types": ["jwt-secret", "api-key"]
+  },
+  
+  "entrypoints": {
+    "min": 4,
+    "expected_types": ["http"]
+  },
+  
+  "risk_level": {
+    "max": "HIGH"
+  }
+}

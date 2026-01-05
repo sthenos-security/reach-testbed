@@ -1,0 +1,32 @@
+{
+  "testcase": "go-app",
+  "description": "Go Gin app with vulnerable dependencies",
+  
+  "reachable_cves": {
+    "min": 2,
+    "expected": ["CVE-2022-32149", "CVE-2022-28948"]
+  },
+  
+  "unreachable_cves": {
+    "min": 0
+  },
+  
+  "specific_cves": {
+    "CVE-2022-32149": "reachable",
+    "CVE-2022-28948": "reachable"
+  },
+  
+  "secrets": {
+    "min": 1,
+    "types": ["api-key"]
+  },
+  
+  "entrypoints": {
+    "min": 3,
+    "expected_types": ["http"]
+  },
+  
+  "risk_level": {
+    "max": "MEDIUM"
+  }
+}

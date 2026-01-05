@@ -1,0 +1,33 @@
+{
+  "testcase": "python-app",
+  "description": "Python Flask app with CVEs and secrets",
+  
+  "reachable_cves": {
+    "min": 1,
+    "expected": ["CVE-2022-42969"]
+  },
+  
+  "unreachable_cves": {
+    "min": 1,
+    "comment": "py4j/Log4j should be unreachable"
+  },
+  
+  "specific_cves": {
+    "CVE-2022-42969": "reachable"
+  },
+  
+  "secrets": {
+    "min": 1,
+    "types": ["aws-credential"]
+  },
+  
+  "entrypoints": {
+    "min": 3,
+    "expected_types": ["http"]
+  },
+  
+  "risk_level": {
+    "max": "HIGH",
+    "comment": "Should not be CRITICAL without KEV"
+  }
+}
