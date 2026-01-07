@@ -1,0 +1,44 @@
+{
+  "_comment": "Expected GuardDog findings when run standalone (no correlation)",
+  "tool": "guarddog",
+  "version": "0.x",
+  "target": "shai-hulud-simulation",
+  "findings": [
+    {
+      "rule": "npm-lifecycle-script",
+      "file": "package.json",
+      "severity": "MEDIUM",
+      "message": "Package uses postinstall lifecycle script",
+      "detail": "scripts.postinstall: node lib/loader.js"
+    },
+    {
+      "rule": "obfuscated-code",
+      "file": "lib/loader.js",
+      "severity": "MEDIUM",
+      "message": "Base64-encoded strings detected",
+      "detail": "Buffer.from('...', 'base64')"
+    },
+    {
+      "rule": "suspicious-url",
+      "file": "lib/exfil.js",
+      "severity": "LOW",
+      "message": "Suspicious domain pattern in URL",
+      "detail": "*.attacker.test domains"
+    }
+  ],
+  "summary": {
+    "total_findings": 3,
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 1,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "postinstall hooks have high false positive rate - many legitimate packages use them",
+    "No payload execution analysis",
+    "No correlation with SAST findings",
+    "Cannot determine if obfuscated code is actually malicious"
+  ]
+}

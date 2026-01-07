@@ -1,0 +1,62 @@
+{
+  "_comment": "Expected Semgrep findings when run standalone (no correlation)",
+  "tool": "semgrep",
+  "version": "1.x",
+  "target": "shai-hulud-simulation",
+  "findings": [
+    {
+      "rule_id": "javascript.lang.security.detect-eval-with-expression",
+      "file": "lib/loader.js",
+      "line": 22,
+      "severity": "WARNING",
+      "message": "Dynamic require() with variable argument detected",
+      "cwe": "CWE-94"
+    },
+    {
+      "rule_id": "javascript.lang.security.hardcoded-http-url",
+      "file": "lib/exfil.js",
+      "line": 18,
+      "severity": "WARNING", 
+      "message": "Hardcoded HTTPS URL detected",
+      "cwe": "CWE-798"
+    },
+    {
+      "rule_id": "javascript.lang.security.hardcoded-http-url",
+      "file": "lib/exfil.js",
+      "line": 19,
+      "severity": "WARNING",
+      "message": "Hardcoded HTTPS URL detected",
+      "cwe": "CWE-798"
+    },
+    {
+      "rule_id": "javascript.lang.security.hardcoded-http-url",
+      "file": "lib/exfil.js",
+      "line": 20,
+      "severity": "WARNING",
+      "message": "Hardcoded HTTP URL detected",
+      "cwe": "CWE-798"
+    },
+    {
+      "rule_id": "generic.secrets.security.detected-generic-api-key",
+      "file": "lib/harvester.js",
+      "line": 45,
+      "severity": "WARNING",
+      "message": "Potential API key or token reference"
+    }
+  ],
+  "summary": {
+    "total_findings": 5,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "warning": 5,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "No reachability analysis - unclear if code paths are executed",
+    "No correlation between findings",
+    "No entry point identification",
+    "Findings buried among other project warnings"
+  ]
+}
