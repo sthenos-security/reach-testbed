@@ -1,0 +1,11 @@
+{
+  "name": "signature-test-app",
+  "version": "1.0.0",
+  "description": "Test app demonstrating reachability filtering for malware signatures",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "private": true
+}

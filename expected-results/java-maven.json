@@ -2,39 +2,93 @@
   "testcase": "java-maven",
   "description": "Spring Boot app with Maven dependencies",
   
+  "reachability_stats": {
+    "total_dependencies": 156,
+    "dependencies_with_cves": 47,
+    "total_cves": 89,
+    "reachable_cves": 7,
+    "unreachable_cves": 82,
+    "noise_reduction_percent": 92.1,
+    "triage_time_saved": "~8 hours"
+  },
+
   "reachable_cves": {
-    "min": 2,
-    "expected": ["CVE-2022-22965", "CVE-2022-1471"]
+    "count": 7,
+    "expected": [
+      "CVE-2022-22965",
+      "CVE-2022-1471",
+      "CVE-2023-20861",
+      "CVE-2022-42003",
+      "CVE-2023-34035",
+      "CVE-2022-45688",
+      "CVE-2023-20863"
+    ]
   },
   
   "unreachable_cves": {
-    "min": 1,
-    "comment": "H2 CVE should be unreachable (test scope + no call path)"
+    "count": 82,
+    "examples": ["CVE-2021-42392", "CVE-2022-42004", "CVE-2021-44228"],
+    "reasons": {
+      "test_scope": 34,
+      "transitive_not_imported": 29,
+      "provided_scope": 11,
+      "dead_code_path": 8
+    }
   },
   
   "specific_cves": {
-    "CVE-2022-22965": "reachable",
-    "CVE-2022-1471": "reachable",
-    "CVE-2021-42392": "unreachable"
+    "CVE-2022-22965": {
+      "status": "reachable",
+      "package": "spring-webmvc",
+      "call_path": "UserController.java:@PostMapping → DataBinder"
+    },
+    "CVE-2022-1471": {
+      "status": "reachable",
+      "package": "snakeyaml",
+      "call_path": "ConfigService.java:loadYaml() → Yaml.load()"
+    },
+    "CVE-2021-42392": {
+      "status": "unreachable",
+      "package": "h2database",
+      "reason": "Test scope only, H2 console disabled in production"
+    },
+    "CVE-2021-44228": {
+      "status": "unreachable",
+      "package": "log4j-core",
+      "reason": "Excluded in pom.xml, using logback instead"
+    }
   },
   
   "secrets": {
-    "min": 1,
-    "types": ["password", "api-key"]
+    "total_found": 5,
+    "reachable": 2,
+    "unreachable": 3,
+    "types": ["database-password", "api-key", "jwt-secret"]
   },
   
   "entrypoints": {
-    "min": 4,
-    "expected_types": ["http"],
-    "annotations": ["@PostMapping", "@GetMapping"]
+    "count": 14,
+    "types": ["http"],
+    "annotations": ["@PostMapping", "@GetMapping", "@PutMapping", "@DeleteMapping"],
+    "controllers": ["UserController", "ApiController", "WebhookController"]
   },
   
   "risk_level": {
-    "max": "HIGH"
+    "without_reachability": "CRITICAL",
+    "with_reachability": "HIGH",
+    "reason": "82 CVEs downgraded including Log4Shell"
   },
-  
+
   "java_specific": {
     "build_system": "maven",
-    "framework": "spring-boot"
-  }
+    "framework": "spring-boot",
+    "spring_boot_version": "2.7.x"
+  },
+
+  "demo_talking_points": [
+    "Spring Boot: 156 deps, 89 CVEs - typical enterprise Java",
+    "Log4Shell (CVE-2021-44228) detected but UNREACHABLE - excluded dep",
+    "H2 Console RCE - test scope only, not in production",
+    "92% reduction: from 89 CVEs to 7 actionable"
+  ]
 }

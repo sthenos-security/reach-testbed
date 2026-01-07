@@ -1,0 +1,147 @@
+{
+  "_comment": "Expected REACHABLE findings - multi-signal correlation",
+  "tool": "reachable",
+  "version": "4.4.x",
+  "target": "shai-hulud-simulation",
+  "findings": [
+    {
+      "id": "REACH-CRITICAL-001",
+      "severity": "CRITICAL",
+      "confidence": 0.98,
+      "type": "supply-chain-attack",
+      "pattern": "shai-hulud",
+      "verdict": "BLOCK_INSTALLATION",
+      "title": "Supply Chain Attack Chain Detected",
+      "description": "Multi-stage supply chain attack targeting developer credentials with exfiltration capability",
+      "entry_point": {
+        "type": "npm-lifecycle",
+        "hook": "postinstall",
+        "file": "package.json",
+        "command": "node lib/loader.js"
+      },
+      "attack_chain": {
+        "stage_1": {
+          "name": "Loader",
+          "file": "lib/loader.js",
+          "purpose": "Obfuscated entry, anti-sandbox checks, delayed execution",
+          "reachable_from": "postinstall"
+        },
+        "stage_2": {
+          "name": "Harvester", 
+          "file": "lib/harvester.js",
+          "purpose": "Credential theft from filesystem and environment",
+          "targets": [
+            "~/.npmrc (npm tokens)",
+            "~/.ssh/* (SSH keys)",
+            "~/.aws/credentials (AWS)",
+            "NPM_TOKEN, GITHUB_TOKEN env vars"
+          ],
+          "reachable_from": "lib/loader.js"
+        },
+        "stage_3": {
+          "name": "Exfiltration",
+          "file": "lib/exfil.js", 
+          "purpose": "Data exfiltration to attacker C2",
+          "c2_endpoints": [
+            "c2.shai-hulud-attack.test",
+            "exfil.malware-collector.test",
+            "data.evil-npm-package.test"
+          ],
+          "methods": ["HTTPS POST", "DNS exfiltration"],
+          "reachable_from": "lib/loader.js"
+        }
+      },
+      "correlated_signals": [
+        {
+          "source": "guarddog",
+          "rule": "npm-lifecycle-script",
+          "file": "package.json",
+          "contribution": "Identifies execution entry point"
+        },
+        {
+          "source": "guarddog",
+          "rule": "obfuscated-code",
+          "file": "lib/loader.js",
+          "contribution": "Indicates evasion attempt"
+        },
+        {
+          "source": "guarddog",
+          "rule": "delayed-execution",
+          "file": "lib/loader.js",
+          "contribution": "Sandbox evasion technique"
+        },
+        {
+          "source": "semgrep",
+          "rule": "CWE-94",
+          "file": "lib/loader.js",
+          "contribution": "Code injection via dynamic require"
+        },
+        {
+          "source": "semgrep",
+          "rule": "CWE-22",
+          "file": "lib/harvester.js",
+          "contribution": "Path traversal to sensitive files"
+        },
+        {
+          "source": "semgrep",
+          "rule": "CWE-798",
+          "file": "lib/exfil.js",
+          "contribution": "Hardcoded C2 endpoints"
+        },
+        {
+          "source": "call-graph",
+          "rule": "reachability-analysis",
+          "files": ["lib/loader.js", "lib/harvester.js", "lib/exfil.js"],
+          "contribution": "All malicious paths verified REACHABLE from entry point"
+        }
+      ],
+      "why_critical": [
+        "Entry point WILL execute - postinstall runs automatically on npm install",
+        "All malicious code paths are REACHABLE from entry point",
+        "Attack chain is complete: harvest credentials → exfiltrate to C2",
+        "Targets high-value npm tokens - enables supply chain propagation",
+        "Multi-stage design indicates sophisticated attacker"
+      ],
+      "recommendation": "Do not install this package. If already installed, revoke all credentials that may have been exposed.",
+      "references": [
+        "https://blog.phylum.io/shai-hulud-npm-attack",
+        "https://socket.dev/npm/issue/install-script"
+      ]
+    }
+  ],
+  "summary": {
+    "total_findings": 1,
+    "critical": 1,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "actionable": true,
+    "attack_chain_visible": true,
+    "noise_reduction": "87.5%",
+    "raw_signals": 8,
+    "correlated_findings": 1
+  },
+  "comparison": {
+    "semgrep_alone": {
+      "findings": 5,
+      "actionable": false
+    },
+    "guarddog_alone": {
+      "findings": 3,
+      "actionable": false
+    },
+    "trivy_alone": {
+      "findings": 0,
+      "actionable": false
+    },
+    "grype_alone": {
+      "findings": 0,
+      "actionable": false
+    },
+    "reachable": {
+      "findings": 1,
+      "actionable": true,
+      "attack_chain": true
+    }
+  }
+}

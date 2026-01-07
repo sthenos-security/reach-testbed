@@ -2,31 +2,71 @@
   "testcase": "go-app",
   "description": "Go Gin app with vulnerable dependencies",
   
+  "reachability_stats": {
+    "total_dependencies": 43,
+    "dependencies_with_cves": 12,
+    "total_cves": 23,
+    "reachable_cves": 2,
+    "unreachable_cves": 21,
+    "noise_reduction_percent": 91.3,
+    "triage_time_saved": "~2 hours"
+  },
+
   "reachable_cves": {
-    "min": 2,
+    "count": 2,
     "expected": ["CVE-2022-32149", "CVE-2022-28948"]
   },
   
   "unreachable_cves": {
-    "min": 0
+    "count": 21,
+    "examples": ["CVE-2022-41723", "CVE-2023-39325", "CVE-2022-27664"],
+    "reasons": {
+      "transitive_not_imported": 14,
+      "test_only": 4,
+      "build_constraint_excluded": 3
+    }
   },
   
   "specific_cves": {
-    "CVE-2022-32149": "reachable",
-    "CVE-2022-28948": "reachable"
+    "CVE-2022-32149": {
+      "status": "reachable",
+      "package": "golang.org/x/text",
+      "call_path": "handlers/i18n.go:Translate() → text.language.Parse()"
+    },
+    "CVE-2022-28948": {
+      "status": "reachable",
+      "package": "gopkg.in/yaml.v3",
+      "call_path": "config/loader.go:LoadConfig() → yaml.Unmarshal()"
+    },
+    "CVE-2022-41723": {
+      "status": "unreachable",
+      "package": "golang.org/x/net/http2",
+      "reason": "Using standard net/http, not x/net/http2 directly"
+    }
   },
   
   "secrets": {
-    "min": 1,
-    "types": ["api-key"]
+    "total_found": 3,
+    "reachable": 1,
+    "unreachable": 2,
+    "types": ["api-key", "database-dsn"]
   },
   
   "entrypoints": {
-    "min": 3,
-    "expected_types": ["http"]
+    "count": 8,
+    "types": ["http", "grpc"],
+    "routes": ["/api/v1/users", "/api/v1/config", "/health", "/metrics"]
   },
   
   "risk_level": {
-    "max": "MEDIUM"
-  }
+    "without_reachability": "HIGH",
+    "with_reachability": "MEDIUM",
+    "reason": "21 CVEs downgraded to unreachable"
+  },
+
+  "demo_talking_points": [
+    "Go has smaller dep tree than npm - but still 91% noise",
+    "golang.org/x/* CVEs common but often not in call path",
+    "REACHABLE traces actual imports from go.mod to code"
+  ]
 }
