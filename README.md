@@ -162,4 +162,6 @@ The `.github/workflows/validate.yml` workflow:
 
 ## License
 
-MIT - For testing purposes only.
+**© 2026 Sthenos Security. All rights reserved.**
+
+Created by Alain Dazzi | adazzi@sthenosec.com

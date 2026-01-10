@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright © 2026 Sthenos Security. All rights reserved.
+
 """
 REACHABLE Test Bed Validator
 
@@ -13,12 +15,10 @@ import json
 import sys
 from pathlib import Path
 
-
 def load_json(path: str) -> dict:
     """Load JSON file."""
     with open(path) as f:
         return json.load(f)
-
 
 def validate(actual_path: str, expected_path: str) -> bool:
     """
@@ -114,7 +114,6 @@ def validate(actual_path: str, expected_path: str) -> bool:
     print()
     return passed
 
-
 def main():
     if len(sys.argv) != 3:
         print("Usage: python validate.py actual.json expected.json")
@@ -133,7 +132,6 @@ def main():
     
     passed = validate(actual_path, expected_path)
     sys.exit(0 if passed else 1)
-
 
 if __name__ == '__main__':
     main()
