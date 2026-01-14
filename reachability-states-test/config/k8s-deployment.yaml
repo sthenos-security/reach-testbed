@@ -1,0 +1,61 @@
+# CONFIG UNKNOWN REACHABILITY TEST
+# =================================
+# Kubernetes deployment with security misconfigurations
+# Reachability is N/A for config files
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vulnerable-app
+  labels:
+    app: vulnerable-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vulnerable-app
+  template:
+    metadata:
+      labels:
+        app: vulnerable-app
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest  # Issue: unpinned image tag
+        ports:
+        - containerPort: 5000
+        
+        # Issue: Missing resource limits
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+        
+        # Issue: Running as root (no securityContext)
+        # securityContext:
+        #   runAsNonRoot: true
+        #   readOnlyRootFilesystem: true
+        
+        # Issue: Privileged container
+        securityContext:
+          privileged: true  # CRITICAL: Allows container escape
+          
+        env:
+        # Issue: Hardcoded secret in env
+        - name: API_KEY
+          value: "sk-live-hardcoded-api-key-in-yaml"
+        - name: DATABASE_PASSWORD
+          value: "super-secret-password"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vulnerable-app-service
+spec:
+  selector:
+    app: vulnerable-app
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: LoadBalancer  # Issue: Exposes service to internet

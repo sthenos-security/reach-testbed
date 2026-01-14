@@ -1,0 +1,9 @@
+# Vulnerable packages for CVE testing
+requests==2.25.0
+pyyaml==5.3.1
+jinja2==2.11.2
+urllib3==1.26.4
+flask==2.0.0
+
+# Clean packages
+python-dotenv==1.0.0

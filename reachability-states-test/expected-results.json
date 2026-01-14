@@ -1,0 +1,109 @@
+{
+  "test_name": "reachability-states-test",
+  "version": "1.0.0",
+  "description": "Expected results for reachability state testing across all signal types",
+  
+  "expected_signals": {
+    "CVE": {
+      "reachable": {
+        "min_count": 1,
+        "example_packages": ["requests", "urllib3"],
+        "files": ["src/cve_reachable.py"]
+      },
+      "not_reachable": {
+        "min_count": 1,
+        "example_packages": ["pyyaml"],
+        "files": ["src/cve_dead_code.py"]
+      },
+      "unknown": {
+        "min_count": 0,
+        "notes": "CVEs should always have determined reachability based on import analysis"
+      }
+    },
+    
+    "CWE": {
+      "reachable": {
+        "min_count": 2,
+        "example_ids": ["CWE-79", "CWE-89"],
+        "files": ["src/cwe_reachable.py"]
+      },
+      "not_reachable": {
+        "min_count": 2,
+        "example_ids": ["CWE-78", "CWE-22"],
+        "files": ["src/cwe_dead_code.py"]
+      },
+      "test_only": {
+        "min_count": 3,
+        "files": ["tests/test_security.py"],
+        "notes": "CWEs in test files should be marked as test_only or excluded"
+      }
+    },
+    
+    "SECRET": {
+      "reachable": {
+        "min_count": 2,
+        "example_types": ["api_key", "aws_credentials"],
+        "files": ["src/secret_reachable.py"]
+      },
+      "not_reachable": {
+        "min_count": 2,
+        "example_types": ["github_token", "slack_webhook", "private_key"],
+        "files": ["src/secret_dead_code.py"]
+      },
+      "unknown": {
+        "min_count": 4,
+        "files": [".env"],
+        "notes": "Secrets in .env files cannot have reachability determined"
+      }
+    },
+    
+    "CONFIG": {
+      "reachable": {
+        "min_count": 0,
+        "notes": "CONFIG issues never have reachable state - they are deployment-time"
+      },
+      "not_reachable": {
+        "min_count": 0,
+        "notes": "CONFIG issues never have not_reachable state"
+      },
+      "unknown": {
+        "min_count": 5,
+        "files": ["config/Dockerfile", "config/k8s-deployment.yaml"],
+        "example_ids": ["missing-user", "privileged-container", "no-resource-limits"],
+        "notes": "CONFIG issues always have unknown/N/A reachability"
+      }
+    },
+    
+    "MALWARE": {
+      "notes": "No malware packages included in this test suite - see malware-test-packages/ for malware testing"
+    }
+  },
+  
+  "validation_rules": [
+    {
+      "rule": "CVE_REACHABILITY",
+      "description": "CVEs from imported packages should be REACHABLE, from unimported should be NOT_REACHABLE",
+      "check": "cve.reachable.count > 0 AND cve.not_reachable.count > 0"
+    },
+    {
+      "rule": "CWE_DEAD_CODE",
+      "description": "CWEs in dead code (unimported modules) should be NOT_REACHABLE",
+      "check": "cwe.not_reachable.files contains 'cwe_dead_code.py'"
+    },
+    {
+      "rule": "SECRET_ENV_UNKNOWN",
+      "description": "Secrets in .env files should have UNKNOWN reachability",
+      "check": "secret.unknown.files contains '.env'"
+    },
+    {
+      "rule": "CONFIG_ALWAYS_UNKNOWN",
+      "description": "CONFIG issues should always have UNKNOWN/N/A reachability",
+      "check": "config.reachable.count == 0 AND config.not_reachable.count == 0"
+    },
+    {
+      "rule": "TEST_CODE_EXCLUSION",
+      "description": "CWEs in test files should be marked differently or excluded",
+      "check": "cwe.test_only.count >= 0 OR tests/ excluded from scan"
+    }
+  ]
+}
