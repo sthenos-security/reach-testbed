@@ -66,6 +66,7 @@ npm install
 | Directory | Language | Features Tested |
 |-----------|----------|-----------------|
 | `shai-hulud-simulation/` | JavaScript | 🌟 **Supply chain attack demo** - multi-signal correlation |
+| `ai-security-test/` | Python/TS/Go | 🤖 **AI/LLM security** - OWASP LLM Top 10, Garak, Corpus patterns |
 | `python-app/` | Python | CVEs, secrets, reachability, malware patterns |
 | `javascript-app/` | JS/TS | npm vulns, call graph, entrypoints |
 | `go-app/` | Go | go.mod vulns, FFI detection |
@@ -74,6 +75,53 @@ npm install
 | `kotlin-app/` | Kotlin | Coroutines, Android lifecycle |
 | `polyglot-monorepo/` | Mixed | Cross-language, microservices |
 | `malware-test-packages/` | JavaScript | GuardDog malware pattern detection |
+
+## AI Security Tests 🤖
+
+The `ai-security-test/` directory contains test cases for AI/LLM security detection:
+
+| File | Patterns | Detection |
+|------|----------|----------|
+| `python/llm01_prompt_injection.py` | Direct prompt injection | OWASP LLM01 |
+| `python/llm02_sensitive_disclosure.py` | Sensitive data leakage | OWASP LLM02 |
+| `python/llm05_output_handling.py` | Unsafe output (exec, eval) | OWASP LLM05 |
+| `python/llm06_excessive_agency.py` | Unrestricted tool access | OWASP LLM06 |
+| `python/mcp_security.py` | MCP tool security | MCP violations |
+| `python/garak_corpus_patterns.py` | **43 jailbreak patterns** | Garak + Corpus rules |
+| `typescript/ai_vulnerabilities.ts` | TypeScript AI patterns | Multi-language |
+| `go/ai_vulnerabilities.go` | Go AI patterns | Multi-language |
+
+### Garak & Corpus Patterns
+
+The `garak_corpus_patterns.py` file tests 47 new rules derived from:
+
+| Source | Rules | Examples |
+|--------|-------|----------|
+| **Garak** (NVIDIA) | 25 | DAN jailbreaks, prompt injection, encoding evasion |
+| **Tensor Trust** | 7 | Access granted, system override, admin mode |
+| **JailbreakBench** | 7 | Evil confidant, fictional bypass, unfiltered requests |
+| **PromptInject** | 8 | Goal hijacking, prompt leaking, delimiter injection |
+
+### Running AI Security Tests
+
+```bash
+# Full AI scan
+reachctl scan ai-security-test/ --enable-ai
+
+# AI-only scan (skip CVE/secrets)
+reachctl scan ai-security-test/ --ai-only --debug
+
+# Validate against expected results
+python validate.py results/ai-security.json expected-results/ai-garak-corpus-expected.json
+```
+
+### Expected Output
+
+- **~107 total AI findings** across all test files
+- **47 findings** from Garak/Corpus patterns alone
+- Output files: `ai-security.json`, `ai-security.sarif`
+
+---
 
 ## Malware Detection Tests
 

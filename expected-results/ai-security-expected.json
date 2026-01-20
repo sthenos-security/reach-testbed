@@ -1,0 +1,49 @@
+{
+  "ai-security-test": {
+    "description": "Expected AI security scan results for ai-security-test directory",
+    "version": "1.0",
+    "min_findings": 15,
+    "max_findings": 30,
+    "by_owasp": {
+      "LLM01": {
+        "min": 4,
+        "max": 8,
+        "files": ["python/llm01_prompt_injection.py", "typescript/ai_vulnerabilities.ts"]
+      },
+      "LLM02": {
+        "min": 2,
+        "max": 5,
+        "files": ["python/llm02_sensitive_disclosure.py"]
+      },
+      "LLM05": {
+        "min": 2,
+        "max": 5,
+        "files": ["python/llm05_output_handling.py", "typescript/ai_vulnerabilities.ts"]
+      },
+      "LLM06": {
+        "min": 3,
+        "max": 8,
+        "files": ["python/llm06_excessive_agency.py", "go/ai_vulnerabilities.go"]
+      },
+      "MCP": {
+        "min": 2,
+        "max": 6,
+        "files": ["python/mcp_security.py"]
+      }
+    },
+    "by_severity": {
+      "ERROR": {"min": 5, "max": 15},
+      "WARNING": {"min": 5, "max": 15},
+      "INFO": {"min": 0, "max": 5}
+    },
+    "expected_critical": {
+      "min": 3,
+      "description": "High-risk findings without guards: prompt injection, shell execution, credential exposure"
+    },
+    "safe_patterns_should_not_match": [
+      "safe_sanitized_input",
+      "safe_hardcoded_prompt", 
+      "SafeMCPServer"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "test_file": "ai-security-test/python/garak_corpus_patterns.py",
+  "description": "Expected AI security findings for Garak and Corpus pattern test file",
+  "generated": "2026-01-19",
+  "expected_findings": {
+    "garak_derived": {
+      "garak-dan-001": 1,
+      "garak-dan-002": 1,
+      "garak-dan-003": 1,
+      "garak-promptinject-001": 1,
+      "garak-promptinject-002": 1,
+      "garak-promptinject-003": 1,
+      "garak-promptinject-004": 1,
+      "garak-promptinject-005": 1,
+      "garak-encoding-001": 1,
+      "garak-encoding-002": 1,
+      "garak-knownbadsignatures-001": 1,
+      "garak-knownbadsignatures-002": 1,
+      "garak-knownbadsignatures-003": 1,
+      "garak-leakreplay-001": 1,
+      "garak-leakreplay-002": 1,
+      "garak-xss-001": 1,
+      "garak-xss-002": 1,
+      "garak-malwaregen-001": 1,
+      "garak-malwaregen-002": 1,
+      "garak-lmrc-001": 1,
+      "garak-lmrc-002": 1
+    },
+    "corpus_derived": {
+      "corpus-tensortrust-001": 1,
+      "corpus-tensortrust-002": 1,
+      "corpus-tensortrust-003": 1,
+      "corpus-tensortrust-004": 1,
+      "corpus-tensortrust-005": 1,
+      "corpus-tensortrust-006": 1,
+      "corpus-tensortrust-007": 1,
+      "corpus-jailbreakbench-001": 1,
+      "corpus-jailbreakbench-002": 1,
+      "corpus-jailbreakbench-003": 1,
+      "corpus-jailbreakbench-004": 1,
+      "corpus-jailbreakbench-005": 1,
+      "corpus-jailbreakbench-006": 1,
+      "corpus-jailbreakbench-007": 1,
+      "corpus-promptinject-001": 1,
+      "corpus-promptinject-002": 1,
+      "corpus-promptinject-003": 1,
+      "corpus-promptinject-004": 1,
+      "corpus-promptinject-005": 1,
+      "corpus-promptinject-006": 1,
+      "corpus-promptinject-007": 1,
+      "corpus-promptinject-008": 1
+    },
+    "owasp_llm_rules": {
+      "llm01-prompt-injection-*": "multiple",
+      "comment": "Existing LLM01 rules should also fire on prompt injection patterns"
+    }
+  },
+  "summary": {
+    "expected_garak_findings": 21,
+    "expected_corpus_findings": 22,
+    "expected_total_new_rules": 43,
+    "note": "Some patterns may trigger multiple rules"
+  }
+}
