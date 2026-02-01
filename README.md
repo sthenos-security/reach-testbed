@@ -105,11 +105,14 @@ The `garak_corpus_patterns.py` file tests 47 new rules derived from:
 ### Running AI Security Tests
 
 ```bash
-# Full AI scan
-reachctl scan ai-security-test/ --enable-ai
+# Standard scan (AI analysis included by default)
+reachctl scan ai-security-test/
 
-# AI-only scan (skip CVE/secrets)
-reachctl scan ai-security-test/ --ai-only --debug
+# Scan with debug output
+reachctl scan ai-security-test/ --debug
+
+# Skip AI analysis for faster scans
+reachctl scan ai-security-test/ --no-ai
 
 # Validate against expected results
 python validate.py results/ai-security.json expected-results/ai-garak-corpus-expected.json
