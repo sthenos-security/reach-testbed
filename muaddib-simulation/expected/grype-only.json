@@ -1,0 +1,22 @@
+{
+  "_comment": "Expected Grype findings — Grype is a CVE scanner, not a malware scanner",
+  "tool": "grype",
+  "version": "0.x",
+  "target": "muaddib-simulation",
+  "findings": [],
+  "summary": {
+    "total_findings": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "Grype matches packages against the NVD/GitHub Advisory database",
+    "muaddib-simulation has no CVE — Grype cannot detect it",
+    "Custom/local malware packages are completely invisible to CVE scanners",
+    "Grype cannot detect behavioral malware patterns"
+  ]
+}

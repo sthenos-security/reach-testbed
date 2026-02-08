@@ -1,0 +1,145 @@
+{
+  "_comment": "Expected sandbox behavioral findings when muaddib-simulation is pip-installed in the DevNull Jail",
+  "tool": "reachable-sandbox",
+  "version": "4.5.x",
+  "target": "muaddib-simulation",
+  "ecosystem": "pip",
+  "install_command": "pip install /work/local-pkg/",
+  "package_source": "local",
+  "verdict": "MALICIOUS",
+  "capability_score": 0.0,
+  "findings": [
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.aws/credentials",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.aws/credentials"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.ssh/id_rsa",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.ssh/id_rsa"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.ssh/id_ed25519",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.ssh/id_ed25519"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.npmrc",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.npmrc"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.docker/config.json",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.docker/config.json"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "Honeypot file accessed: ~/.kube/config",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.kube/config"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "Sensitive environment variable accessed: AWS_ACCESS_KEY_ID",
+      "evidence": {
+        "event": "env_access",
+        "variable": "AWS_ACCESS_KEY_ID"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "Sensitive environment variable accessed: GITHUB_TOKEN",
+      "evidence": {
+        "event": "env_access",
+        "variable": "GITHUB_TOKEN"
+      }
+    },
+    {
+      "rule": "NETWORK_DURING_INSTALL",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "Network access attempted to c2.muaddib-attack.test:443",
+      "evidence": {
+        "event": "network_blocked",
+        "destination": "c2.muaddib-attack.test",
+        "port": 443
+      }
+    },
+    {
+      "rule": "NETWORK_DURING_INSTALL",
+      "severity": "HIGH",
+      "phase": "install",
+      "description": "DNS exfiltration attempt to dns-exfil.muaddib.test",
+      "evidence": {
+        "event": "network_blocked",
+        "destination": "dns-exfil.muaddib.test"
+      }
+    }
+  ],
+  "exfil_chain_detected": true,
+  "exfil_chain": {
+    "sensitive_read": ["~/.aws/credentials", "~/.ssh/id_rsa", "AWS_ACCESS_KEY_ID", "GITHUB_TOKEN"],
+    "outbound_attempt": ["c2.muaddib-attack.test:443", "dns-exfil.muaddib.test"]
+  },
+  "metrics": {
+    "install.network_attempt": true,
+    "install.credential_access": true,
+    "install.shell_spawn": 0,
+    "install.fs_escape": false,
+    "install.exec_unexpected": 0,
+    "install.suspicious_args": 0
+  },
+  "summary": {
+    "total_findings": 10,
+    "critical": 4,
+    "high": 6,
+    "medium": 0,
+    "low": 0,
+    "honeypot_files_accessed": 6,
+    "env_vars_harvested": 2,
+    "network_attempts": 2,
+    "exfil_chain": true
+  },
+  "notes": [
+    "cmdclass override triggers exec(base64.b64decode(...)) during pip install",
+    "Payload reads ALL honeypot files planted by sandbox",
+    "Exfil chain: credential read + outbound POST = CRITICAL verdict upgrade",
+    "DNS exfiltration fallback detected even though HTTP exfil fails",
+    "This is the exact pattern from real PyPI malware: ultrarequests, colourama, ctx"
+  ]
+}

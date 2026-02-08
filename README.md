@@ -4,53 +4,42 @@ Comprehensive test repository demonstrating REACHABLE's multi-signal correlation
 
 ---
 
-## 🌟 Featured Demo: Shai-Hulud Supply Chain Attack
+## 🌟 Featured Demos: Supply Chain Attack Detection
 
-> **The killer demo for investors** - Watch REACHABLE detect a sophisticated supply chain attack that traditional tools miss.
+> **The killer demos for investors** — Watch REACHABLE detect sophisticated supply chain attacks that traditional tools miss, across both npm and pip ecosystems.
+
+### Shai-Hulud (npm) — postinstall hook attack
 
 ```bash
-cd shai-hulud-simulation
-./run-comparison.sh
+cd shai-hulud-simulation && ./run-comparison.sh
 ```
 
-### What You'll See
+### Muad'Dib (pip) — setup.py cmdclass attack
 
-| Tool | Findings | Actionable? | Sees Attack Chain? |
-|------|----------|-------------|-------------------|
-| Semgrep | 5 warnings | ❌ No context | ❌ No |
-| GuardDog | 3 alerts | ❌ No context | ❌ No |
-| Trivy | 0 | ❌ Blind | ❌ No |
-| Grype | 0 | ❌ Blind | ❌ No |
-| **REACHABLE** | **1 CRITICAL** | ✅ **Yes** | ✅ **Full chain** |
-
-### The Attack Chain
-
+```bash
+cd muaddib-simulation && ./run-comparison.sh
 ```
-npm install
-     │
-     ▼
-[postinstall] ──► loader.js ──► harvester.js ──► Steal credentials
-                      │              │                  │
-                      │              ▼                  │
-                      │         ~/.npmrc               │
-                      │         ~/.ssh/*               │
-                      │         ~/.aws/*               │
-                      │                                │
-                      └──────► exfil.js ◄──────────────┘
-                                   │
-                                   ▼
-                            Attacker C2 server
-```
+
+### Detection Summary
+
+| Tool | npm (Shai-Hulud) | pip (Muad'Dib) | Sees Attack Chain? |
+|------|-----------------|----------------|-------------------|
+| Semgrep | 5 warnings | 4 warnings | ❌ No |
+| GuardDog | 3 alerts | 3 alerts | ❌ No |
+| Trivy | 0 (blind) | 0 (blind) | ❌ No |
+| Grype | 0 (blind) | 0 (blind) | ❌ No |
+| **REACHABLE** | **1 CRITICAL** | **1 CRITICAL** | ✅ **Full chain** |
+
+Both attacks follow the same pattern: install hook → credential theft → exfiltration. Only the entry mechanism differs (`postinstall` vs `cmdclass`). REACHABLE detects both via static analysis (GuardDog + Semgrep) correlated with dynamic sandbox results (honeypot access + blocked network).
 
 ### Key Metrics
 
-- **7 raw signals** → **1 correlated critical finding**
+- **7-8 raw signals** → **1 correlated critical finding** per attack
 - **87.5% noise reduction**
-- **Full attack chain visibility**
+- **Exfil chain proof**: credential read + outbound attempt = confirmed malicious
 - **Actionable verdict: BLOCK INSTALLATION**
 
-📖 [Full attack chain documentation](shai-hulud-simulation/docs/ATTACK-CHAIN.md)  
-📊 [Tool comparison matrix](shai-hulud-simulation/docs/COMPARISON-MATRIX.md)
+📖 [npm attack chain](shai-hulud-simulation/docs/ATTACK-CHAIN.md) · [pip attack chain](muaddib-simulation/README.md)
 
 ---
 
@@ -65,7 +54,8 @@ npm install
 
 | Directory | Language | Features Tested |
 |-----------|----------|-----------------|
-| `shai-hulud-simulation/` | JavaScript | 🌟 **Supply chain attack demo** - multi-signal correlation |
+| `shai-hulud-simulation/` | JavaScript | 🌟 **npm supply chain attack** - postinstall hook + sandbox detection |
+| `muaddib-simulation/` | Python | 🌟 **pip supply chain attack** - setup.py cmdclass + sandbox detection |
 | `ai-security-test/` | Python/TS/Go | 🤖 **AI/LLM security** - OWASP LLM Top 10, Garak, Corpus patterns |
 | `python-app/` | Python | CVEs, secrets, reachability, malware patterns |
 | `javascript-app/` | JS/TS | npm vulns, call graph, entrypoints |

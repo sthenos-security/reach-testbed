@@ -1,0 +1,45 @@
+{
+  "_comment": "Expected GuardDog findings when run standalone against muaddib-simulation",
+  "tool": "guarddog",
+  "version": "0.x",
+  "target": "muaddib-simulation",
+  "ecosystem": "pypi",
+  "findings": [
+    {
+      "rule": "cmd-overwrite",
+      "file": "setup.py",
+      "severity": "MEDIUM",
+      "message": "Package overwrites install command via cmdclass",
+      "detail": "cmdclass={'install': MaliciousInstall, 'develop': MaliciousDevelop}"
+    },
+    {
+      "rule": "exec-base64",
+      "file": "setup.py",
+      "severity": "HIGH",
+      "message": "exec() called with base64-decoded content",
+      "detail": "exec(base64.b64decode(_PAYLOAD))"
+    },
+    {
+      "rule": "code-execution",
+      "file": "setup.py",
+      "severity": "MEDIUM",
+      "message": "Dynamic code execution detected",
+      "detail": "exec() call in install command"
+    }
+  ],
+  "summary": {
+    "total_findings": 3,
+    "critical": 0,
+    "high": 1,
+    "medium": 2,
+    "low": 0,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "cmdclass override has high false positive rate (numpy, cython, all C extensions use it)",
+    "exec-base64 is suspicious but not confirmed malicious without execution",
+    "No credential theft or exfiltration visibility",
+    "Cannot determine if payload actually runs during install"
+  ]
+}

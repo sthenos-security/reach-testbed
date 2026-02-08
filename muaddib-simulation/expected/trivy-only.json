@@ -1,0 +1,22 @@
+{
+  "_comment": "Expected Trivy findings — Trivy is a CVE scanner, not a malware scanner",
+  "tool": "trivy",
+  "version": "0.x",
+  "target": "muaddib-simulation",
+  "findings": [],
+  "summary": {
+    "total_findings": 0,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "Trivy scans for known CVEs in published packages",
+    "muaddib-simulation is not a published PyPI package — no CVE database entry",
+    "Even if it were published, malware without a CVE ID is invisible to Trivy",
+    "Trivy cannot detect behavioral malware patterns (exec, credential theft, exfil)"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "_comment": "Expected REACHABLE findings — static + dynamic correlation produces single CRITICAL verdict",
+  "tool": "reachable",
+  "version": "4.5.x",
+  "target": "muaddib-simulation",
+  "ecosystem": "pip",
+  "verdict": "MALICIOUS",
+  "risk_level": "CRITICAL",
+  "noise_reduction": "87.5%",
+  "raw_signals": 8,
+  "correlated_findings": 1,
+  "finding": {
+    "finding_id": "MALWARE-CORRELATION-muaddib-simulation-1.0.0",
+    "severity": "CRITICAL",
+    "title": "Confirmed supply chain malware: credential theft + exfiltration",
+    "description": "Package muaddib-simulation executes malicious code during pip install via cmdclass override. Confirmed credential theft (honeypot access) and exfiltration attempt (outbound network) in sandbox. Static analysis corroborates: exec(base64.b64decode(...)) pattern, hardcoded C2 endpoints, sensitive file path access.",
+    "recommendation": "BLOCK INSTALLATION — Do not use this package.",
+    "attack_chain": {
+      "entry": "setup.py → cmdclass={'install': MaliciousInstall}",
+      "trigger": "pip install (automatic — no user action needed)",
+      "stage_1": "exec(base64.b64decode(_PAYLOAD)) — obfuscated payload execution",
+      "stage_2": "harvest_credentials() — reads ~/.aws, ~/.ssh, ~/.npmrc, ~/.docker, ~/.kube",
+      "stage_3": "harvest_env_vars() — reads AWS_*, GITHUB_*, NPM_TOKEN, SECRET_KEY",
+      "stage_4": "exfiltrate() — POST to c2.muaddib-attack.test + DNS fallback"
+    },
+    "correlated_signals": [
+      {
+        "source": "guarddog",
+        "signal": "cmd-overwrite",
+        "severity": "MEDIUM",
+        "description": "cmdclass override detected in setup.py"
+      },
+      {
+        "source": "guarddog",
+        "signal": "exec-base64",
+        "severity": "HIGH",
+        "description": "exec() called with base64-decoded content"
+      },
+      {
+        "source": "semgrep",
+        "signal": "CWE-94",
+        "severity": "WARNING",
+        "description": "Code injection via exec() with decoded input"
+      },
+      {
+        "source": "semgrep",
+        "signal": "CWE-295",
+        "severity": "WARNING",
+        "description": "SSL certificate verification disabled"
+      },
+      {
+        "source": "semgrep",
+        "signal": "CWE-22",
+        "severity": "WARNING",
+        "description": "Sensitive file path access patterns"
+      },
+      {
+        "source": "sandbox",
+        "signal": "honeypot_access",
+        "severity": "CRITICAL",
+        "description": "Credential files accessed during install (6 honeypots triggered)"
+      },
+      {
+        "source": "sandbox",
+        "signal": "env_harvesting",
+        "severity": "HIGH",
+        "description": "Sensitive environment variables accessed during install"
+      },
+      {
+        "source": "sandbox",
+        "signal": "exfil_chain",
+        "severity": "CRITICAL",
+        "description": "Credential read + outbound network attempt = confirmed exfiltration chain"
+      }
+    ]
+  },
+  "comparison": {
+    "semgrep_alone": "4 warnings — no actionable verdict, high FP rate",
+    "guarddog_alone": "3 alerts — suspicious but not confirmed, cmdclass has high FP",
+    "trivy_alone": "0 findings — completely blind to malware",
+    "grype_alone": "0 findings — completely blind to malware",
+    "reachable": "1 CRITICAL — confirmed malware with behavioral proof from sandbox"
+  },
+  "notes": [
+    "Static signals alone cannot confirm malware (cmdclass and exec are used by legitimate packages)",
+    "Sandbox provides behavioral proof: credential theft + exfiltration chain",
+    "The key differentiator: REACHABLE correlates what the code LOOKS like (static) with what it DOES (dynamic)",
+    "Noise reduction: 8 fragmented signals → 1 high-confidence correlated finding",
+    "This is the Python equivalent of Shai-Hulud (npm) — same intent, different entry mechanism"
+  ]
+}

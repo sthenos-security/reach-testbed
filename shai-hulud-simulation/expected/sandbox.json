@@ -1,0 +1,156 @@
+{
+  "_comment": "Expected sandbox behavioral findings when shai-hulud-simulation is npm-installed in the DevNull Jail",
+  "tool": "reachable-sandbox",
+  "version": "4.5.x",
+  "target": "shai-hulud-simulation",
+  "ecosystem": "npm",
+  "install_command": "npm install /work/local-pkg/",
+  "package_source": "local",
+  "verdict": "MALICIOUS",
+  "capability_score": 0.0,
+  "findings": [
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.aws/credentials",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.aws/credentials"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.ssh/id_rsa",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.ssh/id_rsa"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.ssh/id_ed25519",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.ssh/id_ed25519"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.npmrc",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.npmrc"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.docker/config.json",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.docker/config.json"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Honeypot file accessed: ~/.kube/config",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.kube/config"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Sensitive environment variable accessed: NPM_TOKEN",
+      "evidence": {
+        "event": "env_access",
+        "variable": "NPM_TOKEN"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Sensitive environment variable accessed: GITHUB_TOKEN",
+      "evidence": {
+        "event": "env_access",
+        "variable": "GITHUB_TOKEN"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Sensitive environment variable accessed: AWS_ACCESS_KEY_ID",
+      "evidence": {
+        "event": "env_access",
+        "variable": "AWS_ACCESS_KEY_ID"
+      }
+    },
+    {
+      "rule": "NETWORK_DURING_INSTALL",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "Network access attempted to c2.shai-hulud-attack.test:443",
+      "evidence": {
+        "event": "network_blocked",
+        "destination": "c2.shai-hulud-attack.test",
+        "port": 443
+      }
+    },
+    {
+      "rule": "NETWORK_DURING_INSTALL",
+      "severity": "HIGH",
+      "phase": "postinstall",
+      "description": "DNS exfiltration attempt to dns-exfil.attacker.test",
+      "evidence": {
+        "event": "network_blocked",
+        "destination": "dns-exfil.attacker.test"
+      }
+    }
+  ],
+  "exfil_chain_detected": true,
+  "exfil_chain": {
+    "sensitive_read": ["~/.aws/credentials", "~/.ssh/id_rsa", "~/.npmrc", "NPM_TOKEN", "GITHUB_TOKEN", "AWS_ACCESS_KEY_ID"],
+    "outbound_attempt": ["c2.shai-hulud-attack.test:443", "dns-exfil.attacker.test"]
+  },
+  "metrics": {
+    "install.network_attempt": true,
+    "install.credential_access": true,
+    "install.shell_spawn": 0,
+    "install.fs_escape": false,
+    "install.exec_unexpected": 0,
+    "install.suspicious_args": 0
+  },
+  "summary": {
+    "total_findings": 11,
+    "critical": 4,
+    "high": 7,
+    "medium": 0,
+    "low": 0,
+    "honeypot_files_accessed": 6,
+    "env_vars_harvested": 3,
+    "network_attempts": 2,
+    "exfil_chain": true
+  },
+  "notes": [
+    "postinstall hook triggers loader.js which requires harvester.js and exfil.js",
+    "Loader uses base64-encoded module paths (anti-analysis)",
+    "Delayed execution (setTimeout 5000ms) — sandbox must wait long enough",
+    "Anti-sandbox check: skips delay if CI/DOCKER env vars detected",
+    "Exfil chain: credential read + outbound POST = CRITICAL verdict upgrade",
+    "This simulates the real Shai-Hulud npm attack patterns"
+  ]
+}

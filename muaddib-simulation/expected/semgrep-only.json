@@ -1,0 +1,50 @@
+{
+  "_comment": "Expected Semgrep findings when run standalone against muaddib-simulation",
+  "tool": "semgrep",
+  "version": "1.x",
+  "target": "muaddib-simulation",
+  "findings": [
+    {
+      "rule_id": "python.lang.security.audit.exec-detected",
+      "file": "setup.py",
+      "severity": "WARNING",
+      "message": "Detected use of exec(). Use of exec can lead to code injection.",
+      "cwe": "CWE-94"
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-exec-usage",
+      "file": "setup.py",
+      "severity": "ERROR",
+      "message": "exec() called with base64-decoded input — possible code injection",
+      "cwe": "CWE-94"
+    },
+    {
+      "rule_id": "python.lang.security.audit.ssl-verify-disabled",
+      "file": "setup.py",
+      "severity": "WARNING",
+      "message": "SSL certificate verification disabled (verify_mode = CERT_NONE)",
+      "cwe": "CWE-295"
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-system-call",
+      "file": "setup.py",
+      "severity": "WARNING",
+      "message": "Reading sensitive file paths (~/.aws, ~/.ssh)",
+      "cwe": "CWE-22"
+    }
+  ],
+  "summary": {
+    "total_findings": 4,
+    "errors": 1,
+    "warnings": 3,
+    "actionable": false,
+    "attack_chain_visible": false
+  },
+  "limitations": [
+    "exec() detection flags legitimate metaprogramming and plugin loaders",
+    "Cannot determine if code inside exec() payload is actually malicious",
+    "SSL disable is common in dev/test tools (false positive heavy)",
+    "File path access detection has no context about what happens with the data",
+    "No correlation between credential read and network exfiltration"
+  ]
+}
