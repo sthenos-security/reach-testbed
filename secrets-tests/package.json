@@ -1,0 +1,11 @@
+{
+  "name": "secrets-tests-javascript",
+  "version": "1.0.0",
+  "description": "Secrets test patterns for REACHABLE scanner validation",
+  "dependencies": {
+    "express": "4.18.2",
+    "axios": "0.21.1",
+    "algoliasearch": "4.20.0",
+    "@sentry/node": "7.80.0"
+  }
+}
