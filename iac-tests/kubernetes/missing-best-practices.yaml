@@ -1,0 +1,115 @@
+# =============================================================================
+# IaC Test: Kubernetes deployment missing best practices
+# Expected: CONFIG / UNKNOWN / LOW
+# =============================================================================
+# Patterns tested:
+#   resource-limit    → LOW
+#   memory-limit      → LOW
+#   cpu-limit         → LOW
+#   liveness-probe    → LOW
+#   readiness-probe   → LOW
+#   latest-tag        → LOW
+#   image-tag         → LOW
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: no-best-practices
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: no-limits
+  template:
+    metadata:
+      labels:
+        app: no-limits
+    spec:
+      containers:
+      - name: api
+        # ─────────────────────────────────────────────────────
+        # ISSUE: Using :latest tag — not reproducible
+        # Rule: kubernetes.security.latest-tag / image-tag
+        # Expected severity: LOW
+        # ─────────────────────────────────────────────────────
+        image: mycompany/api-server:latest
+
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+
+        # ─────────────────────────────────────────────────────
+        # ISSUE: No resource limits — can consume entire node
+        # Rule: kubernetes.security.resource-limit
+        # Rule: kubernetes.security.memory-limit
+        # Rule: kubernetes.security.cpu-limit
+        # Expected severity: LOW
+        # ─────────────────────────────────────────────────────
+        # resources:
+        #   requests:
+        #     memory: "64Mi"
+        #     cpu: "250m"
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+
+        # ─────────────────────────────────────────────────────
+        # ISSUE: No liveness probe — no automatic restart on hang
+        # Rule: kubernetes.security.liveness-probe
+        # Expected severity: LOW
+        # ─────────────────────────────────────────────────────
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 8080
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+
+        # ─────────────────────────────────────────────────────
+        # ISSUE: No readiness probe — receives traffic before ready
+        # Rule: kubernetes.security.readiness-probe
+        # Expected severity: LOW
+        # ─────────────────────────────────────────────────────
+        # readinessProbe:
+        #   httpGet:
+        #     path: /ready
+        #     port: 8080
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 5
+
+        env:
+        - name: APP_NAME
+          value: "api-server"
+
+      - name: worker
+        image: mycompany/worker  # No tag at all — defaults to :latest
+        command: ["./worker"]
+
+        # No resource limits
+        # No probes
+        # No health check
+
+---
+# CronJob with same issues
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-job
+  namespace: default
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cleanup
+            image: busybox:latest   # latest tag
+            command: ["sh", "-c", "echo cleanup"]
+            # No resource limits
+            # No probes (not applicable for jobs, but still flagged)
+          restartPolicy: OnFailure

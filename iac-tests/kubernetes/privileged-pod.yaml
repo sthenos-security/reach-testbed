@@ -1,0 +1,81 @@
+# =============================================================================
+# IaC Test: Kubernetes pod with container escape vectors
+# Expected: CONFIG / UNKNOWN / HIGH-CRITICAL
+# =============================================================================
+# Patterns tested:
+#   privileged                    → HIGH
+#   allow-privilege-escalation    → HIGH
+#   hostnetwork                   → HIGH
+#   hostpid                       → HIGH
+#   host-ipc                      → HIGH
+#   capabilities-added            → HIGH
+# =============================================================================
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-pod
+  namespace: production
+  labels:
+    app: attack-surface-test
+spec:
+  # ─────────────────────────────────────────────────────
+  # ISSUE: Host-level namespace sharing
+  # ─────────────────────────────────────────────────────
+  hostNetwork: true   # Rule: kubernetes.security.hostnetwork → HIGH
+  hostPID: true       # Rule: kubernetes.security.hostpid → HIGH
+  hostIPC: true       # Rule: kubernetes.security.host-ipc → HIGH
+
+  containers:
+  - name: escape-vector
+    image: ubuntu:latest
+
+    # ─────────────────────────────────────────────────────
+    # ISSUE: Privileged container — full host kernel access
+    # Rule: kubernetes.security.privileged-container
+    # Expected severity: HIGH
+    # ─────────────────────────────────────────────────────
+    securityContext:
+      privileged: true
+      allowPrivilegeEscalation: true  # Rule: allow-privilege-escalation → HIGH
+      runAsUser: 0                    # Running as root
+
+    # ─────────────────────────────────────────────────────
+    # ISSUE: Dangerous capabilities added
+    # Rule: kubernetes.security.capabilities-added
+    # Expected severity: HIGH
+    # ─────────────────────────────────────────────────────
+      capabilities:
+        add:
+          - SYS_ADMIN        # Mount filesystems, load kernel modules
+          - SYS_PTRACE       # Trace/debug other processes
+          - NET_ADMIN         # Network configuration
+          - NET_RAW           # Raw socket access
+          - SYS_RAWIO         # Direct I/O access
+          - DAC_OVERRIDE      # Bypass file permission checks
+        drop: []              # Nothing dropped
+
+    # Host path mounts — container escape
+    volumeMounts:
+    - name: host-root
+      mountPath: /host
+    - name: docker-sock
+      mountPath: /var/run/docker.sock
+    - name: host-proc
+      mountPath: /host/proc
+
+    command: ["sleep", "infinity"]
+
+  volumes:
+  - name: host-root
+    hostPath:
+      path: /
+      type: Directory
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock
+      type: Socket
+  - name: host-proc
+    hostPath:
+      path: /proc
+      type: Directory

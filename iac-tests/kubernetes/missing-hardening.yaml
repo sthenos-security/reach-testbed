@@ -1,0 +1,115 @@
+# =============================================================================
+# IaC Test: Kubernetes deployment missing security hardening
+# Expected: CONFIG / UNKNOWN / MEDIUM
+# =============================================================================
+# Patterns tested:
+#   run-as-non-root         → MEDIUM
+#   run-as-root             → MEDIUM
+#   read-only-filesystem    → MEDIUM
+#   seccomp                 → MEDIUM
+#   apparmor                → MEDIUM
+#   drop-capabilities       → MEDIUM
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unhardened-app
+  namespace: production
+  # ISSUE: Missing AppArmor annotation
+  # Rule: kubernetes.security.apparmor
+  # Expected severity: MEDIUM
+  # Should have: container.apparmor.security.beta.kubernetes.io/app: runtime/default
+  annotations:
+    description: "Deployment missing all security hardening"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: unhardened
+  template:
+    metadata:
+      labels:
+        app: unhardened
+    spec:
+      containers:
+      - name: app
+        image: myapp:v1.2.3
+        ports:
+        - containerPort: 8080
+
+        # ─────────────────────────────────────────────────────
+        # ISSUE: No security context at all
+        # Missing: runAsNonRoot, readOnlyRootFilesystem,
+        #          seccompProfile, capabilities drop
+        # ─────────────────────────────────────────────────────
+
+        # Rule: kubernetes.security.run-as-non-root → MEDIUM
+        # Fix: runAsNonRoot: true
+        # Fix: runAsUser: 1000
+
+        # Rule: kubernetes.security.read-only-filesystem → MEDIUM
+        # Fix: readOnlyRootFilesystem: true
+
+        # Rule: kubernetes.security.seccomp → MEDIUM
+        # Fix: seccompProfile: { type: RuntimeDefault }
+
+        # Rule: kubernetes.security.drop-capabilities → MEDIUM
+        # Fix: capabilities: { drop: ["ALL"] }
+
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "debug"  # Debug logging in production
+
+      - name: sidecar
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+        # Same issues on sidecar — no hardening
+        securityContext:
+          # ISSUE: Explicitly running as root
+          # Rule: kubernetes.security.run-as-root
+          # Expected severity: MEDIUM
+          runAsUser: 0
+          runAsGroup: 0
+          # ISSUE: Writable filesystem
+          readOnlyRootFilesystem: false
+          # ISSUE: Privilege escalation allowed by default
+          allowPrivilegeEscalation: true
+
+---
+# Second deployment testing seccomp profile missing
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: no-seccomp-app
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: no-seccomp
+  template:
+    metadata:
+      labels:
+        app: no-seccomp
+      # ISSUE: Missing seccomp annotation
+      # Rule: kubernetes.security.seccomp
+      # Expected severity: MEDIUM
+    spec:
+      containers:
+      - name: worker
+        image: worker:v2.0.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          # Good: some hardening present
+          # Bad: no seccomp profile
+          # Bad: no capability drops
+          capabilities:
+            add:
+              - NET_BIND_SERVICE  # Minor, but still added

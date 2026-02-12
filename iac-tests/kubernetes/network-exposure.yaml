@@ -1,0 +1,120 @@
+# =============================================================================
+# IaC Test: Kubernetes network exposure issues
+# Expected: CONFIG / UNKNOWN / HIGH-MEDIUM
+# =============================================================================
+# Patterns tested:
+#   exposed-service          → HIGH
+#   loadbalancer             → HIGH
+#   missing-network-policy   → MEDIUM
+# =============================================================================
+
+# ─────────────────────────────────────────────────────
+# ISSUE: Service exposed via LoadBalancer to the internet
+# Rule: kubernetes.security.exposed-service
+# Rule: kubernetes.security.loadbalancer
+# Expected severity: HIGH
+# ─────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: public-api
+  namespace: production
+spec:
+  type: LoadBalancer  # Exposes to internet with cloud provider LB
+  selector:
+    app: api
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+  # No loadBalancerSourceRanges — open to world
+
+---
+# ISSUE: NodePort also exposes service on every node
+apiVersion: v1
+kind: Service
+metadata:
+  name: debug-service
+  namespace: production
+spec:
+  type: NodePort
+  selector:
+    app: debug
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30080  # Accessible on every node IP
+
+---
+# ISSUE: Admin dashboard exposed via LoadBalancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-dashboard
+  namespace: production
+spec:
+  type: LoadBalancer
+  selector:
+    app: admin
+  ports:
+  - port: 443
+    targetPort: 3000  # Grafana/admin panel directly exposed
+
+---
+# ─────────────────────────────────────────────────────
+# ISSUE: No NetworkPolicy — all pods can talk to all pods
+# Rule: kubernetes.security.missing-network-policy
+# Expected severity: MEDIUM
+#
+# The namespace has no NetworkPolicy defined at all,
+# meaning all ingress and egress traffic is allowed.
+# ─────────────────────────────────────────────────────
+
+# This deployment has no NetworkPolicy restricting traffic
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15.2
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_PASSWORD
+          value: "production-password-123"  # Also a hardcoded secret
+
+---
+# What SHOULD exist but doesn't:
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: database-policy
+#   namespace: production
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: database
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app: api
+#     ports:
+#     - port: 5432

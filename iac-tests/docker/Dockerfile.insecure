@@ -1,0 +1,43 @@
+# =============================================================================
+# IaC Test: Insecure Dockerfile
+# Expected: CONFIG / UNKNOWN / severity varies by rule
+# =============================================================================
+# Patterns tested:
+#   missing-user    → HIGH
+#   latest-tag      → LOW
+#   health-check    → LOW
+# =============================================================================
+
+# ISSUE: Unpinned base image (latest tag)
+# Rule: dockerfile.security.latest-tag
+# Expected severity: LOW
+FROM python:latest
+
+# ISSUE: Running pip as root, installing unverified packages
+RUN pip install flask requests pyyaml cryptography
+
+# ISSUE: Copying everything including .env, .git, secrets
+COPY . /app
+WORKDIR /app
+
+# ISSUE: Exposing debug port alongside production
+EXPOSE 5000
+EXPOSE 5001
+EXPOSE 8080
+
+# ISSUE: Setting sensitive values as build args (leaked in image layers)
+ARG DATABASE_URL=postgresql://admin:password123@db:5432/prod
+ARG AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+ENV DATABASE_URL=${DATABASE_URL}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+# ISSUE: Running as root — no USER directive
+# Rule: dockerfile.security.missing-user
+# Expected severity: HIGH (missing-user pattern)
+
+# ISSUE: No HEALTHCHECK
+# Rule: dockerfile.security.missing-healthcheck
+# Expected severity: LOW (health-check pattern)
+
+# ISSUE: Using shell form instead of exec form (PID 1 problem)
+CMD python app.py

@@ -1,0 +1,78 @@
+# =============================================================================
+# IaC Test: docker-compose with security misconfigurations
+# Expected: CONFIG / UNKNOWN / severity varies
+# =============================================================================
+# Patterns tested:
+#   privileged                  → HIGH
+#   hostnetwork                 → HIGH
+#   capabilities-added          → HIGH
+#   hardcoded-secret            → CRITICAL
+#   exposed-service             → HIGH
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ─────────────────────────────────────────────────────
+  # ISSUE: Privileged container — full host access
+  # Rule: docker-compose.security.privileged-container
+  # Expected severity: HIGH
+  # ─────────────────────────────────────────────────────
+  app:
+    build: .
+    privileged: true
+    network_mode: host  # ISSUE: hostnetwork → HIGH
+    pid: host           # ISSUE: hostpid → HIGH
+    ports:
+      - "0.0.0.0:5000:5000"   # Bound to all interfaces
+      - "0.0.0.0:5432:5432"   # Exposing database port
+      - "0.0.0.0:22:22"       # Exposing SSH
+    environment:
+      # ISSUE: Hardcoded secrets in compose environment
+      # Rule: docker-compose.security.hardcoded-secret
+      # Expected severity: CRITICAL
+      - DATABASE_URL=postgresql://admin:P@ssw0rd!@db:5432/production
+      - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+      - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      - JWT_SECRET=super-secret-jwt-signing-key-do-not-share
+      - STRIPE_SECRET_KEY=sk_live_4eC39HqLyjWDarjtT1zdp7dc
+      - REDIS_PASSWORD=redis-default-pass
+    cap_add:
+      # ISSUE: Added dangerous capabilities
+      # Rule: docker-compose.security.capabilities-added
+      # Expected severity: HIGH
+      - SYS_ADMIN
+      - SYS_PTRACE
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      # ISSUE: Mounting sensitive host paths
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket → container escape
+      - /etc/shadow:/mnt/shadow:ro                 # Password file
+      - /proc:/host/proc                           # Host process info
+    restart: always
+
+  # ─────────────────────────────────────────────────────
+  # Database with default credentials and no auth
+  # ─────────────────────────────────────────────────────
+  db:
+    image: postgres:latest  # Unpinned
+    environment:
+      POSTGRES_PASSWORD: postgres  # Default weak password
+      POSTGRES_USER: admin
+    ports:
+      - "0.0.0.0:5432:5432"  # Database exposed to internet
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # ─────────────────────────────────────────────────────
+  # Redis with no authentication
+  # ─────────────────────────────────────────────────────
+  redis:
+    image: redis:latest
+    ports:
+      - "0.0.0.0:6379:6379"  # Redis exposed without auth
+    command: redis-server     # No --requirepass
+
+volumes:
+  pgdata:

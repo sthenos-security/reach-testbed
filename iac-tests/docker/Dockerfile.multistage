@@ -1,0 +1,38 @@
+# =============================================================================
+# IaC Test: Multi-stage Dockerfile with secrets in build layers
+# Expected: CONFIG / UNKNOWN / severity varies
+# =============================================================================
+# Patterns tested:
+#   hardcoded-secret  → CRITICAL
+#   missing-user      → HIGH
+# =============================================================================
+
+# Stage 1: Build — secrets exposed in image layers
+FROM golang:1.21 AS builder
+
+# ISSUE: Hardcoded secrets in build stage persist in layer cache
+# Rule: dockerfile.security.hardcoded-secret
+# Expected severity: CRITICAL
+ENV GITHUB_TOKEN=ghp_ABCDEFghijklmnopqrstuvwxyz1234567890
+ENV NPM_TOKEN=npm_1234567890abcdefghijklmnopqrstuvwxyz
+ENV PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/yGT..."
+
+# ISSUE: Downloading private dependencies with embedded credentials
+RUN git clone https://oauth2:${GITHUB_TOKEN}@github.com/corp/private-lib.git
+
+WORKDIR /app
+COPY . .
+RUN go build -o server .
+
+# Stage 2: Runtime — still insecure
+FROM alpine:latest
+
+# ISSUE: latest tag, no version pinning
+# ISSUE: Missing USER — runs as root
+
+COPY --from=builder /app/server /usr/local/bin/server
+
+# ISSUE: No health check defined
+EXPOSE 8443
+
+ENTRYPOINT ["server"]
