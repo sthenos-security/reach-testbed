@@ -1,0 +1,176 @@
+# REACHABLE Custom Policy Rules
+# ==============================
+# Example policy definitions for reach-testbed validation.
+# These demonstrate the policy framework and are used to test
+# that custom policies are correctly applied during scans.
+#
+# Format: YAML policy definitions
+# Applied: reachctl scan --policy ./policies/custom_rules.yaml
+
+version: "1.0"
+name: "Sthenos Security Test Policies"
+description: "Custom security policies for reach-testbed validation"
+
+# =============================================================================
+# SEVERITY OVERRIDES — elevate or downgrade specific finding types
+# =============================================================================
+severity_overrides:
+  # Elevate all DLP findings in production paths to CRITICAL
+  - match:
+      finding_type: "dlp"
+      path_pattern: "**/production/**"
+    severity: CRITICAL
+    reason: "PII in production code paths is always critical"
+
+  # Downgrade INFO-level config findings in test infrastructure
+  - match:
+      finding_type: "config"
+      path_pattern: "**/iac-tests/**"
+    severity: INFO
+    reason: "IAC test violations are informational in testbed"
+
+  # Elevate hardcoded AWS keys to CRITICAL regardless of reachability
+  - match:
+      finding_type: "secret"
+      rule_id: "hardcoded-aws-access-key"
+    severity: CRITICAL
+    reason: "AWS key exposure is always critical"
+
+  # Downgrade AI findings in ai-security-test to HIGH (they're intentional)
+  - match:
+      finding_type: "ai"
+      path_pattern: "**/ai-security-test/**"
+    severity: HIGH
+    reason: "AI test patterns are intentional — downgrade from CRITICAL"
+
+
+# =============================================================================
+# SUPPRESSION RULES — suppress known false positives
+# =============================================================================
+suppressions:
+  # Suppress DLP findings in test fixture directories
+  - match:
+      finding_type: "dlp"
+      path_pattern: "**/fixtures/**"
+    reason: "Test fixtures intentionally contain fake PII"
+    expiry: "2027-01-01"
+
+  # Suppress DLP findings in this policies directory
+  - match:
+      finding_type: "dlp"
+      path_pattern: "**/dlp-tests/dlp_false_positives.py"
+    reason: "False positive regression test file — patterns are intentional"
+    expiry: "2027-01-01"
+
+  # Suppress specific CVE for a known acceptable risk
+  - match:
+      finding_type: "cve"
+      cve_id: "CVE-2020-28469"  # glob-parent ReDoS — dead code in test
+      path_pattern: "**/javascript-app/**"
+    reason: "Dead code path — glob-parent not invoked in test app"
+    expiry: "2026-06-01"
+
+  # Suppress Semgrep findings in generated code
+  - match:
+      finding_type: "cwe"
+      path_pattern: "**/dist/**"
+    reason: "Generated build artifacts — not hand-written code"
+
+  # Suppress malware false positive for EICAR test in testbed
+  - match:
+      finding_type: "malware"
+      path_pattern: "**/malware-test-packages/**"
+    reason: "Intentional malware test samples — part of testbed design"
+    severity_threshold: HIGH   # Still flag CRITICAL even in this dir
+
+
+# =============================================================================
+# COMPLIANCE MAPPING — map findings to regulatory requirements
+# =============================================================================
+compliance_mapping:
+  # PCI-DSS mapping
+  pci_dss:
+    - finding_type: "dlp"
+      pii_types: ["credit_card", "pan", "cvv"]
+      requirements: ["Req 3.3", "Req 3.4", "Req 4.1"]
+    - finding_type: "cwe"
+      cwe_ids: ["CWE-89", "CWE-79", "CWE-306"]
+      requirements: ["Req 6.5.1", "Req 6.5.7", "Req 8.2"]
+    - finding_type: "secret"
+      secret_types: ["database_url", "hardcoded-token"]
+      requirements: ["Req 8.2.1", "Req 8.2.2"]
+
+  # HIPAA mapping
+  hipaa:
+    - finding_type: "dlp"
+      pii_types: ["mrn", "ssn", "diagnosis", "medication", "insurance_id"]
+      requirements: ["§164.312(a)(2)(iv)", "§164.312(e)(1)"]
+    - finding_type: "cwe"
+      cwe_ids: ["CWE-312", "CWE-327", "CWE-319"]
+      requirements: ["§164.312(a)(2)(iv)", "§164.312(e)(2)(ii)"]
+    - finding_type: "secret"
+      secret_types: ["hardcoded-token", "md5-password"]
+      requirements: ["§164.312(d)"]
+
+  # GDPR mapping
+  gdpr:
+    - finding_type: "dlp"
+      pii_types: ["email", "phone", "address", "ssn", "dob", "passport"]
+      requirements: ["Art. 5", "Art. 25", "Art. 32"]
+    - finding_type: "cwe"
+      cwe_ids: ["CWE-89", "CWE-200", "CWE-284"]
+      requirements: ["Art. 32(1)(b)"]
+
+  # FedRAMP mapping
+  fedramp:
+    - finding_type: "cwe"
+      cwe_ids: ["CWE-327", "CWE-326", "CWE-916"]
+      requirements: ["SC-28", "IA-7", "IA-5"]
+    - finding_type: "secret"
+      secret_types: ["hardcoded-token", "private-key"]
+      requirements: ["SC-12", "SC-17"]
+
+
+# =============================================================================
+# FAIL CONDITIONS — when to fail CI/CD pipeline
+# =============================================================================
+fail_conditions:
+  # Fail if any CRITICAL finding is reachable
+  - condition: "reachable_critical_count > 0"
+    message: "Build blocked: reachable CRITICAL vulnerabilities found"
+
+  # Fail if DLP finds real PII in non-test code paths
+  - condition: "dlp_count > 0 AND NOT path_matches('**/tests/**', '**/testbed/**', '**/fixtures/**')"
+    message: "Build blocked: PII detected in production code"
+
+  # Fail if AWS keys detected anywhere
+  - condition: "secret_type == 'hardcoded-aws-access-key'"
+    message: "Build blocked: hardcoded AWS credentials detected — rotate immediately"
+
+  # Warn (don't fail) if unreachable HIGH findings exceed threshold
+  - condition: "unreachable_high_count > 50"
+    level: warn
+    message: "Warning: high unreachable finding count — review suppression rules"
+
+
+# =============================================================================
+# NOTIFICATION RULES — who to alert for specific finding types
+# =============================================================================
+notifications:
+  - trigger:
+      finding_type: "secret"
+      severity: [CRITICAL, HIGH]
+    channels:
+      - type: slack
+        webhook_env: "SLACK_SECURITY_WEBHOOK"
+        message: "🚨 Secret detected in {repo}: {finding_id} — rotate immediately"
+      - type: email
+        to: "security@sthenosecurity.com"
+
+  - trigger:
+      finding_type: "dlp"
+      severity: CRITICAL
+    channels:
+      - type: slack
+        webhook_env: "SLACK_COMPLIANCE_WEBHOOK"
+        message: "⚠️ PII detected in {repo}: {pii_type} at {file_path}"

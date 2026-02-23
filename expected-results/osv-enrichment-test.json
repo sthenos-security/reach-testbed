@@ -1,0 +1,50 @@
+{
+  "_comment": "Expected results for OSV enrichment test. Validates that Grype CVEs are enriched with OSV go_vuln_id, EPSS scores, and KEV status.",
+  "_test_command": "reachctl scan /path/to/reach-testbed/osv-enrichment-test",
+  "test_name": "osv-enrichment",
+  "description": "Proves REACHABLE enriches Grype output with OSV GO-VULN-IDs and EPSS/KEV data",
+
+  "required_findings": [
+    {
+      "_comment": "Primary enrichment target — golang.org/x/crypto CVE with GO- alias",
+      "package": "golang.org/x/crypto",
+      "version": "v0.26.0",
+      "cve_id": "CVE-2024-45337",
+      "ghsa_id": "GHSA-v778-237x-gjrc",
+      "go_vuln_id": "GO-2024-3321",
+      "app_reachability": "REACHABLE",
+      "epss_score_present": true,
+      "is_kev": false
+    },
+    {
+      "_comment": "HTTP/2 Rapid Reset — high EPSS score, in CISA KEV",
+      "package": "golang.org/x/net",
+      "version": "v0.23.0",
+      "cve_id": "CVE-2023-44487",
+      "go_vuln_id": "GO-2023-2102",
+      "app_reachability": "REACHABLE",
+      "epss_score_min": 0.9,
+      "is_kev": true
+    },
+    {
+      "_comment": "Non-linear HTML parsing DoS",
+      "package": "golang.org/x/net",
+      "version": "v0.23.0",
+      "cve_id": "CVE-2024-45338",
+      "go_vuln_id": "GO-2024-3333",
+      "app_reachability": "REACHABLE",
+      "epss_score_present": true
+    }
+  ],
+
+  "enrichment_assertions": {
+    "no_finding_with_null_go_vuln_id_for_golang_x": true,
+    "all_cves_have_epss_score": true,
+    "kev_status_populated_not_null": true,
+    "fix_version_not_pseudo_version": true
+  },
+
+  "dead_code_assertions": {
+    "deadCode_function_findings_reachability": "NOT_REACHABLE"
+  }
+}

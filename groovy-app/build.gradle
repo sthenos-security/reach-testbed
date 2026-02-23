@@ -1,0 +1,47 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
+group = 'com.example'
+version = '0.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+// CVE Test Cases for REACHABLE Groovy dep scanning (Gradle/Grype):
+//
+// groovy 3.0.10          → CVE-2022-41881 (deserialization via MethodClosure)
+//                           CVE-2022-41923 (stack overflow in deserialization)
+// commons-collections 3.2.1 → CVE-2015-7501 (Java deserialization gadget chain — classic)
+// snakeyaml 1.30         → CVE-2022-25857 (DoS via billion laughs attack)
+//                           CVE-2022-38752 (stack overflow in YAML parsing)
+// jackson-databind 2.12.5 → CVE-2021-46877 (array wrapper deserialization DoS)
+// log4j-core 2.14.1      → CVE-2021-44228 (Log4Shell — JNDI RCE)
+//                           CVE-2021-45046 (Log4Shell bypass)
+
+dependencies {
+    // Groovy runtime
+    implementation 'org.codehaus.groovy:groovy-all:3.0.10'
+
+    // Apache Commons Collections — infamous deserialization gadget (CVE-2015-7501)
+    implementation 'commons-collections:commons-collections:3.2.1'
+
+    // SnakeYAML — DoS vulnerabilities (CVE-2022-25857, CVE-2022-38752)
+    implementation 'org.yaml:snakeyaml:1.30'
+
+    // Jackson — array wrapper DoS (CVE-2021-46877)
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.5'
+
+    // Log4j — Log4Shell! (CVE-2021-44228, CVE-2021-45046)
+    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
+    implementation 'org.apache.logging.log4j:log4j-api:2.14.1'
+
+    // Spring Web — for HTTP endpoints
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
+}
+
+application {
+    mainClass = 'com.example.Application'
+}

@@ -1,0 +1,20 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+# CVE Test Cases for REACHABLE Ruby dep scanning:
+#
+# rack 2.2.6.2    → CVE-2023-27539 (ReDoS in header parsing)
+#                   CVE-2022-30122 (multipart parsing DoS)
+# nokogiri 1.13.4 → CVE-2022-24836 (ReDoS via HTML4 parser)
+#                   CVE-2022-29181 (improper character encoding)
+# rails 6.1.6     → CVE-2022-23633 (response info disclosure)
+#                   CVE-2022-27777 (XSS in ActionView)
+# jwt 2.6.0       → GHSA-gp7f-rwcx-9369 (algorithm confusion)
+
+gem "rack",               "2.2.6.2"
+gem "nokogiri",           "1.13.4"
+gem "rails",              "6.1.6"
+gem "sinatra",            "3.0.5"
+gem "bcrypt",             "3.1.18"
+gem "jwt",                "2.6.0"

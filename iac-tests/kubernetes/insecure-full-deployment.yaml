@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+---
+# REACHABLE testbed — Helm/K8s manifests with intentional security misconfigurations
+# Signals expected: Config (IaC) findings
+
+# Deployment with multiple security policy violations
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: insecure-api
+  namespace: production
+  labels:
+    app: insecure-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: insecure-api
+  template:
+    metadata:
+      labels:
+        app: insecure-api
+    spec:
+      # CONFIG VIOLATION: No pod-level security context
+      # Missing: runAsNonRoot, runAsUser, fsGroup, seccompProfile
+      containers:
+        - name: api
+          image: python:3.11  # CONFIG VIOLATION: No image digest pinning
+          ports:
+            - containerPort: 8080
+          securityContext:
+            privileged: true                    # CONFIG VIOLATION: Privileged container
+            allowPrivilegeEscalation: true       # CONFIG VIOLATION
+            readOnlyRootFilesystem: false        # CONFIG VIOLATION
+            runAsRoot: true                      # CONFIG VIOLATION
+            capabilities:
+              add:
+                - NET_ADMIN                      # CONFIG VIOLATION: NET_ADMIN capability
+                - SYS_ADMIN                      # CONFIG VIOLATION: SYS_ADMIN capability
+                - ALL                            # CONFIG VIOLATION: ALL capabilities
+          env:
+            # CONFIG VIOLATION + SECRET: Credentials in env vars (not from Secrets)
+            - name: DATABASE_PASSWORD
+              value: "prod_db_P@ss2026!"
+            - name: AWS_ACCESS_KEY_ID
+              value: "AKIAIOSFODNN7EXAMPLE"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            - name: STRIPE_API_KEY
+              value: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+            - name: JWT_SECRET
+              value: "hardcoded-jwt-secret-key-do-not-use"
+          # CONFIG VIOLATION: No resource limits — DoS risk
+          # resources should have limits.cpu, limits.memory
+          volumeMounts:
+            - name: host-root
+              mountPath: /host            # CONFIG VIOLATION: Mounting host root
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /                       # CONFIG VIOLATION: Host path /
+      # CONFIG VIOLATION: hostPID + hostNetwork = container escape
+      hostPID: true
+      hostNetwork: true
+      hostIPC: true
+      # CONFIG VIOLATION: No serviceAccountName with minimal permissions
+      automountServiceAccountToken: true  # CONFIG VIOLATION: Auto-mounted SA token
+---
+# Service with NodePort — excessive exposure
+apiVersion: v1
+kind: Service
+metadata:
+  name: insecure-api
+  namespace: production
+spec:
+  type: NodePort          # CONFIG: Consider LoadBalancer with specific IP allowlist
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080     # Fixed NodePort — predictable attack surface
+  selector:
+    app: insecure-api
+---
+# RBAC: Overly permissive ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: insecure-cluster-role
+rules:
+  - apiGroups: ["*"]       # CONFIG VIOLATION: All API groups
+    resources: ["*"]       # CONFIG VIOLATION: All resources
+    verbs: ["*"]           # CONFIG VIOLATION: All verbs = cluster admin
+---
+# Secret stored insecurely (stored in base64, not encrypted at rest)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+  namespace: production
+type: Opaque
+data:
+  # These are base64 but NOT encrypted — anyone with cluster access can decode
+  db_password: cHJvZF9kYl9QQHNzMjAyNiE=     # prod_db_P@ss2026! in base64
+  api_key: c2tfbGl2ZV80ZUMzOUhxTHlqV0Rhcmp0VDF6ZHA3ZGM=  # Stripe key in base64
+---
+# NetworkPolicy: No network policy = all pods can talk to each other
+# Missing NetworkPolicy is a config finding
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: production
+data:
+  # CONFIG: Sensitive data in ConfigMap (not Secret)
+  admin_email: "admin@sthenosecurity.com"
+  db_host: "rds.internal.example.com"
+  db_name: "production"
+  # These should be in Secrets not ConfigMap:
+  db_user: "admin"
+  db_password: "prod_db_P@ss2026!"    # CONFIG VIOLATION: Password in ConfigMap

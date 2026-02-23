@@ -1,0 +1,100 @@
+---
+# Helm chart — values.yaml with security misconfigurations
+# Config issues should be detected by REACHABLE IaC scanner
+
+replicaCount: 1
+
+image:
+  repository: myapp
+  tag: latest        # Config: 'latest' tag — non-deterministic deployment
+  pullPolicy: Always
+
+# Config: hardcoded secrets in values (should be in Secrets or external vault)
+env:
+  - name: DATABASE_URL
+    value: "postgresql://admin:Pr0d_DB_P@ssw0rd@db.internal:5432/app"
+  - name: API_KEY
+    value: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+  - name: JWT_SECRET
+    value: "jwt_signing_secret_hardcoded_values_yaml"
+  - name: AWS_ACCESS_KEY_ID
+    value: "AKIAIOSFODNN7EXAMPLE"
+  - name: AWS_SECRET_ACCESS_KEY
+    value: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+securityContext:
+  runAsNonRoot: false      # Config: running as root
+  runAsUser: 0             # Config: explicit root UID
+  privileged: true         # Config: privileged container
+  allowPrivilegeEscalation: true   # Config: privilege escalation allowed
+  readOnlyRootFilesystem: false    # Config: writable root filesystem
+  capabilities:
+    add:
+      - NET_ADMIN          # Config: dangerous capability
+      - SYS_ADMIN          # Config: dangerous capability — near-root
+      - SYS_PTRACE         # Config: allows process tracing
+
+podSecurityContext:
+  runAsNonRoot: false
+  seccompProfile: {}       # Config: no seccomp profile
+
+resources:
+  limits:
+    # Config: no CPU/memory limits — DoS risk
+    cpu: ""
+    memory: ""
+
+service:
+  type: LoadBalancer
+  port: 80                 # Config: serving on HTTP not HTTPS
+
+ingress:
+  enabled: true
+  annotations:
+    # Config: missing ssl-redirect
+    kubernetes.io/ingress.class: nginx
+  tls: []                  # Config: no TLS on ingress — plaintext traffic
+
+networkPolicy:
+  enabled: false           # Config: no network policy — unrestricted pod communication
+
+rbac:
+  create: false            # Config: RBAC not enabled
+
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true  # Config: service account token mounted unnecessarily
+
+persistence:
+  enabled: true
+  storageClass: ""         # Config: no encryption-capable storage class specified
+  accessMode: ReadWriteMany
+
+hostNetwork: true          # Config: host network access — breaks isolation
+hostPID: true              # Config: host PID namespace — breakout risk
+
+tolerations:
+  - operator: "Exists"     # Config: tolerates all taints including master
+
+volumes:
+  - name: docker-sock
+    hostPath:
+      path: /var/run/docker.sock  # Config: docker socket mount — container escape vector
+
+volumeMounts:
+  - name: docker-sock
+    mountPath: /var/run/docker.sock
+
+livenessProbe: {}          # Config: no liveness probe — unhealthy containers not restarted
+readinessProbe: {}         # Config: no readiness probe
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+# Config: no pod anti-affinity — single point of failure
+
+monitoring:
+  enabled: false           # No observability — incident detection gap

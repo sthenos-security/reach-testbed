@@ -205,4 +205,4 @@ The `.github/workflows/validate.yml` workflow:
 
 **© 2026 Sthenos Security. All rights reserved.**
 
-Created by Alain Dazzi | adazzi@sthenosec.com
+Created by Alain Dazzi | info@sthenosec.com

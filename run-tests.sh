@@ -24,7 +24,33 @@ DIM='\033[2m'
 NC='\033[0m'
 
 # Test cases
-ALL_TESTS=(python-app javascript-app go-app java-maven noisy-enterprise-app)
+ALL_TESTS=(
+    python-app
+    javascript-app
+    go-app
+    java-maven
+    java-gradle
+    typescript-app
+    ruby-app
+    rust-app
+    scala-app
+    kotlin-app
+    groovy-app
+    noisy-enterprise-app
+    osv-enrichment-test
+    reachability-states-test
+    dlp-tests
+    grc-tests
+    cwe-tests/python
+    cwe-tests/javascript
+    ai-security-test/python
+    ai-security-test/go
+    secret-tests
+    secrets-tests
+    static-malware-tests
+    malware-test-packages
+    iac-tests
+)
 
 print_banner() {
     echo ""
@@ -117,11 +143,15 @@ run_scan() {
 
 print_scan_summary() {
     local output_dir=$1
+    local test_name=$2
     
     # Count findings
     local cve_count=0
     local sast_count=0
     local malware_count=0
+    local secret_count=0
+    local dlp_count=0
+    local iac_count=0
     
     if [ -f "$output_dir/grype.json" ]; then
         cve_count=$(jq '.matches | length' "$output_dir/grype.json" 2>/dev/null || echo "0")
@@ -132,10 +162,29 @@ print_scan_summary() {
     fi
     
     if [ -f "$output_dir/guarddog.json" ]; then
-        malware_count=$(jq 'length' "$output_dir/guarddog.json" 2>/dev/null || echo "0")
+        malware_count=$(jq 'if type=="array" then length else (.issues // [] | length) end' "$output_dir/guarddog.json" 2>/dev/null || echo "0")
+    fi
+
+    if [ -f "$output_dir/results.json" ]; then
+        secret_count=$(jq '[.findings[] | select(.type=="SECRET")] | length' "$output_dir/results.json" 2>/dev/null || echo "0")
+        dlp_count=$(jq '[.findings[] | select(.type=="DLP")] | length' "$output_dir/results.json" 2>/dev/null || echo "0")
+        iac_count=$(jq '[.findings[] | select(.type=="CONFIG" or .type=="IAC")] | length' "$output_dir/results.json" 2>/dev/null || echo "0")
     fi
     
-    echo -e "  ${DIM}CVEs: $cve_count | SAST: $sast_count | Malware: $malware_count${NC}"
+    echo -e "  ${DIM}CVEs: $cve_count | SAST/CWE: $sast_count | Malware: $malware_count | Secrets: $secret_count | DLP: $dlp_count | IaC: $iac_count${NC}"
+
+    # Counter validation: warn if zero findings where we expect some
+    local warn=0
+    case "$test_name" in
+        dlp-tests)          [ "$dlp_count" -eq 0 ]   && warn=1 && echo -e "  ${YELLOW}⚠ DLP counter is 0 — expected findings${NC}" ;;
+        grc-tests)          [ "$sast_count" -eq 0 ]  && warn=1 && echo -e "  ${YELLOW}⚠ SAST/GRC counter is 0 — expected findings${NC}" ;;
+        secret-tests|secrets-tests) [ "$secret_count" -eq 0 ] && warn=1 && echo -e "  ${YELLOW}⚠ Secrets counter is 0 — expected findings${NC}" ;;
+        static-malware-tests|malware-test-packages) [ "$malware_count" -eq 0 ] && warn=1 && echo -e "  ${YELLOW}⚠ Malware counter is 0 — expected findings${NC}" ;;
+        iac-tests)          [ "$iac_count" -eq 0 ]   && warn=1 && echo -e "  ${YELLOW}⚠ IaC counter is 0 — expected findings${NC}" ;;
+        cwe-tests*)         [ "$sast_count" -eq 0 ]  && warn=1 && echo -e "  ${YELLOW}⚠ CWE/SAST counter is 0 — expected findings${NC}" ;;
+        osv-enrichment-test) [ "$cve_count" -eq 0 ]  && warn=1 && echo -e "  ${YELLOW}⚠ CVE counter is 0 — OSV enrichment test needs vulns${NC}" ;;
+    esac
+    return $warn
 }
 
 run_demo() {
@@ -196,7 +245,7 @@ run_tests() {
         
         if run_scan "$test_dir" "$output_dir"; then
             echo -e "  ${GREEN}✓ Scan completed${NC}"
-            print_scan_summary "$output_dir"
+            print_scan_summary "$output_dir" "$test"
             ((passed++))
         else
             echo -e "  ${RED}✗ Scan failed${NC}"

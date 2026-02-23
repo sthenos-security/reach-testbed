@@ -1,0 +1,23 @@
+[package]
+name = "reach-testbed-rust"
+version = "0.1.0"
+edition = "2021"
+
+# CVE Test Cases for REACHABLE Rust dep scanning (Cargo/Grype):
+#
+# openssl 0.10.45   → RUSTSEC-2023-0044 (use-after-free in X.509 cert parsing)
+# hyper 0.14.18     → RUSTSEC-2023-0034 (HTTP/2 rapid reset — CVE-2023-44487)
+# h2 0.3.15         → RUSTSEC-2023-0065 (HTTP/2 rapid reset)
+# rustls 0.20.6     → RUSTSEC-2023-0052 (rejection of valid certificates)
+# serde_json 1.0.91 → No known CVE — included for SBOM baseline
+# tokio 1.26.0      → No CVE — modern async runtime
+
+[dependencies]
+openssl   = { version = "0.10.45", features = ["v102", "v110"] }
+hyper     = { version = "0.14.18", features = ["full"] }
+h2        = "0.3.15"
+rustls    = "0.20.6"
+serde     = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.91"
+tokio     = { version = "1.26.0", features = ["full"] }
+reqwest   = { version = "0.11.14", features = ["json", "rustls-tls"] }
