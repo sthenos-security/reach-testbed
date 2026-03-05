@@ -1,0 +1,286 @@
+{
+  "_meta": {
+    "version": "1.1",
+    "description": "REACHABLE testbed expected findings baseline.",
+    "updated": "2026-03-05"
+  },
+
+  "cve": [
+    {
+      "id": "CVE-2022-42969",
+      "package": "pypdf",
+      "reachability": "REACHABLE",
+      "file": "python-app/app.py",
+      "note": "ReDoS via PdfReader — called from /api/parse-pdf"
+    },
+    {
+      "id": "CVE-2023-32681",
+      "package": "requests",
+      "reachability": "REACHABLE",
+      "file": "reachability-states-test/src/cve_reachable.py",
+      "note": "requests CVE — module imported and called from app.py"
+    },
+    {
+      "id": "CVE-2020-14343",
+      "package": "pyyaml",
+      "reachability": "NOT_REACHABLE",
+      "file": "reachability-states-test/src/cve_dead_code.py",
+      "note": "yaml.load in dead code — must be NOT_REACHABLE"
+    },
+    {
+      "id": "CVE-2021-33503",
+      "package": "urllib3",
+      "reachability": "REACHABLE",
+      "file": "transitive-dep-tests/python/transitive_chains.py",
+      "note": "Depth-1 transitive: requests -> urllib3, called via fetch_url_reachable()"
+    },
+    {
+      "id": "CVE-2021-33503",
+      "package": "urllib3",
+      "reachability": "REACHABLE",
+      "file": "transitive-dep-tests/python/transitive_chains.py",
+      "note": "Depth-2 transitive: boto3 -> botocore -> urllib3, called via upload_to_s3_reachable()"
+    }
+  ],
+
+  "cve_groups": [
+    {
+      "package": "Pillow",
+      "file": "cve-group-tests/cve_groups.py",
+      "expected_cves": ["CVE-2023-44271", "CVE-2023-50447", "CVE-2022-45199"],
+      "all_reachability": "REACHABLE",
+      "note": "All 3 Pillow CVEs must be grouped and all REACHABLE from /api/process-image"
+    },
+    {
+      "package": "cryptography",
+      "file": "cve-group-tests/cve_groups.py",
+      "expected_cves": ["CVE-2023-49083", "CVE-2023-23931"],
+      "mixed_reachability": {
+        "CVE-2023-49083": "REACHABLE",
+        "CVE-2023-23931": "NOT_REACHABLE"
+      },
+      "note": "Mixed reachability in same package CVE group"
+    },
+    {
+      "package": "werkzeug",
+      "file": "cve-group-tests/cve_groups.py",
+      "expected_cves": ["CVE-2023-46136", "CVE-2023-25577"],
+      "all_reachability": "REACHABLE",
+      "note": "Transitive dep (via flask) — both CVEs REACHABLE"
+    },
+    {
+      "package": "paramiko",
+      "file": "cve-group-tests/cve_groups.py",
+      "expected_cves": ["CVE-2023-48795", "CVE-2022-24302"],
+      "all_reachability": "NOT_REACHABLE",
+      "note": "All paramiko CVEs in dead code — must all be NOT_REACHABLE"
+    }
+  ],
+
+  "cwe": [
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_injection.py",
+      "reachability": "REACHABLE",
+      "note": "SQL injection via string concatenation in Flask route"
+    },
+    {
+      "cwe_id": "CWE-78",
+      "file": "cwe-tests/python/cwe_injection.py",
+      "reachability": "REACHABLE",
+      "note": "OS command injection via subprocess"
+    },
+    {
+      "cwe_id": "CWE-22",
+      "file": "cwe-tests/python/cwe_path_traversal.py",
+      "reachability": "REACHABLE",
+      "note": "Path traversal via unsanitized file path"
+    },
+    {
+      "cwe_id": "CWE-327",
+      "file": "cwe-tests/python/cwe_crypto.py",
+      "reachability": "REACHABLE",
+      "note": "Weak cryptography (MD5/SHA1)"
+    }
+  ],
+
+  "secrets": [
+    {
+      "secret_type": "aws_access_key",
+      "file": "python-app/app.py",
+      "reachability": "REACHABLE",
+      "note": "Hardcoded AWS_ACCESS_KEY in live Flask app"
+    },
+    {
+      "secret_type": "aws_access_key",
+      "file": "reachability-states-test/src/secret_reachable.py",
+      "reachability": "REACHABLE",
+      "note": "AWS key in reachable module"
+    },
+    {
+      "secret_type": "aws_access_key",
+      "file": "reachability-states-test/src/secret_dead_code.py",
+      "reachability": "NOT_REACHABLE",
+      "note": "AWS key in dead code — must be NOT_REACHABLE"
+    },
+    {
+      "secret_type": "stripe_key",
+      "file": "secret-tests/stripe_keys.py",
+      "reachability": "REACHABLE",
+      "note": "Live Stripe secret key"
+    },
+    {
+      "secret_type": "twilio",
+      "file": "secret-tests/stripe_keys.py",
+      "reachability": "REACHABLE",
+      "note": "Twilio account SID and auth token"
+    },
+    {
+      "secret_type": "sendgrid",
+      "file": "secret-tests/stripe_keys.py",
+      "reachability": "REACHABLE",
+      "note": "SendGrid API key"
+    }
+  ],
+
+  "dlp": [
+    {
+      "pii_type": "ssn",
+      "file": "dlp-tests/dlp_true_positives.py",
+      "note": "SSN in plain assignment and dict"
+    },
+    {
+      "pii_type": "credit_card",
+      "file": "dlp-tests/dlp_true_positives.py",
+      "note": "Credit card numbers"
+    },
+    {
+      "pii_type": "email",
+      "file": "dlp-tests/dlp_true_positives.py",
+      "note": "Email addresses"
+    },
+    {
+      "pii_type": "ssn",
+      "file": "dlp-tests/dlp_extended_true_positives.py",
+      "note": "Extended PII true positives"
+    },
+    {
+      "pii_type": "ssn",
+      "file": "dlp-tests/dlp_taint_flows.py",
+      "note": "SSN taint: request -> LLM API (pii_into_llm_reachable)"
+    },
+    {
+      "pii_type": "credit_card",
+      "file": "dlp-tests/dlp_taint_flows.py",
+      "note": "Credit card taint: request -> anthropic API"
+    },
+    {
+      "pii_type": "ssn",
+      "file": "dlp-tests/dlp_taint_flows.py",
+      "note": "SSN taint: request -> logger.info() (pii_into_logs_reachable)"
+    }
+  ],
+
+  "ai": [
+    {
+      "owasp_category": "LLM01",
+      "file": "ai-security-test/python/llm01_prompt_injection.py",
+      "note": "Direct user input to OpenAI/Anthropic without sanitization"
+    },
+    {
+      "owasp_category": "LLM02",
+      "file": "ai-security-test/python/llm02_sensitive_disclosure.py",
+      "note": "Sensitive data disclosure via LLM response"
+    },
+    {
+      "owasp_category": "LLM05",
+      "file": "ai-security-test/python/llm05_output_handling.py",
+      "note": "Insecure output handling"
+    },
+    {
+      "owasp_category": "LLM06",
+      "file": "ai-security-test/python/llm06_excessive_agency.py",
+      "note": "Excessive agency"
+    },
+    {
+      "owasp_category": "LLM06",
+      "file": "ai-security-test/python/agentic_security.py",
+      "note": "Agentic: tool-call injection, unbounded loops, irreversible actions"
+    },
+    {
+      "owasp_category": "LLM01",
+      "file": "ai-security-test/python/agentic_security.py",
+      "note": "Agentic: eval(LLM output) — prompt injection to code exec"
+    },
+    {
+      "owasp_category": "LLM07",
+      "file": "ai-security-test/python/llm07_system_prompt_leakage.py",
+      "note": "System prompt contains credentials and PII"
+    },
+    {
+      "owasp_category": "LLM08",
+      "file": "ai-security-test/python/agentic_security.py",
+      "note": "RAG poisoning — user content indexed into shared vector DB"
+    }
+  ],
+
+  "malware": [
+    {
+      "path": "static-malware-tests/fake-pypi-backdoor",
+      "note": "Fake PyPI package with backdoor"
+    },
+    {
+      "path": "static-malware-tests/fake-install-hook-exfil",
+      "note": "setup.py install hook with data exfiltration"
+    },
+    {
+      "path": "static-malware-tests/fake-env-harvester",
+      "note": "Environment variable harvesting"
+    },
+    {
+      "path": "static-malware-tests/fake-reverse-shell-py",
+      "note": "Python reverse shell"
+    },
+    {
+      "path": "static-malware-tests/fake-dependency-confusion",
+      "note": "Dependency confusion attack"
+    },
+    {
+      "path": "static-malware-tests/fake-typosquat-requests",
+      "note": "Typosquat of requests package"
+    }
+  ],
+
+  "reachability_validation": [
+    {
+      "description": "CVE in reachable module must be REACHABLE",
+      "file": "reachability-states-test/src/cve_reachable.py",
+      "expected_reachability": "REACHABLE"
+    },
+    {
+      "description": "CVE in dead code module must be NOT_REACHABLE",
+      "file": "reachability-states-test/src/cve_dead_code.py",
+      "expected_reachability": "NOT_REACHABLE"
+    },
+    {
+      "description": "Secret in reachable module must be REACHABLE",
+      "file": "reachability-states-test/src/secret_reachable.py",
+      "expected_reachability": "REACHABLE"
+    },
+    {
+      "description": "Secret in dead code must be NOT_REACHABLE",
+      "file": "reachability-states-test/src/secret_dead_code.py",
+      "expected_reachability": "NOT_REACHABLE"
+    },
+    {
+      "description": "Transitive dep (urllib3) called via requests must be REACHABLE",
+      "file": "transitive-dep-tests/python/transitive_chains.py",
+      "expected_reachability": "REACHABLE"
+    },
+    {
+      "description": "paramiko in dead code must be NOT_REACHABLE",
+      "file": "cve-group-tests/cve_groups.py",
+      "expected_reachability": "NOT_REACHABLE"
+    }
+  ]
+}

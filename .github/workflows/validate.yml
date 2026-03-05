@@ -1,0 +1,96 @@
+name: Testbed Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      reachable_version:
+        description: 'REACHABLE version to test (e.g. 1.0.0b16, or "latest")'
+        required: false
+        default: 'latest'
+      fail_on:
+        description: 'Gate threshold'
+        required: false
+        default: 'high'
+        type: choice
+        options: [critical, high, medium, any, none]
+      verbose:
+        description: 'Verbose validator output'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  validate:
+    name: Scan testbed and validate findings
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout reach-testbed
+        uses: actions/checkout@v4
+        with:
+          repository: sthenosec/reach-testbed
+          path: reach-testbed
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install REACHABLE
+        env:
+          GITHUB_PAT: ${{ secrets.REACH_CORE_PAT }}
+        run: |
+          VERSION="${{ inputs.reachable_version }}"
+          if [[ "$VERSION" == "latest" || -z "$VERSION" ]]; then
+            pip install reachable \
+              --extra-index-url "https://${GITHUB_PAT}@raw.githubusercontent.com/sthenosec/reach-dist/main/simple/"
+          else
+            pip install "reachable==${VERSION}" \
+              --extra-index-url "https://${GITHUB_PAT}@raw.githubusercontent.com/sthenosec/reach-dist/main/simple/"
+          fi
+          reachctl --version
+
+      - name: Scan testbed
+        run: |
+          reachctl scan reach-testbed \
+            --ci \
+            --fail-on none \
+            --quiet
+        env:
+          REACHABLE_LICENSE: ${{ secrets.REACHABLE_LICENSE }}
+
+      - name: Export SARIF
+        run: |
+          reachctl export \
+            --format sarif \
+            --repo reach-testbed \
+            --output scan-results.sarif
+          echo "SARIF size: $(wc -c < scan-results.sarif) bytes"
+
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-results-sarif
+          path: scan-results.sarif
+          retention-days: 30
+
+      - name: Validate findings against baseline
+        run: |
+          VERBOSE_FLAG=""
+          if [[ "${{ inputs.verbose }}" == "true" ]]; then
+            VERBOSE_FLAG="--verbose"
+          fi
+          python reach-testbed/validate.py \
+            --sarif scan-results.sarif \
+            --baseline reach-testbed/testbed.json \
+            $VERBOSE_FLAG
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: |
+            scan-results.sarif
+          retention-days: 90

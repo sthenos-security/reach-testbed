@@ -1,0 +1,11 @@
+# transitive-dep-tests/requirements.txt
+# Direct dependencies — transitive deps carry the CVEs we're testing
+#
+# Chain A/B/D: requests → urllib3 (CVE-2021-33503, depth-1 transitive)
+requests==2.28.0
+# Chain C: boto3 → botocore → urllib3 (depth-2 transitive)
+boto3==1.26.0
+# Chain D (diamond): flask → werkzeug (transitive)
+flask==2.2.0
+# Direct dep CVE baseline
+pyyaml==5.3.1
