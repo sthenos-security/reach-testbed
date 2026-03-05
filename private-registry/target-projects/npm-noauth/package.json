@@ -1,0 +1,13 @@
+{
+  "name": "npm-noauth-test",
+  "version": "1.0.0",
+  "description": "Negative test: same deps as npm-mixed but NO private registry auth",
+  "main": "index.js",
+  "dependencies": {
+    "express": "4.18.2",
+    "lodash": "4.17.21",
+    "@company/logger": "2.0.0",
+    "@company/http": "1.5.0",
+    "@company/internal-utils": "3.0.0"
+  }
+}

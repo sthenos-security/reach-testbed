@@ -14,8 +14,6 @@ GDPR Article mapping:
 """
 
 import logging
-import json
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

@@ -12,7 +12,6 @@ import hashlib
 import hmac
 import random
 import string
-import os
 
 app = Flask(__name__)
 

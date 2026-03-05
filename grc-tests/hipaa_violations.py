@@ -121,7 +121,7 @@ def transmit_phi_insecure(phi: dict, endpoint: str, port: int = 80) -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((endpoint, port))
     # VIOLATION: PHI sent over unencrypted HTTP connection
-    payload = f"POST /ehr/patient HTTP/1.1\r\nContent-Type: text/plain\r\n\r\n"
+    payload = "POST /ehr/patient HTTP/1.1\r\nContent-Type: text/plain\r\n\r\n"
     payload += f"ssn={phi.get('ssn')}&name={phi.get('name')}&diag={phi.get('diagnosis')}"
     sock.send(payload.encode())
     sock.close()

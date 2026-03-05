@@ -1,0 +1,34 @@
+# Verdaccio configuration for integration tests
+# Allows unauthenticated publish for test packages
+
+storage: /verdaccio/storage
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+    max_users: 100
+
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+    timeout: 30s
+
+packages:
+  '@company/*':
+    access: $all
+    publish: $all
+    # NO uplink — these are our private test packages
+  '**':
+    access: $all
+    publish: $all
+    proxy: npmjs
+
+listen:
+  - 0.0.0.0:4873
+
+log:
+  type: stdout
+  format: pretty
+  level: warn
+
+server:
+  keepAliveTimeout: 60

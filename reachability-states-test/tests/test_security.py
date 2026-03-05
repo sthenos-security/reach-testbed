@@ -7,7 +7,6 @@ Expected: CWE issues should be marked as TEST_ONLY or excluded.
 Security issues in test code are lower priority since they don't
 run in production.
 """
-import pytest
 import subprocess
 
 

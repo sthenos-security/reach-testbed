@@ -12,7 +12,6 @@ Standards covered:
 
 import logging
 import hashlib
-import os
 
 logger = logging.getLogger(__name__)
 

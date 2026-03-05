@@ -4,7 +4,8 @@
 # Tests PII exposure patterns — SSN, credit cards, emails, phone numbers
 # ============================================================================
 from flask import Flask, request, jsonify
-import re, json, logging
+import re
+import logging
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)

@@ -40,8 +40,6 @@ def main():
     
     from reachable.sandbox.runner import (
         detect_local_packages_with_hooks,
-        test_local_packages,
-        generate_attack_chain_summary,
         SandboxRunner,
     )
     
@@ -93,9 +91,9 @@ def main():
     shai_hulud = local_packages[0]  # Should be shai-hulud-simulation
     
     print(f"[Step 3] Running sandbox on: {shai_hulud.name}")
-    print(f"  Command: npm install /work/local-pkg/")
-    print(f"  Network: disabled")
-    print(f"  Filesystem: read-only (+ tmpfs)")
+    print("  Command: npm install /work/local-pkg/")
+    print("  Network: disabled")
+    print("  Filesystem: read-only (+ tmpfs)")
     print(f"  Package mount: {shai_hulud.path} → /work/local-pkg/ (ro)")
     print(f"  Timeout: {runner.timeout}s")
     print()

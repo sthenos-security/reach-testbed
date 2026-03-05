@@ -7,7 +7,6 @@ import requests as http_requests
 import pickle
 import yaml
 import xml.etree.ElementTree as ET
-import json
 import base64
 
 app = Flask(__name__)

@@ -16,7 +16,6 @@ PCI-DSS v4.0 Controls exercised:
 
 import hashlib
 import base64
-import os
 
 # =============================================================================
 # PCI Req 3.3 — Do not retain sensitive authentication data (SAD)

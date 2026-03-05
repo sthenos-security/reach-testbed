@@ -1,0 +1,32 @@
+# registries.yaml for private-registry integration tests
+# Copy to ~/.reachable/registries.yaml before running tests
+# Or run: pytest --setup-registries (handled by conftest.py fixture)
+version: "1.0"
+
+registries:
+  python:
+    index_url: "http://localhost:3141/testuser/company/+simple/"
+    # token_env: DEVPI_TOKEN  # not needed for local devpi
+  npm:
+    registry: "http://localhost:4873"
+    # token_env: VERDACCIO_TOKEN
+  go:
+    goproxy: "http://localhost:3000,direct"
+    goprivate: "company.internal/*"
+    gonosumcheck: "company.internal/*"
+  maven:
+    repository_url: "http://localhost:8081/releases"
+    # settings_xml: ~/.m2/settings.xml
+
+internal_namespaces:
+  python:
+    - "company-*"
+    - "internal-*"
+  npm:
+    - "@company/*"
+  go:
+    - "company.internal/*"
+  maven:
+    - "com.company.*"
+
+package_aliases: {}

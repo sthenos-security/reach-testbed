@@ -64,6 +64,7 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 | `java-gradle/` | Java/Kotlin | Gradle Kotlin DSL, Android |
 | `kotlin-app/` | Kotlin | Coroutines, Android lifecycle |
 | `polyglot-monorepo/` | Mixed | Cross-language, microservices |
+| `private-registry/` | Py/JS/Go/Java | 🆕 **Private registry resolution** — PURLResolver + lib_manager |
 | `malware-test-packages/` | JavaScript | GuardDog malware pattern detection |
 
 ## AI Security Tests 🤖
@@ -193,6 +194,207 @@ The `.github/workflows/validate.yml` workflow:
 ### go-app/
 - **CVE-2022-32149** - golang.org/x/text DoS - REACHABLE
 - **CGO boundary** - Unsafe C call detection
+
+---
+
+## Private Registry Integration Tests
+
+The `private-registry/` directory validates that REACHABLE correctly handles projects pulling from both public registries and private Docker-based registries in the same scan.
+
+This proves three things:
+1. **Scan correctness** — reachctl scan completes with exit 0, no fatal tool errors, SBOM populated, repo.db consistent
+2. **Public + private coexistence** — public packages resolve normally alongside private registry packages
+3. **Auth enforcement** — private packages require proper authentication; bad/missing auth is rejected
+
+### Infrastructure
+
+```
+private-registry/
+├── docker-compose.yml          # 4 registry services
+│   ├── devpi        (Python)   → localhost:3141
+│   ├── verdaccio    (npm)      → localhost:4873
+│   ├── athens       (Go)      → localhost:3000
+│   └── reposilite   (Maven)   → localhost:8081
+├── setup-and-test.sh           # One-command: start → publish → install → test
+├── setup.sh                    # Populate registries with test packages
+├── teardown.sh                 # Stop + remove containers and volumes
+├── verdaccio-config.yaml       # Verdaccio auth + proxy config
+├── registries-test.yaml        # REACHABLE registry config for tests
+└── target-projects/            # Reference mixed-registry projects
+    ├── python-mixed/           # requirements.txt + pip.conf (with devpi)
+    ├── npm-mixed/              # package.json + .npmrc (with Verdaccio)
+    ├── go-mixed/               # go.mod + main.go (with Athens)
+    ├── maven-mixed/            # pom.xml + settings.xml (with Reposilite)
+    ├── npm-noauth/             # Negative test: NO Verdaccio auth
+    └── python-noauth/          # Negative test: NO devpi auth
+```
+
+### Test Files
+
+```
+tests/
+├── test_private_registry_integration.py   # 88 tests: full reachctl scan validation
+│   ├── TestPythonMixed*       (16 tests)  # Exit, log, SBOM, DB, cache, raw files
+│   ├── TestNpmMixedScan       (16 tests)  # Exit, log, SBOM (public + @company/*)
+│   ├── TestGoMixedScan         (8 tests)  # Exit, log, SBOM, PURLs
+│   ├── TestMavenMixedScan     (12 tests)  # Exit, log, SBOM, PURLs, DB
+│   ├── TestCacheIntegrity      (7 tests)  # Cross-ecosystem cache/DB
+│   ├── TestDatabaseSchema      (3 tests)  # repo.db table/schema validation
+│   ├── TestNpmNoAuth           (7 tests)  # Negative: public ✓, @company/* ✗
+│   └── TestPythonNoAuth        (5 tests)  # Negative: public ✓, internal-sdk ✗
+├── test_registry_auth.py                  # 27 tests: HTTP-level auth validation
+│   ├── TestArtifactory*       (13 tests)  # Mock JFrog: good/none/bad auth × 4 langs
+│   ├── TestVerdaccioAuth       (4 tests)  # Live npm registry auth
+│   ├── TestDevpiAuth           (3 tests)  # Live Python registry auth
+│   ├── TestReposiliteAuth      (5 tests)  # Live Maven registry auth (deploy auth)
+│   └── TestAthensAuth          (2 tests)  # Live Go proxy (public by design)
+└── conftest.py                            # Session fixtures, scan runner, ScanResult
+```
+
+### Quick Start (One Command)
+
+```bash
+# Everything: start Docker, publish packages, install deps, run all tests
+cd private-registry
+./setup-and-test.sh
+```
+
+Or step by step:
+
+```bash
+# Setup only (no tests)
+./setup-and-test.sh setup
+
+# Tests only (assumes setup done)
+./setup-and-test.sh test
+```
+
+### Running Specific Test Suites
+
+```bash
+# Full integration suite (88 tests — runs reachctl scan per ecosystem)
+pytest tests/test_private_registry_integration.py -v --tb=short
+
+# Registry auth tests (27 tests — fast, mock Artifactory + live registries)
+pytest tests/test_registry_auth.py -v --tb=short
+
+# Both suites together
+pytest tests/test_registry_auth.py tests/test_private_registry_integration.py -v --tb=short
+
+# Per-ecosystem
+pytest tests/test_private_registry_integration.py -v -k "Npm"       # npm only
+pytest tests/test_private_registry_integration.py -v -k "Go"        # Go only
+pytest tests/test_private_registry_integration.py -v -k "Maven"     # Maven only
+pytest tests/test_private_registry_integration.py -v -k "Python"    # Python only
+
+# Negative tests only (proves auth matters)
+pytest tests/test_private_registry_integration.py -v -k "NoAuth"
+
+# Mock Artifactory only (no Docker needed — always passes)
+pytest tests/test_registry_auth.py -v -k "Artifactory"
+
+# Live registry auth only
+pytest tests/test_registry_auth.py -v -k "Verdaccio or Devpi or Reposilite or Athens"
+
+# With live output (see scan progress)
+pytest tests/test_private_registry_integration.py -v -s --tb=short
+```
+
+### Test Matrix
+
+#### Positive Tests (per ecosystem)
+
+Each ecosystem is tested with a 6-layer validation strategy:
+
+| Layer | What | Example Assertion |
+|-------|------|-------------------|
+| 1. Exit code | Scan completed | `exit_code == 0` |
+| 2. Scan log | No fatal tool errors | No `FATAL`, `Traceback` in log |
+| 3. SBOM | Public + private packages present | `express` in names, `@company/logger` in names |
+| 4. Database | Scan status complete, findings populated | `scans.status = 'complete'` |
+| 5. Cache | Libs directory and global cache populated | `libs/` exists |
+| 6. Raw files | scan-manifest.json, cve-analyzed.json exist | File presence |
+
+Package types per scan:
+
+| Type | Example | In SBOM? | CVEs? |
+|------|---------|----------|-------|
+| **Public** | `express@4.18.2` | ✅ | ✅ |
+| **Private wrapper** | `@company/logger@2.0.0` (wraps winston) | ✅ | Via resolver |
+| **Genuine private** | `@company/internal-utils@3.0.0` | ✅ | ❌ (no upstream) |
+
+#### Negative Tests (auth enforcement)
+
+| Test | Public packages | Private packages | Proves |
+|------|----------------|-----------------|--------|
+| `npm-noauth` | express ✅, lodash ✅ | @company/* ❌ | Auth required for private |
+| `python-noauth` | requests ✅, flask ✅ | internal-sdk ❌ | Auth required for private |
+
+#### Auth Tests (3-tier per registry type)
+
+| Registry | Good auth → | No auth → | Bad auth → |
+|----------|------------|-----------|------------|
+| **Mock Artifactory npm** | 200 | 401 | 403 |
+| **Mock Artifactory PyPI** | 200 | 401 | 403 |
+| **Mock Artifactory Maven** | 200 | 401 | 403 |
+| **Mock Artifactory Go** | 200 | 401 | 403 |
+| **Live Verdaccio** | 200/404 | 200 (public) | Depends on config |
+| **Live Reposilite** | 200/201 (deploy) | 401/403 (deploy) | 401/403 |
+
+### Mock JFrog Artifactory
+
+The auth test suite includes a mock JFrog Artifactory server that simulates the unified proxy pattern used by enterprise customers (e.g., Roku). It uses real Artifactory URL layouts:
+
+| Ecosystem | Artifactory URL Pattern | Auth Method |
+|-----------|------------------------|-------------|
+| npm | `/artifactory/api/npm/npm-local/` | Bearer token in header |
+| PyPI | `/artifactory/api/pypi/pypi-local/simple/` | Basic auth (user:token) |
+| Maven | `/artifactory/maven-local/` | Basic auth (from settings.xml) |
+| Go | `/artifactory/api/go/go-local/` | Bearer token via GOPROXY URL |
+
+The mock runs in-process (no Docker) and verifies all 13 auth scenarios in ~0.1s.
+
+### Prerequisites
+
+- Docker + Docker Compose
+- Python 3.10+, pip, npm, Go 1.21+ (Maven optional — Syft parses pom.xml directly)
+- reach-core installed (`pip install -e ~/src/reach-core`)
+
+```
+~/src/
+├── reach-core/      # pip install -e .
+└── reach-testbed/   # this repo
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DEVPI_URL` | `http://localhost:3141` | Python registry URL |
+| `VERDACCIO_URL` | `http://localhost:4873` | npm registry URL |
+| `ATHENS_URL` | `http://localhost:3000` | Go proxy URL |
+| `REPOSILITE_URL` | `http://localhost:8081` | Maven registry URL |
+
+### Troubleshooting
+
+```bash
+# Check which services are running
+docker compose -f private-registry/docker-compose.yml ps
+
+# View registry logs
+docker logs private-registry-verdaccio-1 --tail 20
+docker logs private-registry-reposilite-1 --tail 20
+
+# Restart everything clean
+cd private-registry && docker compose down -v && ./setup-and-test.sh
+
+# Run tests with live scan output visible
+pytest tests/test_private_registry_integration.py -v -s
+```
+
+> **Unit tests** for the same features (no Docker) live in `reach-core/tests/unit/`.
+
+---
 
 ## Adding New Test Cases
 

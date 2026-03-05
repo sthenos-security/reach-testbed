@@ -10,8 +10,6 @@
 
 from flask import Flask, request, jsonify
 from pypdf import PdfReader  # CVE-2022-42969 - ReDoS vulnerability
-import requests
-import os
 
 app = Flask(__name__)
 

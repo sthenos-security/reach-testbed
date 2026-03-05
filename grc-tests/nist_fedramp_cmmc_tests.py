@@ -24,7 +24,6 @@ CMMC 2.0 Level 2 Practices (aligns with NIST 800-171):
 """
 
 import hashlib
-import os
 import subprocess
 import logging
 

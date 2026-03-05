@@ -18,7 +18,6 @@ GDPR Articles exercised:
 import hashlib
 import logging
 import json
-import os
 
 gdpr_log = logging.getLogger("gdpr")
 

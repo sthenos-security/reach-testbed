@@ -9,7 +9,6 @@ trigger LLM02 (Sensitive Information Disclosure) detections.
 
 from openai import OpenAI
 from anthropic import Anthropic
-import os
 
 
 # === VULNERABLE: API keys in prompts ===

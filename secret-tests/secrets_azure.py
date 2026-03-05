@@ -2,7 +2,7 @@
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # SECRET: Azure connection strings, SAS tokens, client secrets
 # ============================================================================
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 

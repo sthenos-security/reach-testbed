@@ -8,7 +8,6 @@ Secrets tests: REACHABLE (used in active code paths) and UNREACHABLE (dead code)
 Each secret type is tested with both patterns.
 """
 from flask import Flask, request, jsonify
-import os
 
 app = Flask(__name__)
 
@@ -107,7 +106,7 @@ def list_repos():
 @app.route('/api/email/send', methods=['POST'])
 def send_email():
     import requests
-    requests.post(f'https://api.mailgun.net/v3/example.com/messages',
+    requests.post('https://api.mailgun.net/v3/example.com/messages',
         auth=('api', MAILGUN_API_KEY),
         data={'from': 'test@test.com', 'to': 'user@test.com', 'text': 'test'})
     return jsonify({'sent': True})

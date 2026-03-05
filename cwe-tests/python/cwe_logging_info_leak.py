@@ -97,7 +97,7 @@ def debug_eval():
 
 # ── UNREACHABLE ─────────────────────────────────────────────────────────────
 def _dead_log_injection():
-    logger.critical(f"ADMIN ACCESS: user=admin\nINFO Legitimate log entry")
+    logger.critical("ADMIN ACCESS: user=admin\nINFO Legitimate log entry")
 
 def _dead_info_leak():
     return {'db_password': 'never_reaches_here', 'api_key': 'dead_code_key'}

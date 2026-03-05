@@ -10,7 +10,6 @@ Each secret is used in a Flask route (reachable from entrypoint).
 from flask import Flask, request, jsonify
 import boto3
 import requests
-import os
 
 app = Flask(__name__)
 

@@ -76,7 +76,7 @@ patient_data = {
 }
 
 # Email in log/audit context — SHOULD FLAG
-audit_log = f"User login: alice.brown@example-personal.com at 2026-01-15 09:23:11"
+audit_log = "User login: alice.brown@example-personal.com at 2026-01-15 09:23:11"
 
 
 # =============================================================================

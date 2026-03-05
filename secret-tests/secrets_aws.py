@@ -2,7 +2,7 @@
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # SECRET: AWS Access Keys, Session Tokens — multiple embedding patterns
 # ============================================================================
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 import boto3
 
 app = Flask(__name__)

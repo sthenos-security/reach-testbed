@@ -17,13 +17,9 @@ Run:
 """
 
 import shutil
-import sys
-from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / 'private-registry'))
-from conftest import pkg, call_graph_gap  # noqa: E402
 
 requires_grype = pytest.mark.skipif(
     not shutil.which('grype'), reason='Grype not installed'

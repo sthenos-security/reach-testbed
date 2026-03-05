@@ -7,7 +7,6 @@ This file contains intentionally vulnerable code patterns that should
 trigger LLM06 (Excessive Agency) detections.
 """
 
-from openai import OpenAI
 from langchain.agents import initialize_agent, AgentType
 from langchain.tools import Tool, ShellTool, PythonREPLTool
 from langchain.llms import OpenAI as LangChainOpenAI

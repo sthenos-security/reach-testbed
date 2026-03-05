@@ -172,7 +172,7 @@ class LLM07SystemPromptLeakage:
             prompt = self.build_prompt(user_message)
             response = self._call_llm(prompt)
             return {"response": response}
-        except Exception as e:
+        except Exception:
             # VIOLATION: Exception message may include prompt content
             return {"error": f"Failed to process prompt: {prompt[:200]}..."}
 

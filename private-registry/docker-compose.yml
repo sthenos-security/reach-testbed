@@ -1,0 +1,75 @@
+# Private Registry Test Infrastructure
+# Docker Compose for integration testing PURLResolver + lib_manager
+#
+# Services:
+#   devpi       - Python private registry (PyPI mirror)
+#   verdaccio   - npm private registry
+#   athens      - Go module proxy
+#   reposilite  - Maven/Java private registry (multi-arch, replaces Nexus)
+#
+# Usage:
+#   docker compose up -d --wait
+#   ./setup.sh
+#   pytest ../tests/test_purl_resolver_integration.py -v
+#   docker compose down -v
+
+services:
+  devpi:
+    image: jonasal/devpi-server:latest
+    ports: ["3141:3141"]
+    volumes: ["devpi-data:/devpi/server"]
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3141/+api')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    environment:
+      DEVPI_PASSWORD: test
+
+  verdaccio:
+    image: verdaccio/verdaccio:6
+    ports: ["4873:4873"]
+    volumes:
+      - "verdaccio-data:/verdaccio/storage"
+      - "./verdaccio-config.yaml:/verdaccio/conf/config.yaml:ro"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "node -e \"const h=require('http');h.get('http://localhost:4873/-/ping',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  athens:
+    image: gomods/athens:latest
+    ports: ["3000:3000"]
+    environment:
+      ATHENS_STORAGE_TYPE: disk
+      ATHENS_DISK_STORAGE_ROOT: /var/lib/athens
+      ATHENS_GONOSUM_PATTERNS: "go.company.com/*"
+    volumes:
+      - "athens-data:/var/lib/athens"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  reposilite:
+    image: dzikoysk/reposilite:3.5.26
+    ports: ["8081:8080"]
+    volumes: ["reposilite-data:/app/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8080' 2>/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    environment:
+      REPOSILITE_OPTS: "--token admin:secret"
+      JAVA_OPTS: "-Xmx64m"
+
+volumes:
+  devpi-data:
+  verdaccio-data:
+  athens-data:
+  reposilite-data:

@@ -225,8 +225,6 @@ def send_notification():
 @app.route('/api/sign', methods=['POST'])
 def sign_data():
     """Uses RSA private key — REACHABLE SECRET"""
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import padding
     data = request.get_data()
     # Would use RSA_PRIVATE_KEY to sign
     return jsonify({'signed': True, 'key_prefix': RSA_PRIVATE_KEY[:30]})

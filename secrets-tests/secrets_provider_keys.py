@@ -5,7 +5,6 @@
 # ============================================================================
 from flask import Flask, request, jsonify
 import requests
-import os
 
 app = Flask(__name__)
 
@@ -144,7 +143,7 @@ def _dead_openai():
     openai.ChatCompletion.create(model='gpt-4', messages=[])
 
 def _dead_mailgun():
-    requests.post(f'https://api.mailgun.net/v3/example.com/messages',
+    requests.post('https://api.mailgun.net/v3/example.com/messages',
         auth=('api', DEAD_MAILGUN_KEY), data={})
 
 if __name__ == '__main__':

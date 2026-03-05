@@ -7,7 +7,6 @@ This file contains intentionally vulnerable MCP (Model Context Protocol)
 code patterns that should trigger MCP security detections.
 """
 
-import json
 from typing import Any
 import subprocess
 

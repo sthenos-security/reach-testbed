@@ -1,0 +1,9 @@
+# Public packages (should resolve from PyPI)
+requests==2.31.0
+flask==2.0.3
+
+# Private package — will NOT resolve (no devpi configured)
+# internal-sdk is listed here to document intent, but pip.conf
+# does not include devpi, so it will fail to install.
+# The setup script installs only the public packages.
+# internal-sdk==0.5.0

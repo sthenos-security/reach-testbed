@@ -15,7 +15,6 @@ HIPAA Controls exercised:
 
 import hashlib
 import logging
-import os
 
 hipaa_log = logging.getLogger("hipaa")
 
