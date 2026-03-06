@@ -2,11 +2,13 @@
 
 Comprehensive test repository demonstrating REACHABLE's multi-signal correlation capabilities.
 
+This is an intentionally vulnerable test corpus for security framewiork testing — do not use in production
+
 ---
 
 ## 🌟 Featured Demos: Supply Chain Attack Detection
 
-> **The killer demos for investors** — Watch REACHABLE detect sophisticated supply chain attacks that traditional tools miss, across both npm and pip ecosystems.
+> **The killer demos ** — Watch REACHABLE detect sophisticated supply chain attacks that traditional tools miss, across both npm and pip ecosystems.
 
 ### Shai-Hulud (npm) — postinstall hook attack
 
