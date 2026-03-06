@@ -2,7 +2,7 @@
 
 Comprehensive test repository demonstrating REACHABLE's multi-signal correlation capabilities.
 
-This is an intentionally vulnerable test corpus for security framewiork testing — do not use in production
+This is an intentionally vulnerable test corpus for security framework testing — do not use in production
 
 ---
 
