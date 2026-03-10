@@ -60,6 +60,8 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 | `muaddib-simulation/` | Python | 🌟 **pip supply chain attack** - setup.py cmdclass + sandbox detection |
 | `ai-security-test/` | Python/TS/Go | 🤖 **AI/LLM security** - OWASP LLM Top 10, Garak, Corpus patterns |
 | `python-app/` | Python | CVEs, secrets, reachability, malware patterns |
+| `npm-callgraph-test/` | JavaScript | 🔬 **JS call graph canary** — REACHABLE vs NOT_REACHABLE npm CVEs (node-serialize, semver) |
+| `java-callgraph-test/` | Java | 🔬 **Java call graph canary** — Log4Shell REACHABLE, Text4Shell in dead class NOT_REACHABLE |
 | `javascript-app/` | JS/TS | npm vulns, call graph, entrypoints |
 | `go-app/` | Go | go.mod vulns, FFI detection |
 | `java-maven/` | Java | Maven multi-module, Spring entrypoints |
@@ -68,6 +70,94 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 | `polyglot-monorepo/` | Mixed | Cross-language, microservices |
 | `private-registry/` | Py/JS/Go/Java | 🆕 **Private registry resolution** — PURLResolver + lib_manager |
 | `malware-test-packages/` | JavaScript | GuardDog malware pattern detection |
+| `signal-matrix/` | Py/JS/Go/Java | 🎯 **Full signal matrix** — all 6 signals × 4 languages × 3 reachability states |
+
+## Call Graph Canaries 🔬
+
+Two test cases exist specifically to detect if a language call graph is broken or silently disabled. If either fires as `UNKNOWN` instead of the expected `NOT_REACHABLE`, a regression has occurred.
+
+| Test | Package | Expected | Canary for | Failure means |
+|------|---------|----------|------------|---------------|
+| `npm-callgraph-test/src/utils/serializer.js` | node-serialize 0.0.4 | `NOT_REACHABLE` | JS call graph | `JSCallGraphCollector` broken/disabled |
+| `npm-callgraph-test/src/utils/version_check.js` | semver 5.7.1 | `NOT_REACHABLE` | JS call graph | Call graph not tracing dead-code islands |
+| `java-callgraph-test/.../DeadCodeService.java` | commons-text 1.9 | `NOT_REACHABLE` | Java call graph | Java call graph broken/disabled |
+
+---
+
+## Signal Matrix 🎯
+
+`signal-matrix/` is the authoritative coverage matrix: every signal type tested in all 3 reachability states across all 4 supported languages. Scan it to confirm REACHABLE produces correct results for every combination before any release.
+
+### Coverage
+
+| Signal   | Python R/NR/U | JS R/NR/U | Go R/NR/U | Java R/NR/U |
+|----------|:-------------:|:---------:|:---------:|:-----------:|
+| CVE      | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ |
+| CWE      | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ |
+| SECRET   | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ |
+| DLP      | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ |
+| AI       | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ |
+| MALWARE  | ✅/✅/✅ | ✅/✅/✅ | ✅/✅/✅ | NR only |
+
+R=REACHABLE · NR=NOT_REACHABLE · U=UNKNOWN
+
+### Structure
+
+Each language has an entrypoint that orchestrates reachability:
+
+- **REACHABLE** — vulnerable function on a live call path from the entrypoint
+- **NOT_REACHABLE** — module/file/class completely absent from the import/call graph
+- **UNKNOWN** — module IS imported/instantiated but the specific vulnerable function is never invoked (import graph hit, call graph miss)
+
+```
+signal-matrix/
+├── python/
+│   ├── entrypoint.py          # Flask app — imports R+U modules, never imports NR modules
+│   └── signals/
+│       ├── {signal}_reachable.py       # called from entrypoint
+│       ├── {signal}_not_reachable.py   # never imported
+│       └── {signal}_unknown.py         # imported but only safe fn called
+├── javascript/
+│   ├── server.js              # Express app — same pattern
+│   └── signals/
+│       ├── {signal}_reachable.js
+│       ├── {signal}_not_reachable.js
+│       └── {signal}_unknown.js
+├── go/
+│   ├── main.go                # gin router
+│   └── signals/
+│       ├── cve.go             # REACHABLE TranslateHandler + UNKNOWN ParseLangUnknown
+│       ├── cve_dead.go        # NOT_REACHABLE ParseYamlDead
+│       ├── cwe.go / secret.go / dlp.go / ai.go / malware.go
+└── java/
+    └── src/main/java/com/example/
+        ├── ReachableController.java   # @RestController — all REACHABLE signals
+        ├── UnknownController.java     # @RestController — safe HTTP routes, vuln in private methods
+        ├── DlpAiController.java       # @RestController — DLP + AI REACHABLE
+        └── DeadCodeService.java       # NO @Component — never instantiated, all NOT_REACHABLE
+```
+
+### Expected results
+
+See `expected-results/signal-matrix.json` for the complete validation spec. The `canary: true` entries are the highest-priority checks — a wrong result there indicates a call graph or reachability engine regression.
+
+### UNKNOWN semantics
+
+UNKNOWN is the correct result when REACHABLE cannot determine reachability from static analysis alone (e.g. the vulnerable function exists in an imported module but has no static call path from any entrypoint). It is **not** a failure. What IS a failure:
+- A known REACHABLE function showing NOT_REACHABLE (missed detection)
+- A known NOT_REACHABLE function showing REACHABLE (false positive)
+- An UNKNOWN function showing REACHABLE without a confirmed call path (false positive)
+
+### Why these are canaries
+
+Without a call graph, REACHABLE falls back to `UNKNOWN` for all packages that are in the SBOM but whose source files are never directly analysed. The canary packages are engineered so that:
+- Their source files **exist** in the repo (so Grype finds them in the SBOM)
+- Their source files are **never imported/instantiated** from any entrypoint
+- The only way to get `NOT_REACHABLE` is for the call graph to have actually traced the import/call graph and found no path
+
+If either canary regresses to `UNKNOWN`, check: `JSCallGraphCollector.is_available()`, the JS call graph step in `pipeline_finalize`, and the Java Joern/call graph collector output.
+
+---
 
 ## AI Security Tests 🤖
 

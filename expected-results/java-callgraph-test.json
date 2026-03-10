@@ -1,0 +1,65 @@
+{
+  "testcase": "java-callgraph-test",
+  "description": "Spring Boot app designed to validate Java call graph operation via Log4Shell (REACHABLE) and Text4Shell in dead code (NOT_REACHABLE)",
+
+  "_canary_purpose": "If commons-text CVE-2022-42889 shows UNKNOWN instead of NOT_REACHABLE, the Java call graph is broken or disabled. DeadCodeService has no Spring annotations and is never instantiated.",
+
+  "reachability_stats": {
+    "total_cves_in_sbom": 2,
+    "reachable_cves": 1,
+    "unreachable_cves": 1,
+    "noise_reduction_percent": 50.0
+  },
+
+  "specific_cves": {
+    "CVE-2021-44228": {
+      "package": "log4j-core",
+      "version": "2.14.1",
+      "expected_reachability": "REACHABLE",
+      "call_path": "HTTP POST /api/log → LogController.logMessage() → logger.info(userInput)",
+      "note": "User-controlled input flows directly into log4j. Spring @PostMapping is an entrypoint.",
+      "canary": true,
+      "feature": "java_callgraph",
+      "failure_symptom": "NOT_REACHABLE or UNKNOWN means Java call graph is not recognising Spring @PostMapping as entrypoints"
+    },
+    "CVE-2022-42889": {
+      "package": "commons-text",
+      "version": "1.9",
+      "expected_reachability": "NOT_REACHABLE",
+      "call_path": "NONE — DeadCodeService has no @Service/@Component, is never instantiated",
+      "canary": true,
+      "feature": "java_callgraph",
+      "failure_symptom": "UNKNOWN result means Java call graph did not run or failed to identify dead classes"
+    }
+  },
+
+  "call_graph": {
+    "spring_entrypoints": [
+      "com.example.LogController#logMessage (POST /api/log)",
+      "com.example.LogController#health (GET /api/health)"
+    ],
+    "reachable_classes": [
+      "com.example.Application",
+      "com.example.LogController"
+    ],
+    "unreachable_classes": [
+      "com.example.DeadCodeService"
+    ],
+    "dead_code_reason": "DeadCodeService has no @Service, @Component, or @Bean annotation and is not referenced by any Spring-managed class"
+  },
+
+  "validation_rules": [
+    {
+      "rule": "canary_java_callgraph_dead_code",
+      "description": "commons-text must be NOT_REACHABLE (DeadCodeService never instantiated)",
+      "pass": "CVE-2022-42889 shows NOT_REACHABLE",
+      "fail": "CVE-2022-42889 shows UNKNOWN — Java call graph did not run"
+    },
+    {
+      "rule": "canary_java_callgraph_live_path",
+      "description": "log4j-core must be REACHABLE (Spring @PostMapping entrypoint)",
+      "pass": "CVE-2021-44228 shows REACHABLE",
+      "fail": "CVE-2021-44228 shows NOT_REACHABLE or UNKNOWN — Spring entrypoints not recognised"
+    }
+  ]
+}

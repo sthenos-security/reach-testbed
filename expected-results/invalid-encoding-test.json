@@ -1,0 +1,29 @@
+{
+  "_comment": "Ground truth for invalid-encoding-test/ — scanner resilience test",
+  "_description": "All three test files have encoding/binary issues semgrep cannot parse. Expected: no crash, all 3 in coverage gap.",
+  "scan_target": "invalid-encoding-test",
+
+  "files": {
+    "sast_unparseable": 3,
+    "sast_skipped_files": [
+      {
+        "path_suffix": "bytes_literal_with_em_dash.py",
+        "reason_contains": ["bytes", "ascii", "parse"],
+        "error_type_contains": ["Parse", "Syntax", "parse"]
+      },
+      {
+        "path_suffix": "latin1_no_declaration.py",
+        "reason_contains": ["utf", "decode", "encode", "parse"],
+        "error_type_contains": ["Parse", "Syntax", "parse"]
+      },
+      {
+        "path_suffix": "binary_disguised_as_python.py",
+        "reason_contains": ["null", "binary", "parse"],
+        "error_type_contains": ["Parse", "Syntax", "parse"]
+      }
+    ]
+  },
+
+  "expected_findings_count": 0,
+  "_note": "No secrets/CWE/malware findings expected — semgrep rejects all 3 files before pattern matching."
+}

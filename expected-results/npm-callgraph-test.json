@@ -1,0 +1,76 @@
+{
+  "testcase": "npm-callgraph-test",
+  "description": "Multi-file Node.js app designed to validate JS call graph operation via REACHABLE vs NOT_REACHABLE npm CVEs",
+
+  "_canary_purpose": "If node-serialize or semver CVEs show UNKNOWN instead of NOT_REACHABLE, the JS call graph (JSCallGraphCollector) is broken or disabled.",
+
+  "reachability_stats": {
+    "total_cves_in_sbom": 4,
+    "reachable_cves": 2,
+    "unreachable_cves": 2,
+    "noise_reduction_percent": 50.0
+  },
+
+  "specific_cves": {
+    "CVE-2021-23337": {
+      "package": "lodash",
+      "version": "4.17.20",
+      "expected_reachability": "REACHABLE",
+      "call_path": "server.js → routes/merge.js → _.merge()",
+      "note": "_.merge() called in live POST /api/merge handler"
+    },
+    "CVE-2021-44906": {
+      "package": "minimist",
+      "version": "1.2.5",
+      "expected_reachability": "REACHABLE",
+      "call_path": "server.js → routes/args.js → minimist(argv)",
+      "note": "minimist() called in live POST /api/args handler"
+    },
+    "CVE-2017-5941": {
+      "package": "node-serialize",
+      "version": "0.0.4",
+      "expected_reachability": "NOT_REACHABLE",
+      "call_path": "NONE — utils/serializer.js is never required",
+      "canary": true,
+      "feature": "js_callgraph",
+      "failure_symptom": "UNKNOWN result means JSCallGraphCollector did not run or failed to trace the import graph"
+    },
+    "CVE-2022-25883": {
+      "package": "semver",
+      "version": "5.7.1",
+      "expected_reachability": "NOT_REACHABLE",
+      "call_path": "NONE — utils/version_check.js is never required",
+      "canary": true,
+      "feature": "js_callgraph",
+      "failure_symptom": "UNKNOWN result means JSCallGraphCollector did not run or failed to traverse dead-code islands"
+    }
+  },
+
+  "import_graph": {
+    "entrypoints": ["src/server.js"],
+    "reachable_files": [
+      "src/server.js",
+      "src/routes/merge.js",
+      "src/routes/args.js"
+    ],
+    "unreachable_files": [
+      "src/utils/serializer.js",
+      "src/utils/version_check.js"
+    ]
+  },
+
+  "validation_rules": [
+    {
+      "rule": "canary_js_callgraph",
+      "description": "Both node-serialize and semver must be NOT_REACHABLE",
+      "pass": "Both CVE-2017-5941 and CVE-2022-25883 show NOT_REACHABLE",
+      "fail": "Either CVE shows UNKNOWN — JS call graph did not run"
+    },
+    {
+      "rule": "reachable_lodash",
+      "description": "lodash must be REACHABLE (confirms call graph traces positive paths too)",
+      "pass": "CVE-2021-23337 shows REACHABLE",
+      "fail": "CVE-2021-23337 shows NOT_REACHABLE or UNKNOWN"
+    }
+  ]
+}

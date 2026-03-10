@@ -1,0 +1,23 @@
+{
+  "name": "reachable-npm-callgraph-test",
+  "version": "1.0.0",
+  "description": "npm call graph validation: REACHABLE vs NOT_REACHABLE npm CVEs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "lodash": "4.17.20",
+    "node-serialize": "0.0.4",
+    "minimist": "1.2.5",
+    "semver": "5.7.1"
+  },
+  "_comments": {
+    "PURPOSE": "JS call graph canary. If call graph does NOT run, node-serialize and semver show UNKNOWN. If call graph runs correctly, they show NOT_REACHABLE.",
+    "lodash-4.17.20": "CVE-2021-23337 - prototype pollution - REACHABLE: called from src/routes/merge.js which is required by server.js",
+    "minimist-1.2.5": "CVE-2021-44906 - prototype pollution - REACHABLE: called from src/routes/args.js entrypoint",
+    "node-serialize-0.0.4": "CVE-2017-5941 - RCE via unserialize() - NOT_REACHABLE: imported in src/utils/serializer.js but that file is never required",
+    "semver-5.7.1": "CVE-2022-25883 - ReDoS - NOT_REACHABLE: imported in src/utils/version_check.js which is never required from any entrypoint"
+  }
+}

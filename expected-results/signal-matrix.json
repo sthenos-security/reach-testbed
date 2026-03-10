@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "testcase": "signal-matrix",
+    "description": "Exhaustive 3-state × 6-signal × 4-language coverage matrix",
+    "version": "1.0",
+    "signals": ["cve", "cwe", "secret", "dlp", "ai", "malware"],
+    "languages": ["python", "javascript", "go", "java"],
+    "states": ["REACHABLE", "NOT_REACHABLE", "UNKNOWN"],
+    "purpose": "Every signal must be detected in all 3 reachability states for all 4 languages. Any missing cell is a regression."
+  },
+
+  "matrix": {
+    "python": {
+      "cve": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/cve_reachable.py",      "pattern": "requests.get() — CVE-2023-32681" },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/secret_not_reachable.py", "note": "module never imported" },
+        "UNKNOWN":       { "file": "signal-matrix/python/signals/cwe_unknown.py",         "note": "module imported, vuln func not called" }
+      },
+      "cwe": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/cwe_reachable.py",      "cwes": ["CWE-79", "CWE-89"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/cwe_not_reachable.py",  "cwes": ["CWE-89", "CWE-22", "CWE-327", "CWE-78"] },
+        "UNKNOWN":       { "file": "signal-matrix/python/signals/cwe_unknown.py",        "cwes": ["CWE-78", "CWE-22"], "note": "module imported, only safe_render() called" }
+      },
+      "secret": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/secret_reachable.py",     "secrets": ["sk_live_pyREACH_*"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/secret_not_reachable.py", "secrets": ["AWS", "Stripe", "GitHub", "Twilio", "SendGrid", "RSA key"] },
+        "UNKNOWN":       { "file": "signal-matrix/python/signals/secret_unknown.py",       "secrets": ["sk_live_pyUnknown_*", "db_pass_unknown_*"], "note": "module imported, get_public_config() called — not the secret-returning functions" }
+      },
+      "dlp": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/dlp_reachable.py",     "pii": ["ssn", "dob"], "sink": "logger.info()" },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/dlp_not_reachable.py", "pii": ["ssn", "credit_card"], "sinks": ["sqlite3", "openai API", "logger"] },
+        "UNKNOWN":       { "file": "signal-matrix/python/signals/dlp_unknown.py",       "pii": ["ssn", "credit_card"], "note": "module imported, only get_public_profile() called" }
+      },
+      "ai": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/ai_reachable.py",     "owasp": "LLM01", "pattern": "unsanitized user_prompt to OpenAI" },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/ai_not_reachable.py", "owasp": ["LLM01", "LLM05"] },
+        "UNKNOWN":       { "file": "signal-matrix/python/signals/ai_unknown.py",       "owasp": ["LLM01", "LLM05"], "note": "module imported, only get_model_info() called" }
+      },
+      "malware": {
+        "REACHABLE":     { "file": "signal-matrix/python/signals/malware_reachable.py",     "pattern": "C2 beacon on startup — socket + env exfil" },
+        "NOT_REACHABLE": { "file": "signal-matrix/python/signals/malware_not_reachable.py", "patterns": ["env exfil", "reverse shell", "obfuscated eval"] },
+        "UNKNOWN":       { "note": "Python malware UNKNOWN not separately modelled — see malware_reachable (imported+called) vs malware_not_reachable (never imported)" }
+      }
+    },
+
+    "javascript": {
+      "cve": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/cve_reachable.js",     "cve": "CVE-2021-23337", "package": "lodash", "pattern": "_.merge() called from /api/merge" },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/cve_not_reachable.js", "cve": "CVE-2017-5941", "package": "node-serialize", "note": "file never required" },
+        "UNKNOWN":       { "file": "signal-matrix/javascript/signals/cve_unknown.js",       "cve": "CVE-2022-21681", "package": "marked", "note": "module required, only safeText() called — parseMarkdownUnknown() never invoked" }
+      },
+      "cwe": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/cwe_reachable.js",     "cwes": ["CWE-79"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/cwe_not_reachable.js", "cwes": ["CWE-89", "CWE-22", "CWE-78", "CWE-94"] },
+        "UNKNOWN":       { "file": "signal-matrix/javascript/signals/cwe_unknown.js",       "cwes": ["CWE-78", "CWE-89"], "note": "module required, only sanitize() called" }
+      },
+      "secret": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/secret_reachable.js",     "secrets": ["sk_live_jsREACH_*"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/secret_not_reachable.js", "secrets": ["Stripe", "GitHub", "AWS key+secret", "JWT secret"] },
+        "UNKNOWN":       { "file": "signal-matrix/javascript/signals/secret_unknown.js",       "secrets": ["sk_live_jsUNKNOWN_*", "db_jsUnknown_*"], "note": "module required, only getPublicKey() called" }
+      },
+      "dlp": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/dlp_reachable.js",     "pii": ["ssn", "creditCard", "email"], "sinks": ["console.log", "axios.post external"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/dlp_not_reachable.js", "pii": ["ssn", "credit_card"], "sinks": ["openai API", "console.log"] },
+        "UNKNOWN":       { "file": "signal-matrix/javascript/signals/dlp_unknown.js",       "pii": ["ssn", "creditCard"], "note": "module required, only getAnonProfile() called" }
+      },
+      "ai": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/ai_reachable.js",     "owasp": "LLM01", "pattern": "unsanitized prompt to OpenAI via axios" },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/ai_not_reachable.js", "owasp": ["LLM01", "LLM05"] },
+        "UNKNOWN":       { "file": "signal-matrix/javascript/signals/ai_unknown.js",       "owasp": ["LLM01", "LLM05"], "note": "module required, only getCapabilities() called" }
+      },
+      "malware": {
+        "REACHABLE":     { "file": "signal-matrix/javascript/signals/malware_reachable.js",     "pattern": "net.createConnection C2 beacon on startup" },
+        "NOT_REACHABLE": { "file": "signal-matrix/javascript/signals/malware_not_reachable.js", "patterns": ["reverse shell via exec", "obfuscated eval", "env exfil"] },
+        "UNKNOWN":       { "note": "JS malware UNKNOWN not separately modelled" }
+      }
+    },
+
+    "go": {
+      "cve": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/cve.go",      "cve": "CVE-2022-32149", "package": "golang.org/x/text", "fn": "TranslateHandler → language.Parse(userInput)" },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/cve_dead.go", "cve": "CVE-2022-1996",  "package": "gopkg.in/yaml.v3", "fn": "ParseYamlDead() never called" },
+        "UNKNOWN":       { "file": "signal-matrix/go/signals/cve.go",      "fn": "ParseLangUnknown() — same file as REACHABLE, never called from main" }
+      },
+      "cwe": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/cwe.go", "cwes": ["CWE-89 via QueryHandler", "CWE-78 via CmdHandler"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/cwe.go", "cwes": ["CWE-22 via PathTraversalDead()"] },
+        "UNKNOWN":       { "file": "signal-matrix/go/signals/cwe.go", "cwes": ["CWE-89 via SqlInjectionUnknown() — never called from main"] }
+      },
+      "secret": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/secret.go", "secrets": ["PaymentAPIKey", "DBPassword"], "fn": "ConfigHandler called from main" },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/secret.go", "secrets": ["AWSKeyIDDead", "AWSSecretDead", "GitHubTokenDead"], "fn": "GetAwsCredsDead() never called" },
+        "UNKNOWN":       { "file": "signal-matrix/go/signals/secret.go", "secrets": ["InternalKeyUnknown", "AdminPassUnknown"], "fn": "GetInternalKeyUnknown() never called from main" }
+      },
+      "dlp": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/dlp.go", "pii": ["ssn", "dob"], "sinks": ["log.Printf", "http.Post external"], "fn": "PatientHandler" },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/dlp.go", "pii": ["ssn", "card", "email"], "fn": "LogPiiDead() never called" },
+        "UNKNOWN":       { "file": "signal-matrix/go/signals/dlp.go", "pii": ["ssn", "creditCard"], "fn": "ExportPiiUnknown() never called from main" }
+      },
+      "ai": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/ai.go", "owasp": "LLM01", "fn": "LlmHandler — userPrompt to OpenAI" },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/ai.go", "owasp": ["LLM01", "DLP"], "fn": "CallLlmWithPiiDead() never called" },
+        "UNKNOWN":       { "file": "signal-matrix/go/signals/ai.go", "owasp": "LLM01", "fn": "RunUncheckedLlmUnknown() never called from main" }
+      },
+      "malware": {
+        "REACHABLE":     { "file": "signal-matrix/go/signals/malware.go", "pattern": "net.Dial C2 beacon in InitBeacon() called from main" },
+        "NOT_REACHABLE": { "file": "signal-matrix/go/signals/malware.go", "pattern": "ExfilDead() — reverse-shell + env exfil, never called" },
+        "UNKNOWN":       { "note": "Go malware UNKNOWN not separately modelled" }
+      }
+    },
+
+    "java": {
+      "cve": {
+        "REACHABLE":     { "file": "signal-matrix/java/src/.../ReachableController.java", "cve": "CVE-2022-1471", "package": "snakeyaml", "fn": "parseConfig() @PostMapping" },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java",     "cve": "CVE-2021-44228", "package": "log4j-core", "fn": "logUserInputDead() — class never instantiated" },
+        "UNKNOWN":       { "file": "signal-matrix/java/src/.../UnknownController.java",   "cve": "CVE-2022-42889", "package": "commons-text", "fn": "expandVarsUnknown() — private method, no HTTP route" }
+      },
+      "cwe": {
+        "REACHABLE":     { "file": "signal-matrix/java/src/.../ReachableController.java", "cwes": ["CWE-89 query()", "CWE-22 readFile()", "CWE-611 parseXml()"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java",     "cwes": ["CWE-78 runCommandDead()", "CWE-89 queryDead()", "CWE-22 readFileDead()"] },
+        "UNKNOWN":       { "file": "signal-matrix/java/src/.../UnknownController.java",   "cwes": ["CWE-326 generateWeakKeyUnknown() — private, no HTTP route"] }
+      },
+      "secret": {
+        "REACHABLE":     { "file": "signal-matrix/java/src/.../ReachableController.java", "secrets": ["DB_PASSWORD", "PAYMENT_TOKEN"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java",     "secrets": ["AWS_KEY_ID", "AWS_SECRET", "STRIPE_KEY"] },
+        "UNKNOWN":       { "file": "signal-matrix/java/src/.../UnknownController.java",   "secrets": ["INTERNAL_KEY_UNKNOWN"], "fn": "getInternalKeyUnknown() — private" }
+      },
+      "dlp": {
+        "REACHABLE":     { "file": "signal-matrix/java/src/.../DlpAiController.java",  "pii": ["ssn", "dob", "credit_card", "email"], "sinks": ["java.util.logging", "external HTTP"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java",  "pii": ["ssn", "card"],     "fn": "exportPiiDead() — class never instantiated" },
+        "UNKNOWN":       { "file": "signal-matrix/java/src/.../UnknownController.java", "pii": ["ssn", "dob"],     "fn": "exportPiiUnknown() — private, no HTTP route" }
+      },
+      "ai": {
+        "REACHABLE":     { "file": "signal-matrix/java/src/.../DlpAiController.java",  "owasp": ["LLM01 callLlm()", "LLM05 executeLlmOutput()"] },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java",  "owasp": "LLM01+DLP piiToLlmDead() — class never instantiated" },
+        "UNKNOWN":       { "file": "signal-matrix/java/src/.../UnknownController.java", "owasp": "LLM01 callLlmUnknown() — private, no HTTP route" }
+      },
+      "malware": {
+        "REACHABLE":     { "note": "Java malware REACHABLE not separately modelled — use java-callgraph-test or shai-hulud for Java supply chain" },
+        "NOT_REACHABLE": { "file": "signal-matrix/java/src/.../DeadCodeService.java", "fn": "beaconDead() — class never instantiated" },
+        "UNKNOWN":       { "note": "Java malware UNKNOWN not separately modelled" }
+      }
+    }
+  },
+
+  "validation_rules": [
+    {
+      "rule": "all_reachable_detected",
+      "description": "Every REACHABLE signal in every language must be detected and marked REACHABLE",
+      "fail_condition": "Any REACHABLE signal shows NOT_REACHABLE or missing"
+    },
+    {
+      "rule": "all_not_reachable_suppressed",
+      "description": "Every NOT_REACHABLE signal must be marked NOT_REACHABLE (not REACHABLE, not UNKNOWN)",
+      "fail_condition": "Any NOT_REACHABLE signal shows REACHABLE — false positive / precision regression"
+    },
+    {
+      "rule": "unknown_not_false_positive",
+      "description": "UNKNOWN signals (module on import graph, vuln func not called) must not be marked REACHABLE",
+      "fail_condition": "UNKNOWN signal shows REACHABLE — false positive"
+    },
+    {
+      "rule": "callgraph_coverage",
+      "description": "NOT_REACHABLE results for CVE require call graph to have run. UNKNOWN for any UNKNOWN result is acceptable. NOT_REACHABLE for a dead-code module requires import/call graph traversal.",
+      "canary_files": [
+        "signal-matrix/javascript/signals/cve_not_reachable.js",
+        "signal-matrix/go/signals/cve_dead.go",
+        "signal-matrix/java/.../DeadCodeService.java"
+      ]
+    }
+  ]
+}
