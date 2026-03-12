@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 #
 # REACHABLE Demo Statistics Generator
 # Produces investor-ready statistics from all test cases

@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST FILE — DO NOT USE IN PRODUCTION
 # Tests: Semgrep secrets detection — AWS, GCP, Azure, Generic API keys

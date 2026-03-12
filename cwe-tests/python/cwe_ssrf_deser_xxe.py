@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # CWE-918 (SSRF), CWE-611 (XXE), CWE-502 (Deserialization)

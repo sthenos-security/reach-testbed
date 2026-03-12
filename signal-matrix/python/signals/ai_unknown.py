@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """UNKNOWN: AI — module imported, safe function called, vulnerable LLM call never reached."""
 
 def get_model_info() -> dict:

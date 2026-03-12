@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 Signal Matrix — Python entrypoint
 ==================================

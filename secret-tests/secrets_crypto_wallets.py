@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # SECRET: Cryptocurrency private keys and wallet mnemonics

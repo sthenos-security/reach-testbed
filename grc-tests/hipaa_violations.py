@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 GRC Test Suite — HIPAA (Health Insurance Portability and Accountability Act)
 =============================================================================

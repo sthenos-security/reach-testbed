@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # CWE-287 (Improper Auth), CWE-384 (Session Fixation), CWE-639 (IDOR)

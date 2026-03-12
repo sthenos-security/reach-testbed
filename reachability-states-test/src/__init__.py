@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 Source package for reachability states test.
 Only the reachable modules are imported here.

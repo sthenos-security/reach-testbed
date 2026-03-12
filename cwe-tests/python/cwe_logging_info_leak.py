@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # CWE-117 (Log Injection), CWE-532 (Sensitive Data in Logs)

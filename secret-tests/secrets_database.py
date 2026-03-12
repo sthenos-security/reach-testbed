@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST — DO NOT USE IN PRODUCTION
 # SECRET: Database connection strings with embedded passwords

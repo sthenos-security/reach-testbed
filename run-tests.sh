@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 #
 # REACHABLE Test Bed - Run All Tests
 #

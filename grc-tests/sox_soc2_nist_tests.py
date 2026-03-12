@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 SOX / SOC2 / NIST 800-53 Test Cases
 ======================================

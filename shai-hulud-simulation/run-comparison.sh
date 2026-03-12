@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 #
 # Shai-Hulud Detection Comparison
 # Runs multiple security tools against the simulation and compares results

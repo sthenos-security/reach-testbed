@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # CWE-79 (XSS), CWE-352 (CSRF), CWE-1275 (Cookie without flags)
 from flask import Flask, request, jsonify, make_response, render_template_string
 

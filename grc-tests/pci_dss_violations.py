@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 GRC Test Suite — PCI-DSS (Payment Card Industry Data Security Standard)
 ========================================================================

@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 GRC Test Suite — GDPR (General Data Protection Regulation)
 ===========================================================

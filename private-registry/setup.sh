@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # setup.sh — Populate private registries with test packages (idempotent)
 #
 # Creates synthetic private packages that:

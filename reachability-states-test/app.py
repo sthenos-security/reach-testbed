@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 Main application entrypoint.
 This file imports and uses various modules to test reachability detection.

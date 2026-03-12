@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 #
 # Muad'Dib Detection Comparison
 # Runs multiple security tools against the Python supply chain simulation

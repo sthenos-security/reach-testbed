@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # run-private-registry-tests.sh
 #
 # End-to-end: start registries → populate → install deps → run tests

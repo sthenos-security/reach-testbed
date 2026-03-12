@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 MUAD'DIB SIMULATION - Python Supply Chain Attack
 ⚠️ TEST ONLY - Simulates malicious setup.py patterns for REACHABLE sandbox demo

@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """NOT_REACHABLE: CWE — module NEVER imported by entrypoint."""
 
 import subprocess, os, hashlib

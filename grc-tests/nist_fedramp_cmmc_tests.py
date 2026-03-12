@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 GRC Standards Test Suite — NIST 800-53 / FedRAMP / CMMC 2.0
 =============================================================

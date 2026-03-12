@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """REACHABLE: AI — called from entrypoint."""
 
 def run_llm_query(user_prompt: str) -> str:

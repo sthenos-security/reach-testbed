@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST FILE — DO NOT USE IN PRODUCTION
 # CWE-79 (XSS), CWE-352 (CSRF), CWE-1275 (Cookie without flags)

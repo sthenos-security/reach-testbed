@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST FILE — DO NOT USE IN PRODUCTION
 # Triggers: Semgrep sql-injection, python-sql-injection, command-injection

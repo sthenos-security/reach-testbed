@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 # ============================================================================
 # REACHABLE TEST FILE — DO NOT USE IN PRODUCTION
 # CWE-200 (Info Exposure), CWE-209 (Error Info Leak), CWE-532 (Log Injection)

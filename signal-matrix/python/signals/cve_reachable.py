@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """REACHABLE stubs — called from entrypoint.py."""
 import requests
 

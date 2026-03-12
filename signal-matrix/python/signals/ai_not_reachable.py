@@ -1,3 +1,4 @@
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """NOT_REACHABLE: AI — module NEVER imported by entrypoint."""
 
 def llm_prompt_injection_dead(user_input: str) -> str:

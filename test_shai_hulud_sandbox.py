@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 End-to-end test: Can the sandbox detect shai-hulud?
 

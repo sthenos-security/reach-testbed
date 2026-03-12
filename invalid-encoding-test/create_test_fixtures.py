@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright © 2026 Sthenos Security. All rights reserved.
 """
 create_test_fixtures.py — generate the actual binary/encoding-broken test files.
 
