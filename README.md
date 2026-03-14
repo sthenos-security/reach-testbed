@@ -71,6 +71,8 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 | `private-registry/` | Py/JS/Go/Java | 🆕 **Private registry resolution** — PURLResolver + lib_manager |
 | `malware-test-packages/` | JavaScript | GuardDog malware pattern detection |
 | `signal-matrix/` | Py/JS/Go/Java | 🎯 **Full signal matrix** — all 6 signals × 4 languages × 3 reachability states |
+| `invocation-patterns/` | Py/JS/Go/Java | 🔄 **Invocation patterns** — external endpoint vs internal trigger vs dead code × 4 languages |
+| `cwe-tests/python/cwe_sqli_matrix.py` | Python | 🧪 **SQL injection variable origin matrix** — 7 TP + 8 FP + 3 TN + 4 edge cases |
 
 ## Call Graph Canaries 🔬
 
@@ -156,6 +158,47 @@ Without a call graph, REACHABLE falls back to `UNKNOWN` for all packages that ar
 - The only way to get `NOT_REACHABLE` is for the call graph to have actually traced the import/call graph and found no path
 
 If either canary regresses to `UNKNOWN`, check: `JSCallGraphCollector.is_available()`, the JS call graph step in `pipeline_finalize`, and the Java Joern/call graph collector output.
+
+---
+
+## Invocation Patterns 🔄
+
+`invocation-patterns/` tests the three fundamental ways code can execute, across all 4 languages. This validates both the deterministic call graph and the AI reachability analyzer (`enzo analyze`).
+
+### The Three Cases
+
+| Case | Pattern | Expected | RA Today | AI |
+|------|---------|----------|----------|----|
+| 1. External endpoint | HTTP route → sink | REACHABLE | ✅ | ✅ Confirms taint |
+| 2. Internal trigger | thread/timer/init → sink | REACHABLE | ❌ **Gap** | ⚠️ Can classify |
+| 3. Dead code | function never called | NOT_REACHABLE | ✅ | N/A (skipped) |
+
+### Case 2 Internal Trigger Subtypes
+
+| Subtype | Python | JS | Go | Java |
+|---------|--------|-----|-----|------|
+| Threading | `Thread.start()` | `Worker` | `go func()` | `Thread.start()` |
+| Timer | `Timer` | `setInterval` | `time.AfterFunc` | `@Scheduled` |
+| Startup | `atexit` | `process.on('exit')` | `init()` | `@PostConstruct` |
+| Module-level | `os.system()` | IIFE | `init()` | `static {}` |
+| Signal | `signal.signal()` | `process.on('SIGUSR1')` | `signal.Notify` | `addShutdownHook` |
+| C2 beacon | Timer → `urlopen(c2)` | `setInterval` → `http.get` | goroutine → `http.Get` | `ScheduledExecutor` |
+| Constructor | `Class()` at module level | `new Class()` at module level | N/A | instance init `{}` |
+
+### Test Files
+
+| File | Case | CWEs |
+|------|------|------|
+| `python/http_endpoint.py` | 1 | CWE-89, 78, 22, 918 |
+| `python/internal_trigger.py` | 2 | CWE-89, 78, 200, 918 (7 subtypes) |
+| `python/dead_code.py` | 3 | CWE-89, 78, 22, 918, 94 |
+| `javascript/http_endpoint.js` | 1 | CWE-89, 78, 22, 918 |
+| `javascript/internal_trigger.js` | 2 | CWE-78, 89, 200, 918 (7 subtypes) |
+| `javascript/dead_code.js` | 3 | CWE-89, 78, 22, 918, 94 |
+| `go/main.go` | 1+2+3 | CWE-89, 78, 22, 200, 918 |
+| `java/InvocationPatterns.java` | 1+2+3 | CWE-89, 78, 22, 200, 918 |
+
+See `invocation-patterns/expected-results.json` for the full validation spec and `SIGNAL-INVENTORY.md` for the risk matrix.
 
 ---
 
@@ -485,6 +528,52 @@ pytest tests/test_private_registry_integration.py -v -s
 ```
 
 > **Unit tests** for the same features (no Docker) live in `reach-core/tests/unit/`.
+
+---
+
+## Reachability Baseline (testbed.json v1.3)
+
+Ground-truth reachability for all signal types, verified from source code analysis.
+
+### Top-level sections
+
+| Section | REACHABLE | NOT_REACHABLE | Total | Rationale |
+|---------|:---------:|:-------------:|:-----:|----------|
+| CVE | 7 | 4 | 11 | Call graph traces imports from entrypoints to vulnerable packages |
+| CWE | 16 | 0 | 16 | All test CWE functions have `@app.route` Flask decorators |
+| Secrets | 5 | 1 | 6 | Inline secrets in routed code = reachable; dead-code module = not |
+| DLP | 7 | 0 | 7 | DLP scanner treats PII presence as reachable by design |
+| AI | 0 | 8 | 8 | Standalone files — no Flask routes, not imported by any entrypoint |
+| Malware | 6 | 0 | 6 | Install hooks (`setup.py`, `postinstall`) are reachable by definition |
+
+### Signal matrix (`reachability_validation` — 84 entries)
+
+| Language | Signal Types | REACHABLE | NOT_REACHABLE | UNKNOWN (canary) |
+|----------|-------------|:---------:|:-------------:|:----------------:|
+| Python | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
+| JavaScript | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
+| Go | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
+| Java | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
+
+### SQL injection matrix (`sqli_variable_origin` — 15 entries)
+
+| Category | Count | Expected |
+|----------|:-----:|----------|
+| True Positives (TP-1..TP-7) | 7 | Detected as CWE-89 |
+| True Negatives (TN-1..TN-3) | 3 | No finding (parameterized queries) |
+| False Positives (FP-1..FP-8) | 8 | Detected but should be downgraded (future taint analysis) |
+| Edge Cases (EDGE-1..EDGE-4) | 4 | Detected as CWE-89 |
+
+### Exclusion validation (`exclusion_validation` — 4 entries)
+
+| Pattern | Expected Findings |
+|---------|:-----------------:|
+| `.venv/**/site-packages/**` | 0 |
+| `venv/**/site-packages/**` | 0 |
+| `myenv/**/site-packages/**` | 0 |
+| `conda_env/**/site-packages/**` | 0 |
+
+Exclusion targets `site-packages` directly — works regardless of venv directory name.
 
 ---
 
