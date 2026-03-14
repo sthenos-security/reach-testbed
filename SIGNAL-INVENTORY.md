@@ -208,4 +208,86 @@ Test file: `cwe-tests/python/cwe_sqli_matrix.py`
 
 ---
 
-*Last updated: 2026-03-13 · Baseline: reach-testbed · v1.0.0b33*
+## AI Taint Analysis Results (enzo analyze)
+
+`reachctl enzo analyze --type cwe` refines CWE reachability by tracing variable origins.
+Step 1 (call graph) determines function-level reachability; Step 2 (AI) adds variable-level taint.
+
+| Verdict | Count | Meaning |
+|---|---|---|
+| ATTACKER_CONTROLLED | 154 | Confirmed: user input reaches the sink |
+| SAFE | 43 | False positive: constant, config, validated, int-cast |
+| UNCERTAIN | 13 | AI could not determine from visible code |
+
+Noise reduction: **43 findings downgraded** (21% of analyzed CWEs).
+
+Malware guard: findings in files flagged by the malware scanner are forced to UNCERTAIN —
+taint analysis must not downgrade malware behavior (C2 download with constant URL is SAFE
+from taint perspective but CRITICAL from behavior perspective).
+
+---
+
+## Invocation Pattern Test Matrix
+
+Tests the three fundamental ways code can execute. Located in `invocation-patterns/`.
+
+### The Three Cases
+
+| Case | Pattern | Example | Expected State | RA Today | AI Can Help? |
+|------|---------|---------|---------------|----------|-------------|
+| 1. External endpoint | HTTP route → function → sink | `@app.route → cursor.execute(f"{user_input}")` | REACHABLE | ✅ Detected | ✅ Confirms taint |
+| 2. Internal trigger | thread/timer/init → function → sink | `threading.Timer(60, cleanup).start()` | REACHABLE | ❌ **Gap** | ⚠️ Can classify pattern |
+| 3. Dead code | function exists, never called | `def vulnerable(x): exec(x)` | NOT_REACHABLE | ✅ Detected | N/A (skipped) |
+
+### Case 2 Subtypes (Internal Triggers)
+
+| Subtype | Python | JavaScript | Go | Java |
+|---------|--------|------------|-----|------|
+| Threading | `threading.Thread.start()` | `new Worker()` | `go func(){}()` | `new Thread().start()` |
+| Timer/scheduled | `threading.Timer`, `sched` | `setInterval`, `setTimeout` | `time.AfterFunc` | `@Scheduled`, `ScheduledExecutorService` |
+| Startup/init | `atexit.register()` | `process.on('exit')`, IIFE | `func init()` | `@PostConstruct`, `static {}` |
+| Module-level | top-level `os.system()` | top-level `execSync()` | `init()` | static initializer blocks |
+| Signal handler | `signal.signal(SIGUSR1, fn)` | `process.on('SIGUSR1')` | `signal.Notify` | `Runtime.addShutdownHook` |
+| C2 beacon | Timer → `urlopen("https://c2...")` | `setInterval` → `http.get(c2)` | goroutine → `http.Get(c2)` | `ScheduledExecutor` → `URL.openConnection` |
+| Constructor | `AutoInitService()` at module level | `new AutoInitCache()` at module level | N/A (no constructors) | instance initializer `{}` |
+
+### Risk Matrix (Reachable × Tainted × Behavior)
+
+| Reachable | Tainted | Behavior | Classification | Severity |
+|-----------|---------|----------|---------------|----------|
+| yes (external) | yes | shell exec | **Command Injection** | CRITICAL |
+| yes (external) | no | dangerous exec | **Unsafe API use** | HIGH |
+| yes (internal) | no | C2 download | **Malware** | CRITICAL |
+| yes (internal) | no | normal API call | **Benign internal** | LOW |
+| no | no | any | **Dead code** | INFO |
+
+### Test Files
+
+| File | Language | Case | CWEs | Subtypes |
+|------|----------|------|------|----------|
+| `python/http_endpoint.py` | Python | 1 | CWE-89, 78, 22, 918 | Flask routes |
+| `python/internal_trigger.py` | Python | 2 | CWE-89, 78, 200, 918 | Thread, Timer, atexit, signal, module-level, C2, __init__ |
+| `python/dead_code.py` | Python | 3 | CWE-89, 78, 22, 918, 94 | Never called |
+| `javascript/http_endpoint.js` | JS | 1 | CWE-89, 78, 22, 918 | Express routes |
+| `javascript/internal_trigger.js` | JS | 2 | CWE-78, 89, 200, 918 | setInterval, setTimeout, process.on, IIFE, C2, constructor |
+| `javascript/dead_code.js` | JS | 3 | CWE-89, 78, 22, 918, 94 | Never required |
+| `go/main.go` | Go | 1+2+3 | CWE-89, 78, 22, 200, 918 | gin routes + init()/goroutines + dead exports |
+| `java/InvocationPatterns.java` | Java | 1+2+3 | CWE-89, 78, 22, 200, 918 | @PostMapping + @PostConstruct/@Scheduled/static{} + dead methods |
+
+### Known Gaps (RA entrypoint detection)
+
+The call graph currently only traces from these entrypoints:
+
+| Language | Detected Entrypoints | Missing (Case 2) |
+|----------|---------------------|------------------|
+| Python | `@app.route`, `main()`, `if __name__` | `threading.Thread/Timer.start()`, `atexit.register()`, `signal.signal()`, module-level calls |
+| JavaScript | `app.get/post`, `module.exports` called from server | `setInterval/setTimeout`, `process.on()`, IIFE, module-level calls |
+| Go | `func main()`, `r.GET/POST` | `func init()`, `go func(){}()`, `signal.Notify` |
+| Java | `@GetMapping/@PostMapping`, `public static void main` | `@PostConstruct`, `@Scheduled`, `static {}`, `addShutdownHook` |
+
+Fixing these gaps requires changes to the deterministic call graph in reach-core (other session).
+The AI behavioral classifier (Phase 3) can partially compensate by reading code patterns.
+
+---
+
+*Last updated: 2026-03-14 · Baseline: reach-testbed · v1.0.0b33*
