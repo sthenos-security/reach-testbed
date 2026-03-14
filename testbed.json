@@ -1,10 +1,9 @@
 {
   "_meta": {
-    "version": "1.2",
-    "description": "REACHABLE testbed expected findings baseline. All sections include expected reachability.",
-    "updated": "2026-03-13"
+    "version": "1.3",
+    "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
+    "updated": "2026-03-14"
   },
-
   "cve": [
     {
       "id": "CVE-2021-23337",
@@ -90,19 +89,25 @@
       "note": "Depth-2 transitive: boto3 -> botocore -> urllib3, called via upload_to_s3_reachable()"
     }
   ],
-
   "cve_groups": [
     {
       "package": "Pillow",
       "file": "cve-group-tests/cve_groups.py",
-      "expected_cves": ["CVE-2023-44271", "CVE-2023-50447", "CVE-2022-45199"],
+      "expected_cves": [
+        "CVE-2023-44271",
+        "CVE-2023-50447",
+        "CVE-2022-45199"
+      ],
       "all_reachability": "REACHABLE",
       "note": "All 3 Pillow CVEs must be grouped and all REACHABLE from /api/process-image"
     },
     {
       "package": "cryptography",
       "file": "cve-group-tests/cve_groups.py",
-      "expected_cves": ["CVE-2023-49083", "CVE-2023-23931"],
+      "expected_cves": [
+        "CVE-2023-49083",
+        "CVE-2023-23931"
+      ],
       "mixed_reachability": {
         "CVE-2023-49083": "REACHABLE",
         "CVE-2023-23931": "NOT_REACHABLE"
@@ -112,19 +117,24 @@
     {
       "package": "werkzeug",
       "file": "cve-group-tests/cve_groups.py",
-      "expected_cves": ["CVE-2023-46136", "CVE-2023-25577"],
+      "expected_cves": [
+        "CVE-2023-46136",
+        "CVE-2023-25577"
+      ],
       "all_reachability": "REACHABLE",
       "note": "Transitive dep (via flask) — both CVEs REACHABLE"
     },
     {
       "package": "paramiko",
       "file": "cve-group-tests/cve_groups.py",
-      "expected_cves": ["CVE-2023-48795", "CVE-2022-24302"],
+      "expected_cves": [
+        "CVE-2023-48795",
+        "CVE-2022-24302"
+      ],
       "all_reachability": "NOT_REACHABLE",
       "note": "All paramiko CVEs in dead code — must all be NOT_REACHABLE"
     }
   ],
-
   "cwe": [
     {
       "cwe_id": "CWE-89",
@@ -234,64 +244,62 @@
       "note": "Weak cryptography (MD5/SHA1)"
     }
   ],
-
   "secrets": [
     {
       "secret_type": "aws_access_key",
       "file": "python-app/app.py",
       "reachability": "REACHABLE",
-      "note": "Hardcoded AWS_ACCESS_KEY in live Flask app"
+      "note": "Hardcoded AWS_ACCESS_KEY used in /api/upload route"
     },
     {
       "secret_type": "aws_access_key",
       "file": "reachability-states-test/src/secret_reachable.py",
       "reachability": "REACHABLE",
-      "note": "AWS key in reachable module"
+      "note": "AWS key in module imported by app.py via get_api_key()"
     },
     {
       "secret_type": "aws_access_key",
       "file": "reachability-states-test/src/secret_dead_code.py",
       "reachability": "NOT_REACHABLE",
-      "note": "AWS key in dead code — must be NOT_REACHABLE"
+      "note": "AWS key in dead code — module never imported by app.py"
     },
     {
       "secret_type": "stripe_key",
-      "file": "secret-tests/stripe_keys.py",
+      "file": "secret-tests/secrets_api_keys.py",
       "reachability": "REACHABLE",
-      "note": "Live Stripe secret key"
+      "note": "Live Stripe sk_live key used in /api/payment/charge Flask route"
     },
     {
       "secret_type": "twilio",
-      "file": "secret-tests/stripe_keys.py",
+      "file": "secret-tests/secrets_api_keys.py",
       "reachability": "REACHABLE",
-      "note": "Twilio account SID and auth token"
+      "note": "Twilio SID+auth used in /api/sms/send Flask route"
     },
     {
       "secret_type": "sendgrid",
-      "file": "secret-tests/stripe_keys.py",
+      "file": "secret-tests/secrets_api_keys.py",
       "reachability": "REACHABLE",
-      "note": "SendGrid API key"
+      "note": "SendGrid API key used in /api/email/send Flask route"
     }
   ],
-
   "dlp": [
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_true_positives.py",
       "reachability": "REACHABLE",
-      "note": "SSN in plain assignment and dict"
+      "note": "SSN in plain assignment — DLP scanner treats PII presence as reachable by design"
     },
     {
       "pii_type": "credit_card",
       "file": "dlp-tests/dlp_true_positives.py",
       "reachability": "REACHABLE",
-      "note": "Credit card numbers"
+      "note": "Credit card numbers — DLP scanner treats PII presence as reachable by design"
     },
     {
       "pii_type": "email",
       "file": "dlp-tests/dlp_true_positives.py",
       "reachability": "REACHABLE",
-      "note": "Email addresses"
+      "note": "Email addresses in patient/customer context"
     },
     {
       "pii_type": "ssn",
@@ -303,106 +311,103 @@
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_taint_flows.py",
       "reachability": "REACHABLE",
-      "note": "SSN taint: request -> LLM API (pii_into_llm_reachable)"
+      "note": "SSN taint: request → LLM API — Flask route /api/summarize-patient"
     },
     {
       "pii_type": "credit_card",
       "file": "dlp-tests/dlp_taint_flows.py",
       "reachability": "REACHABLE",
-      "note": "Credit card taint: request -> anthropic API"
+      "note": "Credit card taint: request → anthropic API — Flask route /api/analyze-user"
     },
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_taint_flows.py",
       "reachability": "REACHABLE",
-      "note": "SSN taint: request -> logger.info() (pii_into_logs_reachable)"
+      "note": "SSN taint: request → logger.info() — Flask route /api/register"
     }
   ],
-
   "ai": [
     {
       "owasp_category": "LLM01",
       "file": "ai-security-test/python/llm01_prompt_injection.py",
-      "reachability": "REACHABLE",
-      "note": "Direct user input to OpenAI/Anthropic without sanitization"
+      "reachability": "NOT_REACHABLE",
+      "note": "Standalone functions — no Flask routes, not imported by any entrypoint. AI patterns detected but code is not reachable."
     },
     {
       "owasp_category": "LLM02",
       "file": "ai-security-test/python/llm02_sensitive_disclosure.py",
-      "reachability": "REACHABLE",
-      "note": "Sensitive data disclosure via LLM response"
+      "reachability": "NOT_REACHABLE",
+      "note": "Standalone functions — no Flask routes, not imported by any entrypoint"
     },
     {
       "owasp_category": "LLM05",
       "file": "ai-security-test/python/llm05_output_handling.py",
-      "reachability": "REACHABLE",
-      "note": "Insecure output handling"
+      "reachability": "NOT_REACHABLE",
+      "note": "Standalone functions — no Flask routes, not imported by any entrypoint"
     },
     {
       "owasp_category": "LLM06",
       "file": "ai-security-test/python/llm06_excessive_agency.py",
-      "reachability": "REACHABLE",
-      "note": "Excessive agency"
+      "reachability": "NOT_REACHABLE",
+      "note": "Standalone functions — no Flask routes, not imported by any entrypoint"
     },
     {
       "owasp_category": "LLM06",
       "file": "ai-security-test/python/agentic_security.py",
-      "reachability": "REACHABLE",
-      "note": "Agentic: tool-call injection, unbounded loops, irreversible actions"
+      "reachability": "NOT_REACHABLE",
+      "note": "Classes and functions — no Flask routes, not imported by any entrypoint. Contains VulnerableToolExecutor, vulnerable_code_executor, etc."
     },
     {
       "owasp_category": "LLM01",
       "file": "ai-security-test/python/agentic_security.py",
-      "reachability": "REACHABLE",
-      "note": "Agentic: eval(LLM output) — prompt injection to code exec"
+      "reachability": "NOT_REACHABLE",
+      "note": "eval(LLM output) in vulnerable_code_executor — standalone, not imported"
     },
     {
       "owasp_category": "LLM07",
       "file": "ai-security-test/python/llm07_system_prompt_leakage.py",
-      "reachability": "REACHABLE",
-      "note": "System prompt contains credentials and PII"
+      "reachability": "NOT_REACHABLE",
+      "note": "Standalone functions — no Flask routes, not imported by any entrypoint"
     },
     {
       "owasp_category": "LLM08",
       "file": "ai-security-test/python/agentic_security.py",
-      "reachability": "REACHABLE",
-      "note": "RAG poisoning — user content indexed into shared vector DB"
+      "reachability": "NOT_REACHABLE",
+      "note": "RAG poisoning in VulnerableRAGAgent — standalone class, not imported"
     }
   ],
-
   "malware": [
     {
       "path": "static-malware-tests/fake-pypi-backdoor",
       "reachability": "REACHABLE",
-      "note": "Fake PyPI package with backdoor — setup.py install hook"
+      "note": "setup.py install hook — runs on pip install, reachable by definition"
     },
     {
       "path": "static-malware-tests/fake-install-hook-exfil",
       "reachability": "REACHABLE",
-      "note": "setup.py install hook with data exfiltration"
+      "note": "setup.py install hook with data exfiltration — runs on pip install"
     },
     {
       "path": "static-malware-tests/fake-env-harvester",
       "reachability": "REACHABLE",
-      "note": "Environment variable harvesting"
+      "note": "Environment variable harvesting in setup.py — runs on pip install"
     },
     {
       "path": "static-malware-tests/fake-reverse-shell-py",
       "reachability": "REACHABLE",
-      "note": "Python reverse shell"
+      "note": "Python reverse shell in setup.py — runs on pip install"
     },
     {
       "path": "static-malware-tests/fake-dependency-confusion",
       "reachability": "REACHABLE",
-      "note": "Dependency confusion attack"
+      "note": "Dependency confusion attack — setup.py install hook"
     },
     {
       "path": "static-malware-tests/fake-typosquat-requests",
       "reachability": "REACHABLE",
-      "note": "Typosquat of requests package"
+      "note": "Typosquat of requests package — setup.py install hook"
     }
   ],
-
   "reachability_validation": [
     {
       "description": "CVE in reachable module must be REACHABLE",
@@ -474,397 +479,541 @@
       "feature": "java_callgraph",
       "detection_note": "NOT_REACHABLE or UNKNOWN here means Java call graph is not tracing through Spring @PostMapping entrypoints"
     },
-
     {
       "description": "[SIGNAL MATRIX] Python CVE REACHABLE — requests.get in cve_reachable.py",
       "file": "signal-matrix/python/signals/cve_reachable.py",
-      "signal": "cve", "language": "python", "expected_reachability": "REACHABLE"
+      "signal": "cve",
+      "language": "python",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python CVE NOT_REACHABLE — dead code in secret_not_reachable.py (never imported)",
       "file": "signal-matrix/python/signals/secret_not_reachable.py",
-      "signal": "cve", "language": "python", "expected_reachability": "NOT_REACHABLE"
+      "signal": "cve",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python CWE REACHABLE — XSS + SQL injection in cwe_reachable.py",
       "file": "signal-matrix/python/signals/cwe_reachable.py",
-      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
-      "cwes": ["CWE-79", "CWE-89"]
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "REACHABLE",
+      "cwes": [
+        "CWE-79",
+        "CWE-89"
+      ]
     },
     {
       "description": "[SIGNAL MATRIX] Python CWE NOT_REACHABLE — cwe_not_reachable.py never imported",
       "file": "signal-matrix/python/signals/cwe_not_reachable.py",
-      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
-      "cwes": ["CWE-89", "CWE-22", "CWE-327", "CWE-78"]
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE",
+      "cwes": [
+        "CWE-89",
+        "CWE-22",
+        "CWE-327",
+        "CWE-78"
+      ]
     },
     {
       "description": "[SIGNAL MATRIX] Python CWE UNKNOWN — cwe_unknown.py imported, only safe_render() called",
       "file": "signal-matrix/python/signals/cwe_unknown.py",
-      "signal": "cwe", "language": "python", "expected_reachability": "UNKNOWN",
-      "cwes": ["CWE-78", "CWE-22"],
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "UNKNOWN",
+      "cwes": [
+        "CWE-78",
+        "CWE-22"
+      ],
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — safe_render() is called, not the vuln funcs"
     },
     {
       "description": "[SIGNAL MATRIX] Python SECRET REACHABLE — sk_live_pyREACH in secret_reachable.py",
       "file": "signal-matrix/python/signals/secret_reachable.py",
-      "signal": "secret", "language": "python", "expected_reachability": "REACHABLE"
+      "signal": "secret",
+      "language": "python",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python SECRET NOT_REACHABLE — secret_not_reachable.py never imported",
       "file": "signal-matrix/python/signals/secret_not_reachable.py",
-      "signal": "secret", "language": "python", "expected_reachability": "NOT_REACHABLE"
+      "signal": "secret",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python SECRET UNKNOWN — secret_unknown.py imported, only get_public_config() called",
       "file": "signal-matrix/python/signals/secret_unknown.py",
-      "signal": "secret", "language": "python", "expected_reachability": "UNKNOWN",
+      "signal": "secret",
+      "language": "python",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — secret-returning functions are never called"
     },
     {
       "description": "[SIGNAL MATRIX] Python DLP REACHABLE — SSN+DOB to logger in dlp_reachable.py",
       "file": "signal-matrix/python/signals/dlp_reachable.py",
-      "signal": "dlp", "language": "python", "expected_reachability": "REACHABLE"
+      "signal": "dlp",
+      "language": "python",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python DLP NOT_REACHABLE — dlp_not_reachable.py never imported",
       "file": "signal-matrix/python/signals/dlp_not_reachable.py",
-      "signal": "dlp", "language": "python", "expected_reachability": "NOT_REACHABLE"
+      "signal": "dlp",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python DLP UNKNOWN — dlp_unknown.py imported, only get_public_profile() called",
       "file": "signal-matrix/python/signals/dlp_unknown.py",
-      "signal": "dlp", "language": "python", "expected_reachability": "UNKNOWN",
+      "signal": "dlp",
+      "language": "python",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — PII taint functions never called"
     },
     {
       "description": "[SIGNAL MATRIX] Python AI REACHABLE — LLM01 unsanitized prompt in ai_reachable.py",
       "file": "signal-matrix/python/signals/ai_reachable.py",
-      "signal": "ai", "language": "python", "expected_reachability": "REACHABLE"
+      "signal": "ai",
+      "language": "python",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python AI NOT_REACHABLE — ai_not_reachable.py never imported",
       "file": "signal-matrix/python/signals/ai_not_reachable.py",
-      "signal": "ai", "language": "python", "expected_reachability": "NOT_REACHABLE"
+      "signal": "ai",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python AI UNKNOWN — ai_unknown.py imported, only get_model_info() called",
       "file": "signal-matrix/python/signals/ai_unknown.py",
-      "signal": "ai", "language": "python", "expected_reachability": "UNKNOWN",
+      "signal": "ai",
+      "language": "python",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — LLM call functions never invoked from entrypoint"
     },
     {
       "description": "[SIGNAL MATRIX] Python MALWARE REACHABLE — C2 beacon in malware_reachable.py",
       "file": "signal-matrix/python/signals/malware_reachable.py",
-      "signal": "malware", "language": "python", "expected_reachability": "REACHABLE"
+      "signal": "malware",
+      "language": "python",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Python MALWARE NOT_REACHABLE — malware_not_reachable.py never imported",
       "file": "signal-matrix/python/signals/malware_not_reachable.py",
-      "signal": "malware", "language": "python", "expected_reachability": "NOT_REACHABLE"
+      "signal": "malware",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE"
     },
-
     {
       "description": "[SIGNAL MATRIX] JS CVE REACHABLE — lodash CVE-2021-23337 in cve_reachable.js",
       "file": "signal-matrix/javascript/signals/cve_reachable.js",
-      "signal": "cve", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "cve",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS CVE NOT_REACHABLE — node-serialize cve_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/cve_not_reachable.js",
-      "signal": "cve", "language": "javascript", "expected_reachability": "NOT_REACHABLE",
-      "canary": true, "feature": "js_callgraph",
+      "signal": "cve",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "js_callgraph",
       "detection_note": "UNKNOWN here means JS call graph not running"
     },
     {
       "description": "[SIGNAL MATRIX] JS CVE UNKNOWN — marked required, parseMarkdownUnknown() never called",
       "file": "signal-matrix/javascript/signals/cve_unknown.js",
-      "signal": "cve", "language": "javascript", "expected_reachability": "UNKNOWN",
+      "signal": "cve",
+      "language": "javascript",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] JS CWE REACHABLE — XSS in cwe_reachable.js",
       "file": "signal-matrix/javascript/signals/cwe_reachable.js",
-      "signal": "cwe", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "cwe",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS CWE NOT_REACHABLE — cwe_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/cwe_not_reachable.js",
-      "signal": "cwe", "language": "javascript", "expected_reachability": "NOT_REACHABLE"
+      "signal": "cwe",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS CWE UNKNOWN — cwe_unknown.js required, only sanitize() called",
       "file": "signal-matrix/javascript/signals/cwe_unknown.js",
-      "signal": "cwe", "language": "javascript", "expected_reachability": "UNKNOWN",
+      "signal": "cwe",
+      "language": "javascript",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] JS SECRET REACHABLE — sk_live_jsREACH in secret_reachable.js",
       "file": "signal-matrix/javascript/signals/secret_reachable.js",
-      "signal": "secret", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "secret",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS SECRET NOT_REACHABLE — secret_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/secret_not_reachable.js",
-      "signal": "secret", "language": "javascript", "expected_reachability": "NOT_REACHABLE"
+      "signal": "secret",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS SECRET UNKNOWN — secret_unknown.js required, only getPublicKey() called",
       "file": "signal-matrix/javascript/signals/secret_unknown.js",
-      "signal": "secret", "language": "javascript", "expected_reachability": "UNKNOWN",
+      "signal": "secret",
+      "language": "javascript",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — secret-returning functions not called"
     },
     {
       "description": "[SIGNAL MATRIX] JS DLP REACHABLE — PII to log + external in dlp_reachable.js",
       "file": "signal-matrix/javascript/signals/dlp_reachable.js",
-      "signal": "dlp", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "dlp",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS DLP NOT_REACHABLE — dlp_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/dlp_not_reachable.js",
-      "signal": "dlp", "language": "javascript", "expected_reachability": "NOT_REACHABLE"
+      "signal": "dlp",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS DLP UNKNOWN — dlp_unknown.js required, only getAnonProfile() called",
       "file": "signal-matrix/javascript/signals/dlp_unknown.js",
-      "signal": "dlp", "language": "javascript", "expected_reachability": "UNKNOWN",
+      "signal": "dlp",
+      "language": "javascript",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] JS AI REACHABLE — LLM01 in ai_reachable.js",
       "file": "signal-matrix/javascript/signals/ai_reachable.js",
-      "signal": "ai", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "ai",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS AI NOT_REACHABLE — ai_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/ai_not_reachable.js",
-      "signal": "ai", "language": "javascript", "expected_reachability": "NOT_REACHABLE"
+      "signal": "ai",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS AI UNKNOWN — ai_unknown.js required, only getCapabilities() called",
       "file": "signal-matrix/javascript/signals/ai_unknown.js",
-      "signal": "ai", "language": "javascript", "expected_reachability": "UNKNOWN",
+      "signal": "ai",
+      "language": "javascript",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] JS MALWARE REACHABLE — C2 beacon in malware_reachable.js",
       "file": "signal-matrix/javascript/signals/malware_reachable.js",
-      "signal": "malware", "language": "javascript", "expected_reachability": "REACHABLE"
+      "signal": "malware",
+      "language": "javascript",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] JS MALWARE NOT_REACHABLE — malware_not_reachable.js never required",
       "file": "signal-matrix/javascript/signals/malware_not_reachable.js",
-      "signal": "malware", "language": "javascript", "expected_reachability": "NOT_REACHABLE"
+      "signal": "malware",
+      "language": "javascript",
+      "expected_reachability": "NOT_REACHABLE"
     },
-
     {
       "description": "[SIGNAL MATRIX] Go CVE REACHABLE — x/text CVE-2022-32149 via TranslateHandler",
       "file": "signal-matrix/go/signals/cve.go",
-      "signal": "cve", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "cve",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go CVE NOT_REACHABLE — yaml.v3 in ParseYamlDead(), never called",
       "file": "signal-matrix/go/signals/cve_dead.go",
-      "signal": "cve", "language": "go", "expected_reachability": "NOT_REACHABLE",
-      "canary": true, "feature": "go_callgraph",
+      "signal": "cve",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "go_callgraph",
       "detection_note": "UNKNOWN here means Go call graph not running"
     },
     {
       "description": "[SIGNAL MATRIX] Go CVE UNKNOWN — ParseLangUnknown() same file, never called from main",
       "file": "signal-matrix/go/signals/cve.go",
       "fn": "ParseLangUnknown",
-      "signal": "cve", "language": "go", "expected_reachability": "UNKNOWN",
+      "signal": "cve",
+      "language": "go",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Go CWE REACHABLE — SQL injection in QueryHandler, cmd injection in CmdHandler",
       "file": "signal-matrix/go/signals/cwe.go",
-      "signal": "cwe", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "cwe",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go CWE NOT_REACHABLE — PathTraversalDead() never called from main",
       "file": "signal-matrix/go/signals/cwe.go",
       "fn": "PathTraversalDead",
-      "signal": "cwe", "language": "go", "expected_reachability": "NOT_REACHABLE"
+      "signal": "cwe",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go CWE UNKNOWN — SqlInjectionUnknown() never called from main",
       "file": "signal-matrix/go/signals/cwe.go",
       "fn": "SqlInjectionUnknown",
-      "signal": "cwe", "language": "go", "expected_reachability": "UNKNOWN",
+      "signal": "cwe",
+      "language": "go",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Go SECRET REACHABLE — PaymentAPIKey+DBPassword in ConfigHandler",
       "file": "signal-matrix/go/signals/secret.go",
-      "signal": "secret", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "secret",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go SECRET NOT_REACHABLE — GetAwsCredsDead() never called",
       "file": "signal-matrix/go/signals/secret.go",
       "fn": "GetAwsCredsDead",
-      "signal": "secret", "language": "go", "expected_reachability": "NOT_REACHABLE"
+      "signal": "secret",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go SECRET UNKNOWN — GetInternalKeyUnknown() never called from main",
       "file": "signal-matrix/go/signals/secret.go",
       "fn": "GetInternalKeyUnknown",
-      "signal": "secret", "language": "go", "expected_reachability": "UNKNOWN",
+      "signal": "secret",
+      "language": "go",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Go DLP REACHABLE — PII to log+HTTP in PatientHandler",
       "file": "signal-matrix/go/signals/dlp.go",
-      "signal": "dlp", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "dlp",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go DLP NOT_REACHABLE — LogPiiDead() never called",
       "file": "signal-matrix/go/signals/dlp.go",
       "fn": "LogPiiDead",
-      "signal": "dlp", "language": "go", "expected_reachability": "NOT_REACHABLE"
+      "signal": "dlp",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go DLP UNKNOWN — ExportPiiUnknown() never called from main",
       "file": "signal-matrix/go/signals/dlp.go",
       "fn": "ExportPiiUnknown",
-      "signal": "dlp", "language": "go", "expected_reachability": "UNKNOWN",
+      "signal": "dlp",
+      "language": "go",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Go AI REACHABLE — LLM01 in LlmHandler",
       "file": "signal-matrix/go/signals/ai.go",
-      "signal": "ai", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "ai",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go AI NOT_REACHABLE — CallLlmWithPiiDead() never called",
       "file": "signal-matrix/go/signals/ai.go",
       "fn": "CallLlmWithPiiDead",
-      "signal": "ai", "language": "go", "expected_reachability": "NOT_REACHABLE"
+      "signal": "ai",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go AI UNKNOWN — RunUncheckedLlmUnknown() never called from main",
       "file": "signal-matrix/go/signals/ai.go",
       "fn": "RunUncheckedLlmUnknown",
-      "signal": "ai", "language": "go", "expected_reachability": "UNKNOWN",
+      "signal": "ai",
+      "language": "go",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Go MALWARE REACHABLE — InitBeacon() called from main",
       "file": "signal-matrix/go/signals/malware.go",
-      "signal": "malware", "language": "go", "expected_reachability": "REACHABLE"
+      "signal": "malware",
+      "language": "go",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Go MALWARE NOT_REACHABLE — ExfilDead() never called",
       "file": "signal-matrix/go/signals/malware.go",
       "fn": "ExfilDead",
-      "signal": "malware", "language": "go", "expected_reachability": "NOT_REACHABLE"
+      "signal": "malware",
+      "language": "go",
+      "expected_reachability": "NOT_REACHABLE"
     },
-
     {
       "description": "[SIGNAL MATRIX] Java CVE REACHABLE — snakeyaml CVE-2022-1471 in parseConfig() @PostMapping",
       "file": "signal-matrix/java/src/main/java/com/example/ReachableController.java",
-      "signal": "cve", "language": "java", "expected_reachability": "REACHABLE"
+      "signal": "cve",
+      "language": "java",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java CVE NOT_REACHABLE — log4j in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
-      "signal": "cve", "language": "java", "expected_reachability": "NOT_REACHABLE",
-      "canary": true, "feature": "java_callgraph",
+      "signal": "cve",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "java_callgraph",
       "detection_note": "UNKNOWN here means Java call graph not tracing class instantiation"
     },
     {
       "description": "[SIGNAL MATRIX] Java CVE UNKNOWN — commons-text in private expandVarsUnknown(), no HTTP route",
       "file": "signal-matrix/java/src/main/java/com/example/UnknownController.java",
       "fn": "expandVarsUnknown",
-      "signal": "cve", "language": "java", "expected_reachability": "UNKNOWN",
+      "signal": "cve",
+      "language": "java",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Java CWE REACHABLE — CWE-89/22/611 in ReachableController",
       "file": "signal-matrix/java/src/main/java/com/example/ReachableController.java",
-      "signal": "cwe", "language": "java", "expected_reachability": "REACHABLE",
-      "cwes": ["CWE-89", "CWE-22", "CWE-611"]
+      "signal": "cwe",
+      "language": "java",
+      "expected_reachability": "REACHABLE",
+      "cwes": [
+        "CWE-89",
+        "CWE-22",
+        "CWE-611"
+      ]
     },
     {
       "description": "[SIGNAL MATRIX] Java CWE NOT_REACHABLE — CWE-78/89/22 in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
-      "signal": "cwe", "language": "java", "expected_reachability": "NOT_REACHABLE"
+      "signal": "cwe",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java CWE UNKNOWN — CWE-326 generateWeakKeyUnknown() private, no HTTP route",
       "file": "signal-matrix/java/src/main/java/com/example/UnknownController.java",
       "fn": "generateWeakKeyUnknown",
-      "signal": "cwe", "language": "java", "expected_reachability": "UNKNOWN",
+      "signal": "cwe",
+      "language": "java",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Java SECRET REACHABLE — DB_PASSWORD+PAYMENT_TOKEN in ReachableController",
       "file": "signal-matrix/java/src/main/java/com/example/ReachableController.java",
-      "signal": "secret", "language": "java", "expected_reachability": "REACHABLE"
+      "signal": "secret",
+      "language": "java",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java SECRET NOT_REACHABLE — AWS/Stripe keys in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
-      "signal": "secret", "language": "java", "expected_reachability": "NOT_REACHABLE"
+      "signal": "secret",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java SECRET UNKNOWN — INTERNAL_KEY_UNKNOWN in private method, no HTTP route",
       "file": "signal-matrix/java/src/main/java/com/example/UnknownController.java",
       "fn": "getInternalKeyUnknown",
-      "signal": "secret", "language": "java", "expected_reachability": "UNKNOWN",
+      "signal": "secret",
+      "language": "java",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Java DLP REACHABLE — SSN/DOB/card/email in DlpAiController live endpoints",
       "file": "signal-matrix/java/src/main/java/com/example/DlpAiController.java",
-      "signal": "dlp", "language": "java", "expected_reachability": "REACHABLE"
+      "signal": "dlp",
+      "language": "java",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java DLP NOT_REACHABLE — exportPiiDead() in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
       "fn": "exportPiiDead",
-      "signal": "dlp", "language": "java", "expected_reachability": "NOT_REACHABLE"
+      "signal": "dlp",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java DLP UNKNOWN — exportPiiUnknown() private in UnknownController, no HTTP route",
       "file": "signal-matrix/java/src/main/java/com/example/UnknownController.java",
       "fn": "exportPiiUnknown",
-      "signal": "dlp", "language": "java", "expected_reachability": "UNKNOWN",
+      "signal": "dlp",
+      "language": "java",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
     {
       "description": "[SIGNAL MATRIX] Java AI REACHABLE — LLM01+LLM05 in DlpAiController /api/data/llm + /api/data/execute",
       "file": "signal-matrix/java/src/main/java/com/example/DlpAiController.java",
-      "signal": "ai", "language": "java", "expected_reachability": "REACHABLE"
+      "signal": "ai",
+      "language": "java",
+      "expected_reachability": "REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java AI NOT_REACHABLE — piiToLlmDead() in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
       "fn": "piiToLlmDead",
-      "signal": "ai", "language": "java", "expected_reachability": "NOT_REACHABLE"
+      "signal": "ai",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "[SIGNAL MATRIX] Java AI UNKNOWN — callLlmUnknown() private in UnknownController, no HTTP route",
       "file": "signal-matrix/java/src/main/java/com/example/UnknownController.java",
       "fn": "callLlmUnknown",
-      "signal": "ai", "language": "java", "expected_reachability": "UNKNOWN",
+      "signal": "ai",
+      "language": "java",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive"
     },
@@ -872,28 +1021,35 @@
       "description": "[SIGNAL MATRIX] Java MALWARE NOT_REACHABLE — beaconDead() in DeadCodeService (never instantiated)",
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
       "fn": "beaconDead",
-      "signal": "malware", "language": "java", "expected_reachability": "NOT_REACHABLE"
+      "signal": "malware",
+      "language": "java",
+      "expected_reachability": "NOT_REACHABLE"
     },
-
     {
       "description": "[SQLI MATRIX] TP-1 concat: request.args → SQL concat — must be REACHABLE",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "tp_concat",
-      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "REACHABLE",
       "note": "Classic SQL injection via string concatenation with user input"
     },
     {
       "description": "[SQLI MATRIX] TP-7 helper: request.args → cross-function → SQL — must be REACHABLE",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "tp_helper",
-      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "REACHABLE",
       "note": "User input flows through helper function to SQL — tests cross-function taint propagation"
     },
     {
       "description": "[SQLI MATRIX] FP-1 constant: user_id=42 → SQL — should be NOT_REACHABLE or LOW",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "fp_constant",
-      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — variable is a hardcoded constant, not user input. Requires taint analysis to resolve."
     },
@@ -901,7 +1057,9 @@
       "description": "[SQLI MATRIX] FP-4 int_cast: int(request.args) → SQL — should be NOT_REACHABLE or LOW",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "fp_int_cast",
-      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — int() cast makes injection impossible. Requires taint analysis to resolve."
     },
@@ -909,7 +1067,9 @@
       "description": "[SQLI MATRIX] FP-6 allowlist: validated input → SQL — should be NOT_REACHABLE or LOW",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "fp_allowlist",
-      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "NOT_REACHABLE",
       "canary": true,
       "detection_note": "REACHABLE here is a false positive — user input validated against allowlist before SQL. Requires taint analysis to resolve."
     },
@@ -917,25 +1077,28 @@
       "description": "[SQLI MATRIX] EDGE-1 mixed: constant + request.args in same query — must be REACHABLE",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "edge_mixed",
-      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "REACHABLE",
       "note": "One safe variable (constant) and one unsafe (request.args) in same SQL — must flag"
     },
     {
       "description": "[SQLI MATRIX] EDGE-3 reassign: safe then overwritten with user input — must be REACHABLE",
       "file": "cwe-tests/python/cwe_sqli_matrix.py",
       "fn": "edge_reassign",
-      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "signal": "cwe",
+      "language": "python",
+      "expected_reachability": "REACHABLE",
       "note": "Variable starts as constant, conditionally overwritten with request.args"
     },
-
     {
       "description": "[EXCLUSION] site-packages-test/app.py CWE-89 must be detected (real app finding)",
       "file": "site-packages-test/app.py",
-      "signal": "cwe", "expected_reachability": "REACHABLE",
+      "signal": "cwe",
+      "expected_reachability": "REACHABLE",
       "note": "Verifies that the site-packages exclusion does not suppress real app findings"
     }
   ],
-
   "sqli_variable_origin": [
     {
       "description": "FP-1: constant value — should NOT be flagged or should be downgraded",
@@ -1059,7 +1222,6 @@
       "note": "User-controlled comma-separated list injected into IN clause"
     }
   ],
-
   "exclusion_validation": [
     {
       "description": "No findings from .venv/*/site-packages — standard venv name",
