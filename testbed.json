@@ -2,7 +2,7 @@
   "_meta": {
     "version": "1.1",
     "description": "REACHABLE testbed expected findings baseline.",
-    "updated": "2026-03-05"
+    "updated": "2026-03-13"
   },
 
   "cve": [
@@ -131,6 +131,12 @@
       "file": "cwe-tests/python/cwe_injection.py",
       "reachability": "REACHABLE",
       "note": "SQL injection via string concatenation in Flask route"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "site-packages-test/app.py",
+      "reachability": "REACHABLE",
+      "note": "SQL injection in app code — must be detected even when site-packages dirs are present"
     },
     {
       "cwe_id": "CWE-78",
@@ -769,6 +775,40 @@
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
       "fn": "beaconDead",
       "signal": "malware", "language": "java", "expected_reachability": "NOT_REACHABLE"
+    },
+
+    {
+      "description": "[EXCLUSION] site-packages-test/app.py CWE-89 must be detected (real app finding)",
+      "file": "site-packages-test/app.py",
+      "signal": "cwe", "expected_reachability": "REACHABLE",
+      "note": "Verifies that the site-packages exclusion does not suppress real app findings"
+    }
+  ],
+
+  "exclusion_validation": [
+    {
+      "description": "No findings from .venv/*/site-packages — standard venv name",
+      "path_pattern": "site-packages-test/.venv/**/site-packages/**",
+      "expected_findings": 0,
+      "note": "xmlrpc usage in fakepkg/search.py must NOT be reported"
+    },
+    {
+      "description": "No findings from venv/*/site-packages — standard venv name",
+      "path_pattern": "site-packages-test/venv/**/site-packages/**",
+      "expected_findings": 0,
+      "note": "f-string SQL in fakepkg/db_utils.py must NOT be reported"
+    },
+    {
+      "description": "No findings from myenv/*/site-packages — non-standard venv name (customer bug)",
+      "path_pattern": "site-packages-test/myenv/**/site-packages/**",
+      "expected_findings": 0,
+      "note": "eval + os.system in fakepkg/legacy_rpc.py must NOT be reported. This was the customer-reported false positive."
+    },
+    {
+      "description": "No findings from conda_env/*/site-packages — conda-style venv",
+      "path_pattern": "site-packages-test/conda_env/**/site-packages/**",
+      "expected_findings": 0,
+      "note": "subprocess + pickle in fakepkg/unsafe_utils.py must NOT be reported"
     }
   ]
 }

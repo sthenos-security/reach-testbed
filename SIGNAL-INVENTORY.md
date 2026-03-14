@@ -138,4 +138,22 @@ Use this to triage scan output:
 
 ---
 
-*Last updated: 2026-03-10 · Baseline: reach-testbed @ 2943c74e · v5.1.3*
+---
+
+## Exclusion Validation
+
+Verifies that REACHABLE does not report findings from third-party library code inside `site-packages`.
+
+| Scenario | Venv name | CWE patterns inside | Expected findings |
+|---|---|---|---|
+| Standard `.venv` | `.venv` | xmlrpc | 0 |
+| Standard `venv` | `venv` | f-string SQL | 0 |
+| Non-standard (customer bug) | `myenv` | eval, os.system | 0 |
+| Conda-style | `conda_env` | subprocess, pickle | 0 |
+| **Real app code** | — | **SQL injection (CWE-89)** | **1+ (REACHABLE)** |
+
+Test directory: `site-packages-test/`
+
+---
+
+*Last updated: 2026-03-13 · Baseline: reach-testbed · v1.0.0b33*
