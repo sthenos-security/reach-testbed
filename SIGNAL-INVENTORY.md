@@ -156,4 +156,56 @@ Test directory: `site-packages-test/`
 
 ---
 
+## SQL Injection Variable Origin Matrix
+
+Tests whether REACHABLE can distinguish exploitable SQL injection (user-controlled input) from false positives (safe variable origins). All functions are reachable from Flask routes — the test is variable-level taint, not function-level reachability.
+
+Test file: `cwe-tests/python/cwe_sqli_matrix.py`
+
+### True Positives (must detect as REACHABLE)
+
+| ID | Function | Variable origin | Expected |
+|---|---|---|---|
+| TP-1 | `tp_concat` | `request.args.get('name')` → string concat | REACHABLE |
+| TP-2 | `tp_fstring` | `request.args.get('id')` → f-string | REACHABLE |
+| TP-3 | `tp_percent` | `request.args.get('cat')` → `%` format | REACHABLE |
+| TP-4 | `tp_format` | `request.args.get('table')` → `.format()` | REACHABLE |
+| TP-5 | `tp_json_body` | `request.json.get('filter')` → f-string | REACHABLE |
+| TP-6 | `tp_indirect` | `request.args` → intermediate var → f-string | REACHABLE |
+| TP-7 | `tp_helper` | `request.args` → helper function → concat | REACHABLE |
+
+### False Positives (should be downgraded — variable is safe)
+
+| ID | Function | Variable origin | Expected | Today |
+|---|---|---|---|---|
+| FP-1 | `fp_constant` | `user_id = 42` | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-2 | `fp_config` | `APP_CONFIG["admin_table"]` | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-3 | `fp_env` | `os.environ.get("DB_SCHEMA")` | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-4 | `fp_int_cast` | `int(request.args.get('id'))` | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-5 | `fp_computed` | `len(query_result)` | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-6 | `fp_allowlist` | `request.args` validated against set | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-7 | `fp_loop` | `range(5)` loop counter | NOT_REACHABLE / LOW | REACHABLE (FP) |
+| FP-8 | `fp_internal_fn` | `_get_active_table()` returns constant | NOT_REACHABLE / LOW | REACHABLE (FP) |
+
+### True Negatives (parameterized — should not be flagged at all)
+
+| ID | Function | Pattern | Expected |
+|---|---|---|---|
+| TN-1 | `tn_param_qmark` | `execute("...?", (val,))` | No finding |
+| TN-2 | `tn_param_named` | `execute("...:name", {"name": val})` | No finding |
+| TN-3 | `tn_param_dbapi` | `execute("...%s", (val,))` | No finding |
+
+### Edge Cases (complex patterns — must still flag)
+
+| ID | Function | Pattern | Expected |
+|---|---|---|---|
+| EDGE-1 | `edge_mixed` | Constant + `request.args` in same query | REACHABLE |
+| EDGE-2 | `edge_conditional` | One branch safe, one branch unsafe | REACHABLE |
+| EDGE-3 | `edge_reassign` | Variable starts safe, overwritten with user input | REACHABLE |
+| EDGE-4 | `edge_join` | User-controlled list joined into IN clause | REACHABLE |
+
+> **Note:** FP-1 through FP-8 are expected to be false positives TODAY (reported as REACHABLE). The AI Taint Analysis Oracle (see `enzo/docs/ai-taint-analysis-oracle.md`) is designed to resolve these. This matrix provides the ground truth to measure improvement.
+
+---
+
 *Last updated: 2026-03-13 · Baseline: reach-testbed · v1.0.0b33*

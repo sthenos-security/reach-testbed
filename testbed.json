@@ -194,6 +194,34 @@
       "note": "TP-7: request.args → helper function → execute (cross-function taint)"
     },
     {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_mixed",
+      "reachability": "REACHABLE",
+      "note": "EDGE-1: mixed safe+unsafe — page_size is constant but search is request.args"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_conditional",
+      "reachability": "REACHABLE",
+      "note": "EDGE-2: conditional — one branch safe, one unsafe"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_reassign",
+      "reachability": "REACHABLE",
+      "note": "EDGE-3: variable starts safe, overwritten with request.args"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_join",
+      "reachability": "REACHABLE",
+      "note": "EDGE-4: user-controlled comma-separated list in IN clause"
+    },
+    {
       "cwe_id": "CWE-22",
       "file": "cwe-tests/python/cwe_path_traversal.py",
       "reachability": "REACHABLE",
@@ -824,6 +852,59 @@
       "file": "signal-matrix/java/src/main/java/com/example/DeadCodeService.java",
       "fn": "beaconDead",
       "signal": "malware", "language": "java", "expected_reachability": "NOT_REACHABLE"
+    },
+
+    {
+      "description": "[SQLI MATRIX] TP-1 concat: request.args → SQL concat — must be REACHABLE",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "tp_concat",
+      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "note": "Classic SQL injection via string concatenation with user input"
+    },
+    {
+      "description": "[SQLI MATRIX] TP-7 helper: request.args → cross-function → SQL — must be REACHABLE",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "tp_helper",
+      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "note": "User input flows through helper function to SQL — tests cross-function taint propagation"
+    },
+    {
+      "description": "[SQLI MATRIX] FP-1 constant: user_id=42 → SQL — should be NOT_REACHABLE or LOW",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "fp_constant",
+      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here is a false positive — variable is a hardcoded constant, not user input. Requires taint analysis to resolve."
+    },
+    {
+      "description": "[SQLI MATRIX] FP-4 int_cast: int(request.args) → SQL — should be NOT_REACHABLE or LOW",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "fp_int_cast",
+      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here is a false positive — int() cast makes injection impossible. Requires taint analysis to resolve."
+    },
+    {
+      "description": "[SQLI MATRIX] FP-6 allowlist: validated input → SQL — should be NOT_REACHABLE or LOW",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "fp_allowlist",
+      "signal": "cwe", "language": "python", "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here is a false positive — user input validated against allowlist before SQL. Requires taint analysis to resolve."
+    },
+    {
+      "description": "[SQLI MATRIX] EDGE-1 mixed: constant + request.args in same query — must be REACHABLE",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "edge_mixed",
+      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "note": "One safe variable (constant) and one unsafe (request.args) in same SQL — must flag"
+    },
+    {
+      "description": "[SQLI MATRIX] EDGE-3 reassign: safe then overwritten with user input — must be REACHABLE",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "fn": "edge_reassign",
+      "signal": "cwe", "language": "python", "expected_reachability": "REACHABLE",
+      "note": "Variable starts as constant, conditionally overwritten with request.args"
     },
 
     {
