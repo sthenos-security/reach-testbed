@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "version": "1.1",
-    "description": "REACHABLE testbed expected findings baseline.",
+    "version": "1.2",
+    "description": "REACHABLE testbed expected findings baseline. All sections include expected reachability.",
     "updated": "2026-03-13"
   },
 
@@ -278,36 +278,43 @@
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_true_positives.py",
+      "reachability": "REACHABLE",
       "note": "SSN in plain assignment and dict"
     },
     {
       "pii_type": "credit_card",
       "file": "dlp-tests/dlp_true_positives.py",
+      "reachability": "REACHABLE",
       "note": "Credit card numbers"
     },
     {
       "pii_type": "email",
       "file": "dlp-tests/dlp_true_positives.py",
+      "reachability": "REACHABLE",
       "note": "Email addresses"
     },
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_extended_true_positives.py",
+      "reachability": "REACHABLE",
       "note": "Extended PII true positives"
     },
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_taint_flows.py",
+      "reachability": "REACHABLE",
       "note": "SSN taint: request -> LLM API (pii_into_llm_reachable)"
     },
     {
       "pii_type": "credit_card",
       "file": "dlp-tests/dlp_taint_flows.py",
+      "reachability": "REACHABLE",
       "note": "Credit card taint: request -> anthropic API"
     },
     {
       "pii_type": "ssn",
       "file": "dlp-tests/dlp_taint_flows.py",
+      "reachability": "REACHABLE",
       "note": "SSN taint: request -> logger.info() (pii_into_logs_reachable)"
     }
   ],
@@ -316,41 +323,49 @@
     {
       "owasp_category": "LLM01",
       "file": "ai-security-test/python/llm01_prompt_injection.py",
+      "reachability": "REACHABLE",
       "note": "Direct user input to OpenAI/Anthropic without sanitization"
     },
     {
       "owasp_category": "LLM02",
       "file": "ai-security-test/python/llm02_sensitive_disclosure.py",
+      "reachability": "REACHABLE",
       "note": "Sensitive data disclosure via LLM response"
     },
     {
       "owasp_category": "LLM05",
       "file": "ai-security-test/python/llm05_output_handling.py",
+      "reachability": "REACHABLE",
       "note": "Insecure output handling"
     },
     {
       "owasp_category": "LLM06",
       "file": "ai-security-test/python/llm06_excessive_agency.py",
+      "reachability": "REACHABLE",
       "note": "Excessive agency"
     },
     {
       "owasp_category": "LLM06",
       "file": "ai-security-test/python/agentic_security.py",
+      "reachability": "REACHABLE",
       "note": "Agentic: tool-call injection, unbounded loops, irreversible actions"
     },
     {
       "owasp_category": "LLM01",
       "file": "ai-security-test/python/agentic_security.py",
+      "reachability": "REACHABLE",
       "note": "Agentic: eval(LLM output) — prompt injection to code exec"
     },
     {
       "owasp_category": "LLM07",
       "file": "ai-security-test/python/llm07_system_prompt_leakage.py",
+      "reachability": "REACHABLE",
       "note": "System prompt contains credentials and PII"
     },
     {
       "owasp_category": "LLM08",
       "file": "ai-security-test/python/agentic_security.py",
+      "reachability": "REACHABLE",
       "note": "RAG poisoning — user content indexed into shared vector DB"
     }
   ],
@@ -358,26 +373,32 @@
   "malware": [
     {
       "path": "static-malware-tests/fake-pypi-backdoor",
-      "note": "Fake PyPI package with backdoor"
+      "reachability": "REACHABLE",
+      "note": "Fake PyPI package with backdoor — setup.py install hook"
     },
     {
       "path": "static-malware-tests/fake-install-hook-exfil",
+      "reachability": "REACHABLE",
       "note": "setup.py install hook with data exfiltration"
     },
     {
       "path": "static-malware-tests/fake-env-harvester",
+      "reachability": "REACHABLE",
       "note": "Environment variable harvesting"
     },
     {
       "path": "static-malware-tests/fake-reverse-shell-py",
+      "reachability": "REACHABLE",
       "note": "Python reverse shell"
     },
     {
       "path": "static-malware-tests/fake-dependency-confusion",
+      "reachability": "REACHABLE",
       "note": "Dependency confusion attack"
     },
     {
       "path": "static-malware-tests/fake-typosquat-requests",
+      "reachability": "REACHABLE",
       "note": "Typosquat of requests package"
     }
   ],
