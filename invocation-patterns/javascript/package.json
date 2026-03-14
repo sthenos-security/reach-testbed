@@ -1,0 +1,9 @@
+{
+  "name": "invocation-patterns-js",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.18.0",
+    "better-sqlite3": "^9.0.0"
+  }
+}

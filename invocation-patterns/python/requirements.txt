@@ -1,0 +1,2 @@
+# Python dependencies for invocation-patterns test
+flask>=2.0

@@ -1,0 +1,254 @@
+{
+  "_comment": "Expected results for invocation-patterns test suite. Used by validate.py.",
+  "_version": "1.0",
+  "test_cases": [
+    {
+      "_comment": "════ CASE 1: External Endpoint ════",
+      "case": 1,
+      "pattern": "external_endpoint"
+    },
+    {
+      "file": "python/http_endpoint.py",
+      "function": "case1_sqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "request.args.get('id') → f-string → cursor.execute"
+    },
+    {
+      "file": "python/http_endpoint.py",
+      "function": "case1_cmdi",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "request.json.get('cmd') → subprocess.run(shell=True)"
+    },
+    {
+      "file": "javascript/http_endpoint.js",
+      "function": "app.get('/case1/sqli')",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "req.query.name → template literal → db.exec"
+    },
+    {
+      "file": "javascript/http_endpoint.js",
+      "function": "app.post('/case1/cmdi')",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "req.body.cmd → execSync"
+    },
+    {
+      "file": "go/main.go",
+      "function": "Case1SQLi",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "c.Query('name') → fmt.Sprintf → db.Query"
+    },
+    {
+      "file": "java/InvocationPatterns.java",
+      "function": "case1Sqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "expected_confidence": "HIGH",
+      "notes": "body.get('name') → string concat → executeQuery"
+    },
+
+    {
+      "_comment": "════ CASE 2: Internal Trigger ════",
+      "case": 2,
+      "pattern": "internal_trigger"
+    },
+    {
+      "file": "python/internal_trigger.py",
+      "function": "_thread_worker_sqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "expected_confidence": "HIGH",
+      "trigger": "threading.Thread.start()",
+      "notes": "Constant table name — RA gap: thread target not traced as entrypoint"
+    },
+    {
+      "file": "python/internal_trigger.py",
+      "function": "_timer_cleanup",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "expected_confidence": "HIGH",
+      "trigger": "threading.Timer.start()",
+      "notes": "Constant command — RA gap: timer target not traced"
+    },
+    {
+      "file": "python/internal_trigger.py",
+      "function": "_shutdown_report",
+      "cwe": "CWE-200",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "expected_confidence": "HIGH",
+      "trigger": "atexit.register()",
+      "notes": "RA gap: atexit hooks not traced"
+    },
+    {
+      "file": "python/internal_trigger.py",
+      "function": "_beacon",
+      "cwe": "CWE-918",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "expected_confidence": "HIGH",
+      "trigger": "threading.Timer.start()",
+      "notes": "C2 beacon pattern — safe from taint but malicious behavior"
+    },
+    {
+      "file": "python/internal_trigger.py",
+      "function": "module-level os.system",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "expected_confidence": "HIGH",
+      "trigger": "module-level execution",
+      "notes": "Auto-exec on import — constant command"
+    },
+    {
+      "file": "javascript/internal_trigger.js",
+      "function": "cleanupExpiredSessions",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "setInterval",
+      "notes": "RA gap: setInterval target not traced"
+    },
+    {
+      "file": "javascript/internal_trigger.js",
+      "function": "beacon",
+      "cwe": "CWE-918",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "setInterval",
+      "notes": "C2 pattern via JS timer"
+    },
+    {
+      "file": "javascript/internal_trigger.js",
+      "function": "IIFE telemetryPing",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "IIFE (immediately invoked)",
+      "notes": "Runs on require() — RA gap: IIFE not traced"
+    },
+    {
+      "file": "go/main.go",
+      "function": "init",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "Go init()",
+      "notes": "RA gap: Go init() not treated as entrypoint"
+    },
+    {
+      "file": "go/main.go",
+      "function": "backgroundCleanup",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "go func()",
+      "notes": "RA gap: goroutine target not traced"
+    },
+    {
+      "file": "go/main.go",
+      "function": "timedBeacon",
+      "cwe": "CWE-918",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "go func()",
+      "notes": "C2 beacon via goroutine"
+    },
+    {
+      "file": "java/InvocationPatterns.java",
+      "function": "initTelemetry",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "@PostConstruct",
+      "notes": "RA gap: Spring lifecycle annotations not traced"
+    },
+    {
+      "file": "java/InvocationPatterns.java",
+      "function": "scheduledCleanup",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "@Scheduled(fixedRate=60000)",
+      "notes": "RA gap: @Scheduled not traced"
+    },
+    {
+      "file": "java/InvocationPatterns.java",
+      "function": "static initializer",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_reachability_current": "UNKNOWN",
+      "expected_taint": "SAFE",
+      "trigger": "static {} block",
+      "notes": "RA gap: static initializers not traced"
+    },
+
+    {
+      "_comment": "════ CASE 3: Dead Code ════",
+      "case": 3,
+      "pattern": "dead_code"
+    },
+    {
+      "file": "python/dead_code.py",
+      "function": "dead_sqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "notes": "Module never imported, function never called"
+    },
+    {
+      "file": "javascript/dead_code.js",
+      "function": "deadSqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "notes": "Module never required"
+    },
+    {
+      "file": "go/main.go",
+      "function": "DeadSQLi",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "notes": "Exported function, never called from main or any route"
+    },
+    {
+      "file": "java/InvocationPatterns.java",
+      "function": "deadSqli",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "notes": "Public method, never called from any handler or trigger"
+    }
+  ]
+}
