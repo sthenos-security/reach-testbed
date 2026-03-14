@@ -145,6 +145,55 @@
       "note": "OS command injection via subprocess"
     },
     {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_concat",
+      "reachability": "REACHABLE",
+      "note": "TP-1: request.args → string concat → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_fstring",
+      "reachability": "REACHABLE",
+      "note": "TP-2: request.args → f-string → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_percent",
+      "reachability": "REACHABLE",
+      "note": "TP-3: request.args → percent format → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_format",
+      "reachability": "REACHABLE",
+      "note": "TP-4: request.args → .format() → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_json_body",
+      "reachability": "REACHABLE",
+      "note": "TP-5: request.json → f-string → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_indirect",
+      "reachability": "REACHABLE",
+      "note": "TP-6: request.args → intermediate var → execute"
+    },
+    {
+      "cwe_id": "CWE-89",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tp_helper",
+      "reachability": "REACHABLE",
+      "note": "TP-7: request.args → helper function → execute (cross-function taint)"
+    },
+    {
       "cwe_id": "CWE-22",
       "file": "cwe-tests/python/cwe_path_traversal.py",
       "reachability": "REACHABLE",
@@ -782,6 +831,130 @@
       "file": "site-packages-test/app.py",
       "signal": "cwe", "expected_reachability": "REACHABLE",
       "note": "Verifies that the site-packages exclusion does not suppress real app findings"
+    }
+  ],
+
+  "sqli_variable_origin": [
+    {
+      "description": "FP-1: constant value — should NOT be flagged or should be downgraded",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_constant",
+      "variable": "user_id",
+      "origin": "constant (42)",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Semgrep sees f-string SQL but variable is a hardcoded int"
+    },
+    {
+      "description": "FP-2: config dict value — should NOT be flagged or should be downgraded",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_config",
+      "variable": "table",
+      "origin": "APP_CONFIG dict",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Variable from app-level config, not user input"
+    },
+    {
+      "description": "FP-3: env variable — should NOT be flagged or should be downgraded",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_env",
+      "variable": "db_schema",
+      "origin": "os.environ",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Server-controlled env var, not user input"
+    },
+    {
+      "description": "FP-4: int() cast — injection impossible",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_int_cast",
+      "variable": "user_id",
+      "origin": "int(request.args.get(...))",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "int() cast sanitizes — ValueError on non-numeric input, no injection possible"
+    },
+    {
+      "description": "FP-5: computed value from DB result — not user input",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_computed",
+      "variable": "count",
+      "origin": "len(query_result)",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Variable is a computed integer from internal DB query"
+    },
+    {
+      "description": "FP-6: allowlist-validated input — safe after validation",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_allowlist",
+      "variable": "sort_col",
+      "origin": "request.args validated against set",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "User input constrained to known-safe values via allowlist check"
+    },
+    {
+      "description": "FP-7: loop counter — not user-controlled",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_loop",
+      "variable": "i",
+      "origin": "range(5)",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Loop counter is always an int from range()"
+    },
+    {
+      "description": "FP-8: internal function return — not user input",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "fp_internal_fn",
+      "variable": "table_name",
+      "origin": "_get_active_table() returns constant",
+      "expected": "NOT_REACHABLE or LOW severity",
+      "note": "Variable from internal function that returns hardcoded string"
+    },
+    {
+      "description": "TN-1: parameterized ? — should NOT be flagged",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tn_param_qmark",
+      "expected": "no finding",
+      "note": "Parameterized query with ? placeholder — safe by construction"
+    },
+    {
+      "description": "TN-2: parameterized :name — should NOT be flagged",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tn_param_named",
+      "expected": "no finding",
+      "note": "Named parameter — safe by construction"
+    },
+    {
+      "description": "TN-3: parameterized %s tuple — should NOT be flagged",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "tn_param_dbapi",
+      "expected": "no finding",
+      "note": "DB-API parameterized query — safe by construction"
+    },
+    {
+      "description": "EDGE-1: mixed safe+unsafe in same query — MUST flag",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_mixed",
+      "expected": "REACHABLE",
+      "note": "page_size is constant (safe) but search is request.args (unsafe) — must flag"
+    },
+    {
+      "description": "EDGE-2: conditional — one branch safe, one unsafe — MUST flag",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_conditional",
+      "expected": "REACHABLE",
+      "note": "At least one code path has user-controlled input flowing to SQL"
+    },
+    {
+      "description": "EDGE-3: reassignment — starts safe, overwritten with user input — MUST flag",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_reassign",
+      "expected": "REACHABLE",
+      "note": "Variable is reassigned from constant to request.args on one path"
+    },
+    {
+      "description": "EDGE-4: string join with user input — MUST flag",
+      "file": "cwe-tests/python/cwe_sqli_matrix.py",
+      "function": "edge_join",
+      "expected": "REACHABLE",
+      "note": "User-controlled comma-separated list injected into IN clause"
     }
   ],
 
