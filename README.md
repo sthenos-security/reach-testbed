@@ -45,6 +45,27 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 
 ---
 
+## Scan Baseline (v1.0.0b34)
+
+> `reachctl scan ~/src/reach-testbed --ai-enhance` · 2026-03-14 · groq/llama-3.3-70b
+
+| Signal | Total | Exploitable | Unverified | Filtered |
+|--------|------:|------------:|-----------:|---------:|
+| CVE | 103 | 60 | 0 | 43 |
+| CWE | 458 | 103 | 114 | 241 |
+| SECRET | 112 | 21 | 15 | 76 |
+| DLP | 67 | 67 | 0 | 0 |
+| AI/LLM | 183 | 52 | 0 | 131 |
+| MALWARE | 343 | 97 | 0 | 246 |
+| CONFIG | 169 | — | — | — |
+| **TOTAL** | **1435** | **400** | **129** | **737** |
+
+**Noise reduction: 56.2%** · AI reachability: 648 analyzed, 113 confirmed exploitable, 49 downgraded safe
+
+See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI per-signal metrics.
+
+---
+
 ## Purpose
 
 1. **Validation** - Prove REACHABLE detects what it claims
