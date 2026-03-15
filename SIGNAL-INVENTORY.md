@@ -1,7 +1,8 @@
 # REACHABLE Signal Inventory & Competitor Comparison
 
-> Reference: `expected-results/full-scan-v5.1.3.json` (reach-testbed @ 2943c74e)  
-> Purpose: Pre-release validation baseline + sales/investor comparison tool
+> Source of truth: `testbed.json` + test code (reach-testbed @ 2943c74e)  
+> Purpose: Pre-release validation baseline + sales/investor comparison tool  
+> Rule: This file is derived from test cases. Never edit to match scan output.
 
 ---
 
@@ -17,50 +18,53 @@
 
 ---
 
-## Signal Inventory (reach-testbed full scan baseline)
+## Test Case Inventory (from testbed.json)
 
-> Baseline: v1.0.0b34 · scan date: 2026-03-15 · `--ai-enhance` enabled · malware guard v2
+> Source of truth: `testbed.json` + test code in reach-testbed @ 2943c74e  
+> These numbers come from TEST CASES, not scan output. They change only when tests are added or removed.
 
-| Signal | Total | Exploitable | Unverified | Filtered | Config | Priority |
-|--------|------:|------------:|-----------:|---------:|-------:|----------|
-| **CVE** | 103 | 60 | 0 | 43 | — | P0–P1 |
-| **CWE** | 458 | 181 | 35 | 242 | — | P1–P2 |
-| **SECRET** | 112 | 22 | 13 | 77 | — | P0–P1 |
-| **DLP** | 67 | 67 | 0 | 0 | — | P0–P1 |
-| **AI** | 183 | 52 | 0 | 131 | — | P1–P2 |
-| **MALWARE** | 343 | 97 | 0 | 246 | — | P0 |
-| **CONFIG** | 169 | — | — | — | 134 | P4 |
-| **TOTAL** | **1435** | **479** | **48** | **739** | **134** | — |
+### Signal Detection Baselines
 
-> **Noise reduction: 56.5%** — 479 exploitable + 48 unverified out of 1435 total.  
-> 684 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.  
-> Malware guard v2: CWE findings in malware-flagged files now analyzed (ATTACKER_CONTROLLED allowed, demotion blocked).
+Expected findings that `validate.py` checks for:
 
-### AI Reachability (enzo analyze, groq/llama-3.3-70b)
+| Signal | Test cases | Source |
+|--------|------:|--------|
+| CVE | 11 | `testbed.json` → `cve` |
+| CWE | 16 | `testbed.json` → `cwe` |
+| SECRET | 6 | `testbed.json` → `secrets` |
+| DLP | 7 | `testbed.json` → `dlp` |
+| AI | 8 | `testbed.json` → `ai` |
+| MALWARE | 6 | `testbed.json` → `malware` |
+| CVE groups | 4 | `testbed.json` → `cve_groups` (Pillow, cryptography, werkzeug, paramiko) |
 
-| Metric | Count | Notes |
-|--------|------:|-------|
-| Findings analyzed | 419 | CWE + SECRET + DLP + AI/LLM (CVE/MALWARE/CONFIG skipped by design) |
-| Confirmed exploitable | 292 | Attacker-controlled input reaches the sink |
-| Downgraded (safe) | 51 | Constant, config value, int-cast, or validated input |
-| Cache hits | 7 | Unchanged code skipped (prompt-hash match) |
+### Reachability Assertions (84 total)
 
-**Per-signal AI breakdown:**
+Expected reachability states that `validate.py` checks:
 
-| Signal | Exploitable | Safe | Total | What AI asks |
-|--------|------:|------:|------:|------|
-| CWE (taint) | 175 | 17 | 233 | Is the variable attacker-controlled? |
-| SECRET (loader) | 13 | 34 | 67 | Is the key loaded by an SDK? |
-| DLP (flow) | 67 | 0 | 67 | Is PII masked before the sink? |
-| AI/LLM | 37 | 0 | 52 | Does user input reach LLM without guardrails? |
+| Category | REACHABLE | NOT_REACHABLE | UNKNOWN | Total |
+|----------|------:|------:|------:|------:|
+| Signal matrix (6 signals × 4 langs) | 23 | 24 | 19 | 66 |
+| Reachability-states-test | 2 | 2 | 0 | 4 |
+| Transitive deps | 1 | 1 | 0 | 2 |
+| Callgraph canaries (JS/Java) | 1 | 3 | 0 | 4 |
+| SQLI matrix (TP/FP/EDGE) | 5 | 3 | 0 | 8 |
+| **TOTAL** | **32** | **33** | **19** | **84** |
 
-**Signals NOT analyzed by AI (by design):**
+29 of these are **canary** entries — regressions on canaries are release-blockers.
 
-| Signal | Why skipped |
-|--------|-------------|
-| CVE | Call graph + EPSS/KEV is the gold standard. Fix = upgrade. |
-| MALWARE | Behavior overrides taint. Remove the package, not check the variable. |
-| CONFIG | Declarative policy. No function, no variable, no code to analyze. |
+### AI Reachability Design
+
+AI analyzes 4 signal types. CVE/MALWARE/CONFIG are skipped by design.
+
+| Signal | AI analyzes? | What AI asks |
+|--------|:---:|------|
+| CWE | ✅ | Is the variable attacker-controlled? |
+| SECRET | ✅ | Is the key loaded by an SDK? |
+| DLP | ✅ | Is PII masked before the sink? |
+| AI/LLM | ✅ | Does user input reach LLM without guardrails? |
+| CVE | ❌ | Call graph + EPSS/KEV is the gold standard. Fix = upgrade. |
+| MALWARE | ❌ | Behavior overrides taint. Remove the package. |
+| CONFIG | ❌ | Declarative policy. No code to analyze. |
 
 **Malware guard v2:** Files with malware findings are analyzed normally. AI can
 confirm ATTACKER_CONTROLLED (user input reaches shell). Demotion to SAFE is blocked
@@ -75,10 +79,10 @@ from behavior).
 |--------|-----------------------|-------|
 | CVE | ✅ Full (call graph) | Python/JS/Go/Java call graphs; EPSS + KEV enrichment |
 | SECRET | ✅ Partial (import graph) | REACHABLE if secret flows into called function; UNKNOWN if module imported but function not traced |
-| CWE | ✅ Full (call graph) | SAST findings mapped to call graph; 261/262 currently NOT_REACHABLE in testbed |
-| DLP | ✅ Full (taint + call graph) | All 33 findings REACHABLE in testbed (taint flows to sinks) |
+| CWE | ✅ Full (call graph) | SAST findings mapped to call graph |
+| DLP | ✅ Full (taint + call graph) | Taint flows from PII source to sink |
 | AI | ✅ Full (call graph) | LLM API calls traced from HTTP entrypoints |
-| MALWARE | ⚠️ Static only | GuardDog + YARA; no call-path tracing yet; all UNKNOWN |
+| MALWARE | ⚠️ Static only | GuardDog + YARA; no call-path tracing yet |
 | IAC/CONFIG | ❌ N/A | Control-plane; reachability not meaningful |
 | SANDBOX | ✅ Dynamic | Runtime detonation; REACHABLE if executed in sandbox |
 
@@ -241,30 +245,12 @@ Test file: `cwe-tests/python/cwe_sqli_matrix.py`
 
 ---
 
-## AI Reachability Results (enzo analyze)
+## AI Reachability (enzo analyze)
 
 `reachctl scan --ai-enhance` or `reachctl enzo analyze` runs three-layer reachability:
 1. **Call graph** (deterministic): Is the FUNCTION reachable?
 2. **AI taint oracle**: Is the VARIABLE attacker-controlled?
 3. **AI invocation classifier** (planned): HOW does the code execute?
-
-### Full scan results (v1.0.0b34, groq/llama-3.3-70b)
-
-| Metric | Count | Notes |
-|---|---|---|
-| Total analyzed | 419 | CWE + SECRET + DLP + AI/LLM |
-| Confirmed exploitable | 292 | CWE: 175, SECRET: 13, DLP: 67, AI/LLM: 37 |
-| Downgraded (safe) | 51 | CWE: 17, SECRET: 34 |
-| Cache hits | 7 | Prompt-hash match — unchanged code skipped |
-
-### Per-signal breakdown
-
-| Signal | Exploitable | Safe | Total | Analysis |
-|--------|------:|------:|------:|----------|
-| CWE | 175 | 17 | 233 | Taint: is the variable attacker-controlled? |
-| SECRET | 13 | 34 | 67 | Loader: is the key used by an SDK? |
-| DLP | 67 | 0 | 67 | Flow: is PII masked before the sink? |
-| AI/LLM | 37 | 0 | 52 | Guardrails: does user input reach LLM unfiltered? |
 
 ### Cache management
 
@@ -275,11 +261,6 @@ reachctl enzo analyze ~/src/myapp --clear-cache   # Clear + re-analyze
 Cache is per-repo, stored in the `ai_reachability_audit` table in `repo.db`.
 Same prompt (same code + same finding) = same answer. Cache is invalidated
 automatically when code changes (different SHA-256 prompt hash).
-
-Malware guard v2: findings in files flagged by the malware scanner are analyzed normally.
-Promotion to ATTACKER_CONTROLLED is allowed (confirms real exploitability). Demotion to
-SAFE is blocked (behavior overrides taint — C2 download with constant URL is SAFE from
-taint perspective but CRITICAL from behavior perspective).
 
 ---
 
@@ -380,31 +361,20 @@ All REACHABLE findings get accurate ATTACKER_CONTROLLED / SAFE / UNCERTAIN verdi
 Run `validate.py` before every beta/release build:
 
 ```bash
-# Full testbed validation (84 reachability assertions + signal detection)
 reachctl scan ~/src/reach-testbed --ai-enhance
 cd ~/src/reach-testbed
 python validate.py --db ~/.reachable/scans/reach-testbed-*/repo.db --verbose
 ```
 
-The validator checks:
-- All expected CVE/CWE/SECRET/DLP/AI/MALWARE findings are detected
-- Reachability states match expected (REACHABLE/NOT_REACHABLE/UNKNOWN)
-- Signal-matrix coverage: 6 signals × 3 states × 4 languages = 66 assertions
-- Exclusion validation: site-packages not scanned
-- SQL injection variable origin matrix: 15 test cases
-
-**Current status (v1.0.0b34):**
-
-```
-  3 FAILED (known CG issues, tracked):
-    - JS cwe_not_reachable → REACHABLE    (CG-JS-FP)
-    - Python cwe_unknown → NOT_REACHABLE  (CG-PY-UNK)
-    - Go cwe_unknown → mixed              (CG-GO)
-  All other checks: PASS
-```
+The validator checks (from `testbed.json`):
+- 11 CVE + 16 CWE + 6 SECRET + 7 DLP + 8 AI + 6 MALWARE detection assertions
+- 84 reachability state assertions (32 REACHABLE, 33 NOT_REACHABLE, 19 UNKNOWN)
+- 29 canary entries (regressions on canaries are release-blockers)
+- 4 exclusion assertions (site-packages must not be scanned)
+- 15 SQL injection variable origin assertions
 
 Any NEW failure = regression. Do not ship.
 
 ---
 
-*Last updated: 2026-03-15 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled · malware guard v2*
+*Last updated: 2026-03-15 · Source of truth: testbed.json @ reach-testbed 2943c74e*
