@@ -375,4 +375,36 @@ All REACHABLE findings get accurate ATTACKER_CONTROLLED / SAFE / UNCERTAIN verdi
 
 ---
 
+## Pre-Release Validation
+
+Run `validate.py` before every beta/release build:
+
+```bash
+# Full testbed validation (84 reachability assertions + signal detection)
+reachctl scan ~/src/reach-testbed --ai-enhance
+cd ~/src/reach-testbed
+python validate.py --db ~/.reachable/scans/reach-testbed-*/repo.db --verbose
+```
+
+The validator checks:
+- All expected CVE/CWE/SECRET/DLP/AI/MALWARE findings are detected
+- Reachability states match expected (REACHABLE/NOT_REACHABLE/UNKNOWN)
+- Signal-matrix coverage: 6 signals × 3 states × 4 languages = 66 assertions
+- Exclusion validation: site-packages not scanned
+- SQL injection variable origin matrix: 15 test cases
+
+**Current status (v1.0.0b34):**
+
+```
+  3 FAILED (known CG issues, tracked):
+    - JS cwe_not_reachable → REACHABLE    (CG-JS-FP)
+    - Python cwe_unknown → NOT_REACHABLE  (CG-PY-UNK)
+    - Go cwe_unknown → mixed              (CG-GO)
+  All other checks: PASS
+```
+
+Any NEW failure = regression. Do not ship.
+
+---
+
 *Last updated: 2026-03-15 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled · malware guard v2*
