@@ -19,20 +19,40 @@
 
 ## Signal Inventory (reach-testbed full scan baseline)
 
-| Signal | Total | REACHABLE | NOT_REACHABLE | UNKNOWN | CRIT | HIGH | MED | LOW | Priority |
-|--------|------:|----------:|--------------:|--------:|-----:|-----:|----:|----:|----------|
-| **CVE** | 46 | 27 | 19 | 0 | 3 | 16 | 25 | 2 | P0–P1 |
-| **SECRET** | 119 | 36 | 0 | 83 | 61 | 30 | 28 | 0 | P0–P1 |
-| **CWE** | 262 | 1 | 261 | 0 | 90 | 0 | 153 | 19 | P1–P2 |
-| **DLP** | 33 | 33 | 0 | 0 | 7 | 10 | 16 | 0 | P0–P1 |
-| **AI** | 129 | 86 | 43 | 0 | 0 | 0 | 129 | 0 | P1–P2 |
-| **MALWARE** | 19 | 0 | 0 | 19 | 11 | 8 | 0 | 0 | P0 |
-| **IAC/CONFIG** | 4 | 0 | 0 | 4 | 0 | 2 | 1 | 1 | P4 |
-| **SANDBOX** | 0 | — | — | — | — | — | — | — | P0 (when triggered) |
-| **TOTAL** | **612** | **183** | **323** | **106** | **172** | **66** | **352** | **22** | — |
+> Baseline: v1.0.0b34 · scan date: 2026-03-14 · `--ai-enhance` enabled
 
-> **Noise reduction: 54.7%** — 183 REACHABLE out of 612 total findings.  
-> Excludes IAC/CONFIG from noise funnel (control-plane, not app execution path).
+| Signal | Total | Exploitable | Unverified | Filtered | Config | Priority |
+|--------|------:|------------:|-----------:|---------:|-------:|----------|
+| **CVE** | 103 | 60 | 0 | 43 | — | P0–P1 |
+| **CWE** | 458 | 103 | 114 | 241 | — | P1–P2 |
+| **SECRET** | 112 | 21 | 15 | 76 | — | P0–P1 |
+| **DLP** | 67 | 67 | 0 | 0 | — | P0–P1 |
+| **AI** | 183 | 52 | 0 | 131 | — | P1–P2 |
+| **MALWARE** | 343 | 97 | 0 | 246 | — | P0 |
+| **CONFIG** | 169 | — | — | — | 134 | P4 |
+| **TOTAL** | **1435** | **400** | **129** | **737** | **134** | — |
+
+> **Noise reduction: 56.3%** — 400 exploitable + 129 unverified out of 1435 total.  
+> 682 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.
+
+### AI Reachability (enzo analyze, groq/llama-3.3-70b)
+
+| Metric | Count | Notes |
+|--------|------:|-------|
+| Findings analyzed | 527 | REACHABLE + UNKNOWN (excludes NOT_REACHABLE without `--deep`) |
+| Confirmed exploitable | 69 | Attacker-controlled input reaches the sink |
+| Downgraded (safe) | 49 | Constant, config value, int-cast, or validated input |
+| Uncertain | 409 | AI couldn't determine, or malware guard applied |
+| Cache hits | 132 | Unchanged code skipped (prompt-hash match) |
+
+**Per-signal AI breakdown:**
+
+| Signal | Promoted | Demoted | Unchanged | Total | Notes |
+|--------|---------|---------|-----------|------:|-------|
+| CWE (taint) | 39 | 16 | 25 | 80 | Variable-level taint tracing |
+| SECRET (loader) | 7 | 33 | 12 | 52 | Is the key used by an SDK? |
+| MALWARE (guard) | 0 | 0 | 293 | 293 | Skipped — behavior overrides taint |
+| DLP/Other | 0 | 0 | 102 | 102 | No code slices available |
 
 ---
 
@@ -208,18 +228,41 @@ Test file: `cwe-tests/python/cwe_sqli_matrix.py`
 
 ---
 
-## AI Taint Analysis Results (enzo analyze)
+## AI Reachability Results (enzo analyze)
 
-`reachctl enzo analyze --type cwe` refines CWE reachability by tracing variable origins.
-Step 1 (call graph) determines function-level reachability; Step 2 (AI) adds variable-level taint.
+`reachctl scan --ai-enhance` or `reachctl enzo analyze` runs three-layer reachability:
+1. **Call graph** (deterministic): Is the FUNCTION reachable?
+2. **AI taint oracle**: Is the VARIABLE attacker-controlled?
+3. **AI invocation classifier** (planned): HOW does the code execute?
 
-| Verdict | Count | Meaning |
+### Full scan results (v1.0.0b34, groq/llama-3.3-70b)
+
+| Metric | Count | Notes |
 |---|---|---|
-| ATTACKER_CONTROLLED | 154 | Confirmed: user input reaches the sink |
-| SAFE | 43 | False positive: constant, config, validated, int-cast |
-| UNCERTAIN | 13 | AI could not determine from visible code |
+| Total analyzed | 527 | REACHABLE + UNKNOWN findings |
+| Confirmed exploitable | 69 | CWE: 39, SECRET: 7, DLP/other: 23 |
+| Downgraded (safe) | 49 | CWE: 16, SECRET: 33 |
+| Uncertain | 409 | Malware guard: 293, no code: 102, model uncertain: 14 |
+| Cache hits | 132 | Prompt-hash match — unchanged code skipped |
 
-Noise reduction: **43 findings downgraded** (21% of analyzed CWEs).
+### Per-signal breakdown
+
+| Signal | Promoted | Demoted | Unchanged | Total | Analysis |
+|--------|---------|---------|-----------|------:|----------|
+| CWE | 39 | 16 | 25 | 80 | Taint: is the variable attacker-controlled? |
+| SECRET | 7 | 33 | 12 | 52 | Loader: is the key used by an SDK? |
+| MALWARE | 0 | 0 | 293 | 293 | Guard: skipped — behavior overrides taint |
+| DLP/Other | 0 | 0 | 102 | 102 | No code slices available for analysis |
+
+### Cache management
+
+```bash
+reachctl enzo analyze ~/src/myapp --clear-cache   # Clear + re-analyze
+```
+
+Cache is per-repo, stored in the `ai_reachability_audit` table in `repo.db`.
+Same prompt (same code + same finding) = same answer. Cache is invalidated
+automatically when code changes (different SHA-256 prompt hash).
 
 Malware guard: findings in files flagged by the malware scanner are forced to UNCERTAIN —
 taint analysis must not downgrade malware behavior (C2 download with constant URL is SAFE
@@ -290,4 +333,4 @@ The AI behavioral classifier (Phase 3) can partially compensate by reading code 
 
 ---
 
-*Last updated: 2026-03-14 · Baseline: reach-testbed · v1.0.0b33*
+*Last updated: 2026-03-14 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled*
