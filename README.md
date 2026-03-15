@@ -52,17 +52,17 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 | Signal | Total | Exploitable | Unverified | Filtered |
 |--------|------:|------------:|-----------:|---------:|
 | CVE | 103 | 60 | 0 | 43 |
-| CWE | 458 | 102 | 114 | 242 |
-| SECRET | 112 | 21 | 15 | 76 |
+| CWE | 458 | 181 | 35 | 242 |
+| SECRET | 112 | 22 | 13 | 77 |
 | DLP | 67 | 67 | 0 | 0 |
 | AI/LLM | 183 | 52 | 0 | 131 |
 | MALWARE | 343 | 97 | 0 | 246 |
 | CONFIG | 169 | — | — | — |
-| **TOTAL** | **1435** | **399** | **129** | **738** |
+| **TOTAL** | **1435** | **479** | **48** | **739** |
 
-**Noise reduction: 56.4%** · AI reachability: 419 analyzed, 171 confirmed exploitable, 50 downgraded safe
+**Noise reduction: 56.5%** · AI reachability: 419 analyzed, 292 confirmed exploitable, 51 downgraded safe
 
-AI analyzes CWE (56 exploitable, 17 safe), SECRET (12 loaded, 33 unused), DLP (67 exposed), AI/LLM (36 exploitable). CVE/MALWARE/CONFIG skipped by design — call graph is the gold standard for those.
+AI analyzes CWE (175 exploitable, 17 safe), SECRET (13 loaded, 34 unused), DLP (67 exposed), AI/LLM (37 exploitable). CVE/MALWARE/CONFIG skipped by design — call graph is the gold standard for those.
 
 See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI per-signal metrics.
 

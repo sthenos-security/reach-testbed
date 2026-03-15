@@ -24,34 +24,35 @@
 | Signal | Total | Exploitable | Unverified | Filtered | Config | Priority |
 |--------|------:|------------:|-----------:|---------:|-------:|----------|
 | **CVE** | 103 | 60 | 0 | 43 | — | P0–P1 |
-| **CWE** | 458 | 102 | 114 | 242 | — | P1–P2 |
-| **SECRET** | 112 | 21 | 15 | 76 | — | P0–P1 |
+| **CWE** | 458 | 181 | 35 | 242 | — | P1–P2 |
+| **SECRET** | 112 | 22 | 13 | 77 | — | P0–P1 |
 | **DLP** | 67 | 67 | 0 | 0 | — | P0–P1 |
 | **AI** | 183 | 52 | 0 | 131 | — | P1–P2 |
 | **MALWARE** | 343 | 97 | 0 | 246 | — | P0 |
 | **CONFIG** | 169 | — | — | — | 134 | P4 |
-| **TOTAL** | **1435** | **399** | **129** | **738** | **134** | — |
+| **TOTAL** | **1435** | **479** | **48** | **739** | **134** | — |
 
-> **Noise reduction: 56.4%** — 399 exploitable + 129 unverified out of 1435 total.  
-> 683 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.
+> **Noise reduction: 56.5%** — 479 exploitable + 48 unverified out of 1435 total.  
+> 684 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.  
+> Malware guard v2: CWE findings in malware-flagged files now analyzed (ATTACKER_CONTROLLED allowed, demotion blocked).
 
 ### AI Reachability (enzo analyze, groq/llama-3.3-70b)
 
 | Metric | Count | Notes |
 |--------|------:|-------|
 | Findings analyzed | 419 | CWE + SECRET + DLP + AI/LLM (CVE/MALWARE/CONFIG skipped by design) |
-| Confirmed exploitable | 171 | Attacker-controlled input reaches the sink |
-| Downgraded (safe) | 50 | Constant, config value, int-cast, or validated input |
-| Cache hits | 58 | Unchanged code skipped (prompt-hash match) |
+| Confirmed exploitable | 292 | Attacker-controlled input reaches the sink |
+| Downgraded (safe) | 51 | Constant, config value, int-cast, or validated input |
+| Cache hits | 7 | Unchanged code skipped (prompt-hash match) |
 
 **Per-signal AI breakdown:**
 
 | Signal | Exploitable | Safe | Total | What AI asks |
 |--------|------:|------:|------:|------|
-| CWE (taint) | 56 | 17 | 233 | Is the variable attacker-controlled? |
-| SECRET (loader) | 12 | 33 | 67 | Is the key loaded by an SDK? |
+| CWE (taint) | 175 | 17 | 233 | Is the variable attacker-controlled? |
+| SECRET (loader) | 13 | 34 | 67 | Is the key loaded by an SDK? |
 | DLP (flow) | 67 | 0 | 67 | Is PII masked before the sink? |
-| AI/LLM | 36 | 0 | 52 | Does user input reach LLM without guardrails? |
+| AI/LLM | 37 | 0 | 52 | Does user input reach LLM without guardrails? |
 
 **Signals NOT analyzed by AI (by design):**
 
@@ -252,18 +253,18 @@ Test file: `cwe-tests/python/cwe_sqli_matrix.py`
 | Metric | Count | Notes |
 |---|---|---|
 | Total analyzed | 419 | CWE + SECRET + DLP + AI/LLM |
-| Confirmed exploitable | 171 | CWE: 56, SECRET: 12, DLP: 67, AI/LLM: 36 |
-| Downgraded (safe) | 50 | CWE: 17, SECRET: 33 |
-| Cache hits | 58 | Prompt-hash match — unchanged code skipped |
+| Confirmed exploitable | 292 | CWE: 175, SECRET: 13, DLP: 67, AI/LLM: 37 |
+| Downgraded (safe) | 51 | CWE: 17, SECRET: 34 |
+| Cache hits | 7 | Prompt-hash match — unchanged code skipped |
 
 ### Per-signal breakdown
 
 | Signal | Exploitable | Safe | Total | Analysis |
 |--------|------:|------:|------:|----------|
-| CWE | 56 | 17 | 233 | Taint: is the variable attacker-controlled? |
-| SECRET | 12 | 33 | 67 | Loader: is the key used by an SDK? |
+| CWE | 175 | 17 | 233 | Taint: is the variable attacker-controlled? |
+| SECRET | 13 | 34 | 67 | Loader: is the key used by an SDK? |
 | DLP | 67 | 0 | 67 | Flow: is PII masked before the sink? |
-| AI/LLM | 36 | 0 | 52 | Guardrails: does user input reach LLM unfiltered? |
+| AI/LLM | 37 | 0 | 52 | Guardrails: does user input reach LLM unfiltered? |
 
 ### Cache management
 
