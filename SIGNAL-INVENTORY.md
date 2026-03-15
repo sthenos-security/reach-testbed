@@ -344,6 +344,35 @@ The call graph currently only traces from these entrypoints:
 Fixing these gaps requires changes to the deterministic call graph in reach-core (other session).
 The AI behavioral classifier (Phase 3) can partially compensate by reading code patterns.
 
+### Known CG Issues (v1.0.0b34)
+
+Verified against signal-matrix and invocation-patterns test cases:
+
+| ID | Issue | Test case | Expected | Actual | Impact |
+|----|-------|-----------|----------|--------|--------|
+| CG-JS-FP | JS call graph false positive | `signal-matrix/javascript/signals/cwe_not_reachable.js` | NOT_REACHABLE | REACHABLE | FP — dead code shows as exploitable |
+| CG-JS-FP | JS call graph false positive | `invocation-patterns/javascript/dead_code.js` | NOT_REACHABLE | REACHABLE | FP — dead code shows as exploitable |
+| CG-PY-UNK | Python UNKNOWN misclassified | `signal-matrix/python/signals/cwe_unknown.py` | UNKNOWN | NOT_REACHABLE | Minor — conservative direction |
+| CG-PY-INT | Internal trigger not traced | `invocation-patterns/python/internal_trigger.py` | REACHABLE | mixed R/NR | Known gap — CG doesn't trace threading.Timer etc |
+| CG-JS-INT | Internal trigger not traced | `invocation-patterns/javascript/internal_trigger.js` | REACHABLE | UNKNOWN | Known gap — CG doesn't trace setInterval etc |
+
+**Root causes:**
+
+**CG-JS-FP:** Joern CPG and/or `ts_import_tracer.js` over-traces `require()` chains. If file A
+`require()`s file B, all exports in B are marked reachable regardless of whether A calls them.
+Fix: add function-level filtering to Joern query or ts-morph tracer. Files: `js_collector.py`,
+`joern_query.sc`, `ts_import_tracer.js`.
+
+**CG-PY-UNK:** Python CG too aggressive in pruning — if module IS in import graph but specific
+function has no caller, result should be UNKNOWN (not NOT_REACHABLE). NOT_REACHABLE should only
+apply when the module itself is never imported.
+
+**CG-PY-INT / CG-JS-INT:** Known entrypoint detection gaps (see table above). The AI invocation
+classifier (Phase 3, not yet built) is designed to catch these patterns.
+
+**AI verdicts are correct on everything the CG gives them.** These are CG-layer issues, not AI issues.
+All REACHABLE findings get accurate ATTACKER_CONTROLLED / SAFE / UNCERTAIN verdicts.
+
 ---
 
 *Last updated: 2026-03-15 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled · malware guard v2*
