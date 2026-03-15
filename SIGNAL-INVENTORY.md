@@ -19,40 +19,52 @@
 
 ## Signal Inventory (reach-testbed full scan baseline)
 
-> Baseline: v1.0.0b34 · scan date: 2026-03-14 · `--ai-enhance` enabled
+> Baseline: v1.0.0b34 · scan date: 2026-03-15 · `--ai-enhance` enabled · malware guard v2
 
 | Signal | Total | Exploitable | Unverified | Filtered | Config | Priority |
 |--------|------:|------------:|-----------:|---------:|-------:|----------|
 | **CVE** | 103 | 60 | 0 | 43 | — | P0–P1 |
-| **CWE** | 458 | 103 | 114 | 241 | — | P1–P2 |
+| **CWE** | 458 | 102 | 114 | 242 | — | P1–P2 |
 | **SECRET** | 112 | 21 | 15 | 76 | — | P0–P1 |
 | **DLP** | 67 | 67 | 0 | 0 | — | P0–P1 |
 | **AI** | 183 | 52 | 0 | 131 | — | P1–P2 |
 | **MALWARE** | 343 | 97 | 0 | 246 | — | P0 |
 | **CONFIG** | 169 | — | — | — | 134 | P4 |
-| **TOTAL** | **1435** | **400** | **129** | **737** | **134** | — |
+| **TOTAL** | **1435** | **399** | **129** | **738** | **134** | — |
 
-> **Noise reduction: 56.3%** — 400 exploitable + 129 unverified out of 1435 total.  
-> 682 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.
+> **Noise reduction: 56.4%** — 399 exploitable + 129 unverified out of 1435 total.  
+> 683 findings filtered by reachability analysis. CONFIG findings excluded from noise funnel.
 
 ### AI Reachability (enzo analyze, groq/llama-3.3-70b)
 
 | Metric | Count | Notes |
 |--------|------:|-------|
-| Findings analyzed | 527 | REACHABLE + UNKNOWN (excludes NOT_REACHABLE without `--deep`) |
-| Confirmed exploitable | 69 | Attacker-controlled input reaches the sink |
-| Downgraded (safe) | 49 | Constant, config value, int-cast, or validated input |
-| Uncertain | 409 | AI couldn't determine, or malware guard applied |
-| Cache hits | 132 | Unchanged code skipped (prompt-hash match) |
+| Findings analyzed | 419 | CWE + SECRET + DLP + AI/LLM (CVE/MALWARE/CONFIG skipped by design) |
+| Confirmed exploitable | 171 | Attacker-controlled input reaches the sink |
+| Downgraded (safe) | 50 | Constant, config value, int-cast, or validated input |
+| Cache hits | 58 | Unchanged code skipped (prompt-hash match) |
 
 **Per-signal AI breakdown:**
 
-| Signal | Promoted | Demoted | Unchanged | Total | Notes |
-|--------|---------|---------|-----------|------:|-------|
-| CWE (taint) | 39 | 16 | 25 | 80 | Variable-level taint tracing |
-| SECRET (loader) | 7 | 33 | 12 | 52 | Is the key used by an SDK? |
-| MALWARE (guard) | 0 | 0 | 293 | 293 | Skipped — behavior overrides taint |
-| DLP/Other | 0 | 0 | 102 | 102 | No code slices available |
+| Signal | Exploitable | Safe | Total | What AI asks |
+|--------|------:|------:|------:|------|
+| CWE (taint) | 56 | 17 | 233 | Is the variable attacker-controlled? |
+| SECRET (loader) | 12 | 33 | 67 | Is the key loaded by an SDK? |
+| DLP (flow) | 67 | 0 | 67 | Is PII masked before the sink? |
+| AI/LLM | 36 | 0 | 52 | Does user input reach LLM without guardrails? |
+
+**Signals NOT analyzed by AI (by design):**
+
+| Signal | Why skipped |
+|--------|-------------|
+| CVE | Call graph + EPSS/KEV is the gold standard. Fix = upgrade. |
+| MALWARE | Behavior overrides taint. Remove the package, not check the variable. |
+| CONFIG | Declarative policy. No function, no variable, no code to analyze. |
+
+**Malware guard v2:** Files with malware findings are analyzed normally. AI can
+confirm ATTACKER_CONTROLLED (user input reaches shell). Demotion to SAFE is blocked
+(behavior overrides taint — `os.system("curl c2")` is SAFE from taint but CRITICAL
+from behavior).
 
 ---
 
@@ -239,20 +251,19 @@ Test file: `cwe-tests/python/cwe_sqli_matrix.py`
 
 | Metric | Count | Notes |
 |---|---|---|
-| Total analyzed | 527 | REACHABLE + UNKNOWN findings |
-| Confirmed exploitable | 69 | CWE: 39, SECRET: 7, DLP/other: 23 |
-| Downgraded (safe) | 49 | CWE: 16, SECRET: 33 |
-| Uncertain | 409 | Malware guard: 293, no code: 102, model uncertain: 14 |
-| Cache hits | 132 | Prompt-hash match — unchanged code skipped |
+| Total analyzed | 419 | CWE + SECRET + DLP + AI/LLM |
+| Confirmed exploitable | 171 | CWE: 56, SECRET: 12, DLP: 67, AI/LLM: 36 |
+| Downgraded (safe) | 50 | CWE: 17, SECRET: 33 |
+| Cache hits | 58 | Prompt-hash match — unchanged code skipped |
 
 ### Per-signal breakdown
 
-| Signal | Promoted | Demoted | Unchanged | Total | Analysis |
-|--------|---------|---------|-----------|------:|----------|
-| CWE | 39 | 16 | 25 | 80 | Taint: is the variable attacker-controlled? |
-| SECRET | 7 | 33 | 12 | 52 | Loader: is the key used by an SDK? |
-| MALWARE | 0 | 0 | 293 | 293 | Guard: skipped — behavior overrides taint |
-| DLP/Other | 0 | 0 | 102 | 102 | No code slices available for analysis |
+| Signal | Exploitable | Safe | Total | Analysis |
+|--------|------:|------:|------:|----------|
+| CWE | 56 | 17 | 233 | Taint: is the variable attacker-controlled? |
+| SECRET | 12 | 33 | 67 | Loader: is the key used by an SDK? |
+| DLP | 67 | 0 | 67 | Flow: is PII masked before the sink? |
+| AI/LLM | 36 | 0 | 52 | Guardrails: does user input reach LLM unfiltered? |
 
 ### Cache management
 
@@ -264,9 +275,10 @@ Cache is per-repo, stored in the `ai_reachability_audit` table in `repo.db`.
 Same prompt (same code + same finding) = same answer. Cache is invalidated
 automatically when code changes (different SHA-256 prompt hash).
 
-Malware guard: findings in files flagged by the malware scanner are forced to UNCERTAIN —
-taint analysis must not downgrade malware behavior (C2 download with constant URL is SAFE
-from taint perspective but CRITICAL from behavior perspective).
+Malware guard v2: findings in files flagged by the malware scanner are analyzed normally.
+Promotion to ATTACKER_CONTROLLED is allowed (confirms real exploitability). Demotion to
+SAFE is blocked (behavior overrides taint — C2 download with constant URL is SAFE from
+taint perspective but CRITICAL from behavior perspective).
 
 ---
 
@@ -333,4 +345,4 @@ The AI behavioral classifier (Phase 3) can partially compensate by reading code 
 
 ---
 
-*Last updated: 2026-03-14 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled*
+*Last updated: 2026-03-15 · Baseline: reach-testbed @ 2943c74e · v1.0.0b34 · `--ai-enhance` enabled · malware guard v2*

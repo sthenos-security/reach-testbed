@@ -47,20 +47,22 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 
 ## Scan Baseline (v1.0.0b34)
 
-> `reachctl scan ~/src/reach-testbed --ai-enhance` · 2026-03-14 · groq/llama-3.3-70b
+> `reachctl scan ~/src/reach-testbed --ai-enhance` · 2026-03-15 · groq/llama-3.3-70b
 
 | Signal | Total | Exploitable | Unverified | Filtered |
 |--------|------:|------------:|-----------:|---------:|
 | CVE | 103 | 60 | 0 | 43 |
-| CWE | 458 | 103 | 114 | 241 |
+| CWE | 458 | 102 | 114 | 242 |
 | SECRET | 112 | 21 | 15 | 76 |
 | DLP | 67 | 67 | 0 | 0 |
 | AI/LLM | 183 | 52 | 0 | 131 |
 | MALWARE | 343 | 97 | 0 | 246 |
 | CONFIG | 169 | — | — | — |
-| **TOTAL** | **1435** | **400** | **129** | **737** |
+| **TOTAL** | **1435** | **399** | **129** | **738** |
 
-**Noise reduction: 56.2%** · AI reachability: 648 analyzed, 113 confirmed exploitable, 49 downgraded safe
+**Noise reduction: 56.4%** · AI reachability: 419 analyzed, 171 confirmed exploitable, 50 downgraded safe
+
+AI analyzes CWE (56 exploitable, 17 safe), SECRET (12 loaded, 33 unused), DLP (67 exposed), AI/LLM (36 exploitable). CVE/MALWARE/CONFIG skipped by design — call graph is the gold standard for those.
 
 See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI per-signal metrics.
 
