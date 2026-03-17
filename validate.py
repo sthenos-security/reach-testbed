@@ -188,9 +188,15 @@ def load_db(db_path: str) -> list[FindingRecord]:
                         raw=raw,
                     ))
 
-    # AI findings
+    # AI findings — read app_reachability (TEXT) not is_reachable (BOOLEAN).
+    # is_reachable can only express REACHABLE/NOT_REACHABLE; app_reachability
+    # also carries UNKNOWN (module imported, dangerous function never called).
     ai_rows = con.execute("""
-        SELECT owasp_category, file_path, is_reachable, rule_id
+        SELECT owasp_category, file_path, is_reachable, rule_id,
+               COALESCE(app_reachability,
+                        CASE WHEN is_reachable=1 THEN 'REACHABLE'
+                             WHEN is_reachable=0 THEN 'NOT_REACHABLE'
+                             ELSE 'UNKNOWN' END) AS reach_state
         FROM ai_findings
         WHERE scan_id = (SELECT MAX(id) FROM scans)
     """).fetchall()
@@ -199,12 +205,16 @@ def load_db(db_path: str) -> list[FindingRecord]:
             finding_type="ai",
             identifier=r["owasp_category"] or r["rule_id"] or "",
             file_path=r["file_path"],
-            reachability="REACHABLE" if r["is_reachable"] else "NOT_REACHABLE",
+            reachability=r["reach_state"],
         ))
 
-    # DLP findings
+    # DLP findings — read app_reachability (TEXT) not is_reachable (BOOLEAN).
     dlp_rows = con.execute("""
-        SELECT pii_type, file_path, is_reachable
+        SELECT pii_type, file_path, is_reachable,
+               COALESCE(app_reachability,
+                        CASE WHEN is_reachable=1 THEN 'REACHABLE'
+                             WHEN is_reachable=0 THEN 'NOT_REACHABLE'
+                             ELSE 'UNKNOWN' END) AS reach_state
         FROM dlp_findings
         WHERE scan_id = (SELECT MAX(id) FROM scans)
     """).fetchall()
@@ -213,7 +223,7 @@ def load_db(db_path: str) -> list[FindingRecord]:
             finding_type="dlp",
             identifier=r["pii_type"] or "",
             file_path=r["file_path"],
-            reachability="REACHABLE" if r["is_reachable"] else "NOT_REACHABLE",
+            reachability=r["reach_state"],
         ))
 
     con.close()
