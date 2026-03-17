@@ -173,6 +173,20 @@ def load_db(db_path: str) -> list[FindingRecord]:
             package=r["package_name"],
             raw=raw,
         ))
+        # Also emit alias records for CVE findings so GHSA-only Grype results
+        # match CVE IDs in testbed.json via osv_aliases.
+        if ftype == "cve":
+            aliases = raw.get("osv_aliases", []) or []
+            for alias in aliases:
+                if alias and alias != identifier:
+                    records.append(FindingRecord(
+                        finding_type="cve",
+                        identifier=alias,
+                        file_path=r["file_path"],
+                        reachability=r["app_reachability"],
+                        package=r["package_name"],
+                        raw=raw,
+                    ))
 
     # AI findings
     ai_rows = con.execute("""
@@ -396,26 +410,37 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
         desc     = e["description"]
         file_h   = e["file"]
         expected_reach = e["expected_reachability"]
+        signal   = e.get("signal", "")   # cve, cwe, secret, dlp, ai, malware
+        canary   = e.get("canary", False)
 
-        # Find any finding touching this file
-        matches = [f for f in findings if file_matches(f.file_path, file_h)]
+        # Filter by signal type when available (fixes cross-type matching bug)
+        if signal:
+            matches = [f for f in findings
+                       if f.finding_type == signal and file_matches(f.file_path, file_h)]
+        else:
+            matches = [f for f in findings if file_matches(f.file_path, file_h)]
+
         if not matches:
+            # No finding of the expected signal type in this file = detection gap.
+            # WARN only — the scanner doesn't have a rule for this signal+lang yet.
             results.append(ValidationResult("Reachability", desc, "WARN",
-                f"No findings in {file_h} — cannot validate reachability state"))
+                f"No {signal or 'any'} findings in {file_h}"))
             continue
 
-        wrong = [f for f in matches if f.reachability and f.reachability != expected_reach]
         correct = [f for f in matches if f.reachability == expected_reach]
+        wrong   = [f for f in matches if f.reachability and f.reachability != expected_reach]
 
         if correct:
             results.append(ValidationResult("Reachability", desc, "PASS",
-                f"{len(correct)} finding(s) correctly marked {expected_reach}"))
+                f"{len(correct)} {signal} finding(s) correctly {expected_reach}"))
         elif wrong:
-            results.append(ValidationResult("Reachability", desc, "WARN",
-                f"Findings in {file_h} have reachability={wrong[0].reachability}, expected={expected_reach}"))
+            actual = wrong[0].reachability
+            # Finding exists with correct signal type but WRONG reachability = hard fail.
+            results.append(ValidationResult("Reachability", desc, "MISS",
+                f"{signal} in {file_h}: got {actual}, expected {expected_reach}"))
         else:
             results.append(ValidationResult("Reachability", desc, "WARN",
-                f"Findings found but no reachability state set"))
+                f"{signal} findings found but no reachability state set"))
     return results
 
 
