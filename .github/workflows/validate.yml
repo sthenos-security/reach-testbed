@@ -42,11 +42,12 @@ jobs:
           GITHUB_PAT: ${{ secrets.REACH_CORE_PAT }}
         run: |
           VERSION="${{ inputs.reachable_version }}"
-          INDEX_URL="https://${GITHUB_PAT}@raw.githubusercontent.com/sthenosec/reach-dist/main/simple/"
           if [[ "$VERSION" == "latest" || -z "$VERSION" ]]; then
-            pip install reachable --extra-index-url "${INDEX_URL}"
+            pip install reachable \
+              --extra-index-url "https://${GITHUB_PAT}@raw.githubusercontent.com/sthenosec/reach-dist/main/simple/"
           else
-            pip install "reachable==${VERSION}" --extra-index-url "${INDEX_URL}"
+            pip install "reachable==${VERSION}" \
+              --extra-index-url "https://${GITHUB_PAT}@raw.githubusercontent.com/sthenosec/reach-dist/main/simple/"
           fi
           reachctl --version
 

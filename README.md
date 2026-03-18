@@ -45,24 +45,24 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 
 ---
 
-## Scan Baseline (v1.0.0b34)
+## Scan Baseline (v1.0.0b35)
 
-> `reachctl scan ~/src/reach-testbed --ai-enhance` · 2026-03-15 · groq/llama-3.3-70b
+> `reachctl scan ~/src/reach-testbed` · 2026-03-15 · v1.0.0b35
 
 | Signal | Total | Exploitable | Unverified | Filtered |
 |--------|------:|------------:|-----------:|---------:|
-| CVE | 103 | 60 | 0 | 43 |
-| CWE | 458 | 181 | 35 | 242 |
-| SECRET | 112 | 22 | 13 | 77 |
+| CVE | 103 | 63 | 0 | 40 |
+| CWE | 458 | 217 | 164 | 77 |
+| SECRET | 112 | 34 | 46 | 32 |
 | DLP | 67 | 67 | 0 | 0 |
-| AI/LLM | 183 | 52 | 0 | 131 |
-| MALWARE | 343 | 97 | 0 | 246 |
-| CONFIG | 169 | — | — | — |
-| **TOTAL** | **1435** | **479** | **48** | **739** |
+| AI/LLM | 183 | 55 | 0 | 128 |
+| MALWARE | 274 | 122 | 0 | 152 |
+| CONFIG | 134 | — | — | — |
+| **TOTAL** | **1331** | **558** | **210** | **429** |
 
-**Noise reduction: 56.5%** · AI reachability: 419 analyzed, 292 confirmed exploitable, 51 downgraded safe
+**Noise reduction: 36.6%** (base scan) · **56.5%** with `--ai-enhance`
 
-AI analyzes CWE (175 exploitable, 17 safe), SECRET (13 loaded, 34 unused), DLP (67 exposed), AI/LLM (37 exploitable). CVE/MALWARE/CONFIG skipped by design — call graph is the gold standard for those.
+Add `--ai-enhance` for AI-verified exploitability across CWE, secrets, DLP, and AI/LLM findings.
 
 See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI per-signal metrics.
 
