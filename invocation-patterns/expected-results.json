@@ -249,6 +249,338 @@
       "expected_reachability": "NOT_REACHABLE",
       "expected_taint": null,
       "notes": "Public method, never called from any handler or trigger"
+    },
+
+    {
+      "_comment": "════ CASE 4: Dynamic Invocation ════",
+      "case": 4,
+      "pattern": "dynamic_invocation"
+    },
+
+    {
+      "_comment": "── Python ──"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "thread_worker_reachable",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "threading.Thread(target=fn)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "env var taint → os.system(); CG must trace Thread(target=) as entrypoint"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "sigterm_handler_reachable",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "SAFE",
+      "mechanism": "signal.signal(SIGTERM, handler)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Constant cleanup path; CG must trace signal handler as reachable"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "executor_task_reachable",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "ThreadPoolExecutor.submit(fn, arg)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Param taint → os.system(); CG must trace executor.submit target"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "dispatch_create_reachable",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "DISPATCH_TABLE[key](data)",
+      "cg_coverage": "PARTIAL",
+      "notes": "Dict literal dispatch; CG should trace dict values as reachable"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "process_item_reachable",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "map(fn, iterable)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Called via map() builtin; CG must trace map(fn) as fn being reachable"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "action_read",
+      "cwe": "CWE-22",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "getattr(module, name)()",
+      "cg_coverage": "NO",
+      "notes": "Reflection via getattr — cannot determine callee statically"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "eval_user_code_reachable",
+      "cwe": "CWE-94",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "eval(user_input)",
+      "cg_coverage": "PARTIAL",
+      "notes": "eval() call is REACHABLE; what executes inside is UNKNOWN"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "load_plugin_unknown",
+      "cwe": "CWE-829",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "importlib.import_module(variable)",
+      "cg_coverage": "NO",
+      "notes": "Dynamic import — module name is runtime value"
+    },
+    {
+      "file": "python/dynamic_invocation.py",
+      "function": "dead_dynamic_handler",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "mechanism": "none",
+      "cg_coverage": "YES",
+      "notes": "Never stored in dispatch table or passed to any callback"
+    },
+
+    {
+      "_comment": "── JavaScript ──"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "handleCreateUser",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "handlers[action](data) — dict dispatch",
+      "cg_coverage": "PARTIAL",
+      "notes": "Dict literal dispatch; CG should trace dict values as reachable"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "deferredCleanup",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "SAFE",
+      "mechanism": "setTimeout(fn, 0)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "setTimeout callback; CG must treat fn arg as reachable"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "processItem",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "items.forEach(fn)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "forEach callback; CG must trace fn as reachable"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "onFetchSuccess",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "Promise.then(fn)",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Promise then callback; CG must trace fn as reachable"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "app.post('/dynamic/eval')",
+      "cwe": "CWE-95",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "eval(user_input)",
+      "cg_coverage": "PARTIAL",
+      "notes": "eval() call is REACHABLE + ATTACKER_CONTROLLED; callee UNKNOWN"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "app.get('/dynamic/require')",
+      "cwe": "CWE-829",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "require(variable)",
+      "cg_coverage": "NO",
+      "notes": "Dynamic require — module path is runtime string"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "handlerObj.readFile",
+      "cwe": "CWE-22",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "obj[computedKey]()",
+      "cg_coverage": "NO",
+      "notes": "Computed property key — method selected by user string at runtime"
+    },
+    {
+      "file": "javascript/dynamic_invocation.js",
+      "function": "deadDynamicHandler",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "mechanism": "none",
+      "cg_coverage": "YES",
+      "notes": "Never stored or referenced in any dispatch table or callback"
+    },
+
+    {
+      "_comment": "── Go ──"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "dynCreateUser",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "map[string]func dispatch",
+      "cg_coverage": "PARTIAL",
+      "notes": "Map literal fn dispatch; CG should trace map values as reachable"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "sensitiveOp",
+      "cwe": "CWE-78",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "reflect.Value.Call()",
+      "cg_coverage": "NO",
+      "notes": "Reflection — method name resolved from user string at runtime"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "SqlHandler.Handle",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "interface dispatch",
+      "cg_coverage": "YES_after_fix",
+      "notes": "CG must trace all Handler implementors as potentially reachable"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "goroutineTask",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "go fn(arg) — goroutine function variable",
+      "cg_coverage": "YES_after_fix",
+      "notes": "CG must trace function variable in goroutine as reachable"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "DynPlugin",
+      "cwe": "CWE-829",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "plugin.Open(path)",
+      "cg_coverage": "NO",
+      "notes": "Runtime-loaded .so plugin — CG cannot analyze loaded code"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "pathTraversalHandler",
+      "cwe": "CWE-22",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "http.HandlerFunc variable",
+      "cg_coverage": "YES_after_fix",
+      "notes": "http.HandlerFunc stored in variable and called; CG must trace through"
+    },
+    {
+      "file": "go/dynamic_invocation.go",
+      "function": "deadDynHandler",
+      "cwe": "CWE-89",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "mechanism": "none",
+      "cg_coverage": "YES",
+      "notes": "Never placed in any map, goroutine, or interface implementation"
+    },
+
+    {
+      "_comment": "── Java ──"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "buildQuery (lambda)",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "Function<T,R> lambda called via .apply()",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Lambda assigned to Function field; CG must trace lambda body as reachable"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "buildDeleteQuery",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "Method reference — ClassName::methodName",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Method reference stored in Function variable; CG must trace the referent"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "secretDump",
+      "cwe": "CWE-22",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "Method.invoke() with runtime method name",
+      "cg_coverage": "NO",
+      "notes": "Reflection — method name comes from user query param"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "classForName",
+      "cwe": "CWE-829",
+      "expected_reachability": "UNKNOWN",
+      "expected_taint": null,
+      "mechanism": "Class.forName(className) + newInstance()",
+      "cg_coverage": "NO",
+      "notes": "Runtime class loading — class name supplied by user"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "runShellCommand",
+      "cwe": "CWE-78",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "executor.submit(() -> fn()) — Callable lambda",
+      "cg_coverage": "YES_after_fix",
+      "notes": "Lambda submitted to executor; CG must trace lambda body as reachable"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "sqlAction",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "expected_taint": "ATTACKER_CONTROLLED",
+      "mechanism": "Map<String,Function> dispatch — method reference",
+      "cg_coverage": "PARTIAL",
+      "notes": "Map literal fn dispatch; CG should trace method ref values as reachable"
+    },
+    {
+      "file": "java/DynamicInvocation.java",
+      "function": "deadDynamicHandler",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "expected_taint": null,
+      "mechanism": "none",
+      "cg_coverage": "YES",
+      "notes": "Never passed to executor, map, or reflection call"
     }
   ]
 }
