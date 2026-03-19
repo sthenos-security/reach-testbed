@@ -562,29 +562,35 @@ Ground-truth reachability for all signal types, verified from source code analys
 
 | Section | REACHABLE | NOT_REACHABLE | Total | Rationale |
 |---------|:---------:|:-------------:|:-----:|----------|
-| CVE | 7 | 4 | 11 | Call graph traces imports from entrypoints to vulnerable packages |
+| CVE | 6 | 2 | 8 | Call graph traces imports from entrypoints to vulnerable packages |
 | CWE | 16 | 0 | 16 | All test CWE functions have `@app.route` Flask decorators |
 | Secrets | 5 | 1 | 6 | Inline secrets in routed code = reachable; dead-code module = not |
 | DLP | 7 | 0 | 7 | DLP scanner treats PII presence as reachable by design |
 | AI | 0 | 8 | 8 | Standalone files — no Flask routes, not imported by any entrypoint |
 | Malware | 6 | 0 | 6 | Install hooks (`setup.py`, `postinstall`) are reachable by definition |
 
-### Signal matrix (`reachability_validation` — 84 entries)
+### Reachability validation (`reachability_validation` — 112 entries, 40 canaries)
 
-| Language | Signal Types | REACHABLE | NOT_REACHABLE | UNKNOWN (canary) |
-|----------|-------------|:---------:|:-------------:|:----------------:|
-| Python | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
-| JavaScript | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
-| Go | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
-| Java | CVE, CWE, SECRET, DLP, AI, MALWARE | ✅ | ✅ | ✅ |
+| Category | REACHABLE | NOT_REACHABLE | UNKNOWN | Total |
+|----------|:---------:|:-------------:|:-------:|:-----:|
+| Signal matrix (6 signals × 4 langs) | 23 | 24 | 19 | 66 |
+| CWE framework tests (Flask/Django/FastAPI/NestJS/Fastify/Echo) | 23 | 10 | 0 | 33 |
+| Reachability-states-test | 2 | 2 | 0 | 4 |
+| Callgraph canaries (JS/Java) | 1 | 3 | 0 | 4 |
+| Client-side app (React) | 1 | 1 | 0 | 2 |
+| Transitive deps | 1 | 0 | 0 | 1 |
+| Site-packages exclusion | 1 | 0 | 0 | 1 |
+| CVE group test | 0 | 1 | 0 | 1 |
+| **TOTAL** | **52** | **41** | **19** | **112** |
 
 ### SQL injection matrix (`sqli_variable_origin` — 15 entries)
 
+> These are the taint-analysis validation cases. TP cases (user-input → SQL sink) are verified via `reachability_validation` as REACHABLE CWE findings. The 15 entries here focus on taint origin accuracy.
+
 | Category | Count | Expected |
 |----------|:-----:|----------|
-| True Positives (TP-1..TP-7) | 7 | Detected as CWE-89 |
+| False Positives (FP-1..FP-8) | 8 | Detected but should be downgraded (safe variable origin) |
 | True Negatives (TN-1..TN-3) | 3 | No finding (parameterized queries) |
-| False Positives (FP-1..FP-8) | 8 | Detected but should be downgraded (future taint analysis) |
 | Edge Cases (EDGE-1..EDGE-4) | 4 | Detected as CWE-89 |
 
 ### Exclusion validation (`exclusion_validation` — 4 entries)
@@ -600,12 +606,88 @@ Exclusion targets `site-packages` directly — works regardless of venv director
 
 ---
 
+## Test Procedure
+
+Run this procedure before every beta release to confirm zero regressions.
+
+### Step 1 — Full scan
+
+```bash
+reachctl scan ~/src/reach-testbed --ai-enhance
+```
+
+Expected: exits 0, no `FATAL` or `Traceback` in scan log.
+
+### Step 2 — Run validator
+
+```bash
+cd ~/src/reach-testbed
+python validate.py --db ~/.reachable/scans/reach-testbed-*/repo.db --verbose
+```
+
+The validator checks all assertions in `testbed.json`:
+- 8 CVE + 16 CWE + 6 SECRET + 7 DLP + 8 AI + 6 MALWARE detection assertions
+- 3 CVE group assertions (Pillow, cryptography, paramiko)
+- 112 reachability state assertions (52 REACHABLE, 41 NOT_REACHABLE, 19 UNKNOWN)
+- 40 canary entries (failure = release blocker)
+- 4 site-packages exclusion assertions
+- 15 SQL injection variable origin assertions (FP/TN/EDGE taint cases)
+
+### Step 3 — Interpret results
+
+| Output | Meaning | Action |
+|--------|---------|--------|
+| `PASS` | Assertion met | Nothing |
+| `MISS` | Expected finding not found | Bug in detection — file issue |
+| `FAIL` | Reachability state wrong | Bug in call graph or pipeline — file issue |
+| `WARN` | Expected UNKNOWN got REACHABLE or vice versa | Investigate, may be legit improvement |
+
+**Any FAIL or MISS on a canary entry = release blocker. Do not ship.**
+
+Canary entries are marked `"canary": true` in `testbed.json`. They cover:
+- Signal matrix UNKNOWN state (call graph must produce UNKNOWN, not fall back to REACHABLE)
+- JS callgraph NOT_REACHABLE canaries (`npm-callgraph-test/`)
+- Java callgraph NOT_REACHABLE canary (`java-callgraph-test/`)
+- CWE framework-specific canaries (Django, FastAPI, NestJS, Fastify, Echo)
+- Client-side React canary
+
+### Step 4 — Check signal counts
+
+Verify scan output counts reconcile with the b35 baseline in the Scan Baseline table above. Unexplained drops in any signal type indicate a pipeline regression.
+
+```bash
+reachctl scan ~/src/reach-testbed --summary-only
+```
+
+### Step 5 — Run private registry tests (if applicable)
+
+```bash
+cd ~/src/reach-testbed/private-registry
+./setup-and-test.sh
+```
+
+Only required if `reach-core` registry resolution code changed since last release.
+
+### Step 6 — Confirm DLP reachability is not hardcoded
+
+DLP is the highest-risk signal for hardcoded reachability (known b35 bug). After any DLP pipeline change:
+
+```bash
+grep -n 'is_reachable' ~/.reachable/scans/reach-testbed-*/dlp-analyzed.json | head -20
+```
+
+All DLP findings should have `is_reachable` set from the call graph, not hardcoded to `1`.
+
+---
+
 ## Adding New Test Cases
 
 1. Create directory with vulnerable code
 2. Document expected CVEs in README
 3. Add `expected-results/{name}.json`
-4. Update validation workflow
+4. Add entries to `testbed.json` (detection assertions + reachability assertions)
+5. Update this README and SIGNAL-INVENTORY.md counts
+6. Update validation workflow
 
 ## License
 

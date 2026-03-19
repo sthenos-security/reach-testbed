@@ -53,15 +53,16 @@ def create_bytes_literal_with_em_dash():
     print(f"  Created: {out} ({len(content)} bytes)")
 
     # Verify Python rejects it
-    import py_compile, shutil, tempfile
+    import py_compile
+    import tempfile
     with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
     try:
         py_compile.compile(tmp_path, doraise=True)
-        print(f"  ERROR: should have failed!")
+        print("  ERROR: should have failed!")
     except py_compile.PyCompileError:
-        print(f"  Verified: Python rejects it as expected")
+        print("  Verified: Python rejects it as expected")
     finally:
         os.unlink(tmp_path)
 
@@ -96,15 +97,16 @@ def create_latin1_no_declaration():
     out.write_bytes(content)
     print(f"  Created: {out} ({len(content)} bytes)")
 
-    import py_compile, shutil, tempfile
+    import py_compile
+    import tempfile
     with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
     try:
         py_compile.compile(tmp_path, doraise=True)
-        print(f"  ERROR: should have failed!")
+        print("  ERROR: should have failed!")
     except (py_compile.PyCompileError, SyntaxError):
-        print(f"  Verified: Python rejects it as expected")
+        print("  Verified: Python rejects it as expected")
     finally:
         os.unlink(tmp_path)
 
@@ -140,15 +142,16 @@ def create_binary_disguised_as_python():
     out.write_bytes(content)
     print(f"  Created: {out} ({len(content)} bytes)")
 
-    import py_compile, tempfile
+    import py_compile
+    import tempfile
     with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as tmp:
         tmp.write(content)
         tmp_path = tmp.name
     try:
         py_compile.compile(tmp_path, doraise=True)
-        print(f"  ERROR: should have failed!")
+        print("  ERROR: should have failed!")
     except (py_compile.PyCompileError, SyntaxError, UnicodeDecodeError):
-        print(f"  Verified: Python rejects it as expected")
+        print("  Verified: Python rejects it as expected")
     finally:
         os.unlink(tmp_path)
 

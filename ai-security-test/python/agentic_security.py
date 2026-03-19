@@ -19,7 +19,6 @@ Maps to OWASP LLM Top 10 (2025):
   LLM08 — Vector and Embedding Weaknesses (agent memory)
 """
 
-import os
 import subprocess
 import json
 from typing import Any

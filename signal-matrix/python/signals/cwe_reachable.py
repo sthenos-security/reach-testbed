@@ -1,6 +1,5 @@
 # Copyright © 2026 Sthenos Security. All rights reserved.
 """REACHABLE: CWE — called from entrypoint."""
-import subprocess
 from jinja2 import Template
 
 def render_template_unsafe(user_input: str) -> str:

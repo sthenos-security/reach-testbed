@@ -1,6 +1,7 @@
 """UNKNOWN: CWE — module imported, safe function called, vulnerable function never reached."""
 
-import subprocess, os
+import subprocess
+import os
 
 def safe_render(text: str) -> str:
     """Safe function — called from entrypoint. No CWE here."""

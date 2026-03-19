@@ -1,7 +1,9 @@
 # Copyright © 2026 Sthenos Security. All rights reserved.
 """NOT_REACHABLE: CWE — module NEVER imported by entrypoint."""
 
-import subprocess, os, hashlib
+import subprocess
+import os
+import hashlib
 
 def sql_injection_dead(db, user_input: str):
     """CWE-89: NOT_REACHABLE — this whole file is never imported."""

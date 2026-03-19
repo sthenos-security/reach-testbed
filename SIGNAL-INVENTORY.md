@@ -29,28 +29,31 @@ Expected findings that `validate.py` checks for:
 
 | Signal | Test cases | Source |
 |--------|------:|--------|
-| CVE | 11 | `testbed.json` → `cve` |
+| CVE | 8 | `testbed.json` → `cve` |
 | CWE | 16 | `testbed.json` → `cwe` |
 | SECRET | 6 | `testbed.json` → `secrets` |
 | DLP | 7 | `testbed.json` → `dlp` |
 | AI | 8 | `testbed.json` → `ai` |
 | MALWARE | 6 | `testbed.json` → `malware` |
-| CVE groups | 4 | `testbed.json` → `cve_groups` (Pillow, cryptography, werkzeug, paramiko) |
+| CVE groups | 3 | `testbed.json` → `cve_groups` (Pillow, cryptography, paramiko) |
 
-### Reachability Assertions (84 total)
+### Reachability Assertions (112 total)
 
 Expected reachability states that `validate.py` checks:
 
 | Category | REACHABLE | NOT_REACHABLE | UNKNOWN | Total |
 |----------|------:|------:|------:|------:|
 | Signal matrix (6 signals × 4 langs) | 23 | 24 | 19 | 66 |
+| CWE framework tests (Flask/Django/FastAPI/NestJS/Fastify/Echo) | 23 | 10 | 0 | 33 |
 | Reachability-states-test | 2 | 2 | 0 | 4 |
-| Transitive deps | 1 | 1 | 0 | 2 |
 | Callgraph canaries (JS/Java) | 1 | 3 | 0 | 4 |
-| SQLI matrix (TP/FP/EDGE) | 5 | 3 | 0 | 8 |
-| **TOTAL** | **32** | **33** | **19** | **84** |
+| Client-side app (React) | 1 | 1 | 0 | 2 |
+| Transitive deps | 1 | 0 | 0 | 1 |
+| Site-packages exclusion | 1 | 0 | 0 | 1 |
+| CVE group test | 0 | 1 | 0 | 1 |
+| **TOTAL** | **52** | **41** | **19** | **112** |
 
-29 of these are **canary** entries — regressions on canaries are release-blockers.
+40 of these are **canary** entries — regressions on canaries are release-blockers.
 
 ### AI Reachability Design
 
@@ -347,11 +350,12 @@ python validate.py --db ~/.reachable/scans/reach-testbed-*/repo.db --verbose
 ```
 
 The validator checks (from `testbed.json`):
-- 11 CVE + 16 CWE + 6 SECRET + 7 DLP + 8 AI + 6 MALWARE detection assertions
-- 84 reachability state assertions (32 REACHABLE, 33 NOT_REACHABLE, 19 UNKNOWN)
-- 29 canary entries (regressions on canaries are release-blockers)
+- 8 CVE + 16 CWE + 6 SECRET + 7 DLP + 8 AI + 6 MALWARE detection assertions
+- 3 CVE group assertions (Pillow, cryptography, paramiko)
+- 112 reachability state assertions (52 REACHABLE, 41 NOT_REACHABLE, 19 UNKNOWN)
+- 40 canary entries (regressions on canaries are release-blockers)
 - 4 exclusion assertions (site-packages must not be scanned)
-- 15 SQL injection variable origin assertions
+- 15 SQL injection variable origin assertions (FP/TN/EDGE taint cases)
 
 Any NEW failure = regression. Do not ship.
 
