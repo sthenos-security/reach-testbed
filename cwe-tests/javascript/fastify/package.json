@@ -1,0 +1,11 @@
+{
+  "name": "reachable-testbed-fastify",
+  "version": "1.0.0",
+  "description": "Fastify CWE injection tests for REACHABLE testbed",
+  "private": true,
+  "dependencies": {
+    "fastify": "^4.24.0",
+    "axios": "^1.6.0",
+    "mysql2": "^3.6.0"
+  }
+}

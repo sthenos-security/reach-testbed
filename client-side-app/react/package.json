@@ -1,0 +1,14 @@
+{
+  "name": "reachable-testbed-react",
+  "version": "1.0.0",
+  "description": "React client-side CWE/DLP/Secret tests for REACHABLE testbed",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.23.0"
+  }
+}

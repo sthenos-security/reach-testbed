@@ -1,0 +1,13 @@
+{
+  "name": "reachable-testbed-nestjs",
+  "version": "1.0.0",
+  "description": "NestJS CWE injection tests for REACHABLE testbed",
+  "private": true,
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "mysql2": "^3.6.0",
+    "reflect-metadata": "^0.1.13"
+  }
+}

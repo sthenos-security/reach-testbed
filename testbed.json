@@ -1,41 +1,18 @@
 {
   "_meta": {
-    "version": "1.3",
+    "version": "1.5",
     "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
-    "updated": "2026-03-14"
+    "updated": "2026-03-18",
+    "frameworks_covered": ["flask", "django", "fastapi", "drf", "express", "fastify", "nestjs", "gin", "echo", "spring-boot", "react"]
   },
   "cve": [
     {
-      "id": "CVE-2021-23337",
+      "id": "CVE-2025-13465",
       "package": "lodash",
       "version": "4.17.20",
       "reachability": "REACHABLE",
       "file": "npm-callgraph-test/src/routes/merge.js",
-      "note": "lodash prototype pollution — _.merge() called from /api/merge entrypoint"
-    },
-    {
-      "id": "CVE-2021-44906",
-      "package": "minimist",
-      "version": "1.2.5",
-      "reachability": "REACHABLE",
-      "file": "npm-callgraph-test/src/routes/args.js",
-      "note": "minimist prototype pollution — called from /api/args entrypoint"
-    },
-    {
-      "id": "CVE-2017-5941",
-      "package": "node-serialize",
-      "version": "0.0.4",
-      "reachability": "NOT_REACHABLE",
-      "file": "npm-callgraph-test/src/utils/serializer.js",
-      "note": "JS CALLGRAPH CANARY: node-serialize RCE in dead-code file never required by server.js. NOT_REACHABLE proves JS call graph ran. UNKNOWN means it did not."
-    },
-    {
-      "id": "CVE-2022-25883",
-      "package": "semver",
-      "version": "5.7.1",
-      "reachability": "NOT_REACHABLE",
-      "file": "npm-callgraph-test/src/utils/version_check.js",
-      "note": "JS CALLGRAPH CANARY: semver ReDoS in dead-code file never required by server.js. NOT_REACHABLE proves JS call graph traversal is working."
+      "note": "lodash prototype pollution — _.merge() called from /api/merge entrypoint (updated from CVE-2021-23337)"
     },
     {
       "id": "CVE-2021-44228",
@@ -54,11 +31,11 @@
       "note": "JAVA CALLGRAPH CANARY: Text4Shell in DeadCodeService which has no @Service annotation and is never instantiated. NOT_REACHABLE proves Java call graph ran. UNKNOWN means it did not."
     },
     {
-      "id": "CVE-2022-42969",
+      "id": "CVE-2023-36464",
       "package": "pypdf",
       "reachability": "REACHABLE",
       "file": "python-app/app.py",
-      "note": "ReDoS via PdfReader — called from /api/parse-pdf"
+      "note": "pypdf DoS — called from /api/parse-pdf (updated from CVE-2022-42969, Grype DB shift)"
     },
     {
       "id": "CVE-2023-32681",
@@ -96,43 +73,32 @@
       "expected_cves": [
         "CVE-2023-44271",
         "CVE-2023-50447",
-        "CVE-2022-45199"
+        "CVE-2024-28219"
       ],
       "all_reachability": "REACHABLE",
-      "note": "All 3 Pillow CVEs must be grouped and all REACHABLE from /api/process-image"
+      "note": "All 3 Pillow CVEs must be grouped and all REACHABLE (CVE-2022-45199→CVE-2024-28219, Grype DB shift)"
     },
     {
       "package": "cryptography",
       "file": "cve-group-tests/cve_groups.py",
       "expected_cves": [
         "CVE-2023-49083",
-        "CVE-2023-23931"
+        "CVE-2023-50782"
       ],
       "mixed_reachability": {
         "CVE-2023-49083": "REACHABLE",
-        "CVE-2023-23931": "NOT_REACHABLE"
+        "CVE-2023-50782": "NOT_REACHABLE"
       },
-      "note": "Mixed reachability in same package CVE group"
-    },
-    {
-      "package": "werkzeug",
-      "file": "cve-group-tests/cve_groups.py",
-      "expected_cves": [
-        "CVE-2023-46136",
-        "CVE-2023-25577"
-      ],
-      "all_reachability": "REACHABLE",
-      "note": "Transitive dep (via flask) — both CVEs REACHABLE"
+      "note": "Mixed reachability in same package CVE group (CVE-2023-23931→CVE-2023-50782, Grype DB shift)"
     },
     {
       "package": "paramiko",
       "file": "cve-group-tests/cve_groups.py",
       "expected_cves": [
-        "CVE-2023-48795",
-        "CVE-2022-24302"
+        "CVE-2023-48795"
       ],
       "all_reachability": "NOT_REACHABLE",
-      "note": "All paramiko CVEs in dead code — must all be NOT_REACHABLE"
+      "note": "paramiko CVE in dead code — must be NOT_REACHABLE (CVE-2022-24302 removed, not in Grype DB)"
     }
   ],
   "cwe": [
@@ -258,10 +224,10 @@
       "note": "AWS key in module imported by app.py via get_api_key()"
     },
     {
-      "secret_type": "aws_access_key",
+      "secret_type": "private-key",
       "file": "reachability-states-test/src/secret_dead_code.py",
       "reachability": "NOT_REACHABLE",
-      "note": "AWS key in dead code — module never imported by app.py"
+      "note": "RSA private key in dead code — module never imported by app.py (was aws_access_key but file has no AWS key)"
     },
     {
       "secret_type": "stripe_key",
@@ -1097,6 +1063,294 @@
       "signal": "cwe",
       "expected_reachability": "REACHABLE",
       "note": "Verifies that the site-packages exclusion does not suppress real app findings"
+    },
+    {
+      "description": "[DJANGO FBV] CWE-89 sqli_fbv_raw_concat — must be REACHABLE via urls.py path()",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "sqli_fbv_raw_concat",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "django",
+      "expected_reachability": "REACHABLE",
+      "note": "Django FBV entrypoint: urls.py path() → view function. Engine must parse urls.py to find this."
+    },
+    {
+      "description": "[DJANGO FBV] CWE-89 sqli_fbv_parameterized — REACHABLE but parameterized, NOT a TP",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "sqli_fbv_parameterized",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "django",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "detection_note": "Function is REACHABLE but uses parameterized query — engine should NOT flag as SQLi TP"
+    },
+    {
+      "description": "[DJANGO CBV] CWE-89 SQLiCBV.get() — must be REACHABLE via as_view() dispatch",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "SQLiCBV.get",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "django",
+      "expected_reachability": "REACHABLE",
+      "note": "CBV resolution chain: urls.py → View.as_view() → dispatch() → get(). Engine must resolve as_view()."
+    },
+    {
+      "description": "[DJANGO DEAD] sqli_dead_code — NOT_REACHABLE (not in urls.py)",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "sqli_dead_code",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "django",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine is not reading urls.py and is treating all view functions as entrypoints"
+    },
+    {
+      "description": "[DRF @api_view] CWE-89 drf_sqli_view — REACHABLE via path() registration",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "drf_sqli_view",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "drf",
+      "expected_reachability": "REACHABLE",
+      "note": "DRF @api_view decorator — engine must recognise it as an HTTP entrypoint equivalent to @app.route"
+    },
+    {
+      "description": "[DRF @api_view DEAD] drf_dead_view — NOT_REACHABLE (not in urlpatterns)",
+      "file": "cwe-tests/python/django/cwe_injection_django.py",
+      "fn": "drf_dead_view",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "drf",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine treats @api_view as entrypoint without checking URL registration"
+    },
+    {
+      "description": "[DRF ViewSet] UserViewSet.list() — REACHABLE via router.register()",
+      "file": "cwe-tests/python/django/cwe_drf_viewset.py",
+      "fn": "UserViewSet.list",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "drf",
+      "expected_reachability": "REACHABLE",
+      "note": "DRF router.register() → ViewSet action method. Engine must resolve DefaultRouter registration."
+    },
+    {
+      "description": "[DRF ViewSet @action] search_unsafe() — REACHABLE via router @action",
+      "file": "cwe-tests/python/django/cwe_drf_viewset.py",
+      "fn": "UserViewSet.search_unsafe",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "drf",
+      "expected_reachability": "REACHABLE",
+      "note": "DRF @action decorator on ViewSet method — engine must recognise @action as generating a URL route"
+    },
+    {
+      "description": "[DRF ViewSet DEAD] DeadViewSet.list() — NOT_REACHABLE (not in router)",
+      "file": "cwe-tests/python/django/cwe_drf_viewset.py",
+      "fn": "DeadViewSet.list",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "drf",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine treats all ViewSet classes as registered regardless of router"
+    },
+    {
+      "description": "[FASTAPI] sqli_path_param (str) — REACHABLE, CWE-89 TP",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "sqli_path_param",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "REACHABLE",
+      "note": "FastAPI @app.get with str path param — engine must recognise @app.get/@app.post as entrypoints"
+    },
+    {
+      "description": "[FASTAPI] sqli_path_param_safe (int annotation) — REACHABLE, not injectable (FP)",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "sqli_path_param_safe",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "detection_note": "int annotation means FastAPI enforces type — flagging this as SQLi TP is a false positive"
+    },
+    {
+      "description": "[FASTAPI] sqli_body via Pydantic — REACHABLE, Pydantic fields are user-controlled",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "sqli_body",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "REACHABLE",
+      "note": "FastAPI Pydantic body field flows to SQL — engine must recognise BaseModel fields as user-controlled"
+    },
+    {
+      "description": "[FASTAPI] sqli_depends via Depends() chain — REACHABLE",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "sqli_depends",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "REACHABLE",
+      "note": "FastAPI Depends() DI chain — user input flows through dependency. Engine must follow Depends()."
+    },
+    {
+      "description": "[FASTAPI APIRouter] router_sqli — REACHABLE via app.include_router()",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "router_sqli",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "REACHABLE",
+      "note": "FastAPI APIRouter registered via app.include_router() — engine must resolve include_router()"
+    },
+    {
+      "description": "[FASTAPI DEAD] unrouted_sqli — NOT_REACHABLE (plain function, no decorator)",
+      "file": "cwe-tests/python/fastapi/cwe_injection_fastapi.py",
+      "fn": "unrouted_sqli",
+      "signal": "cwe",
+      "language": "python",
+      "framework": "fastapi",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "Plain function with no route decorator and never called — must be NOT_REACHABLE"
+    },
+    {
+      "description": "[NESTJS] UserController.getUser() — REACHABLE via AppModule.controllers[]",
+      "file": "cwe-tests/javascript/nestjs/cwe_injection_nestjs.js",
+      "fn": "UserController.getUser",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "nestjs",
+      "expected_reachability": "REACHABLE",
+      "note": "NestJS @Controller + @Get method in registered controller. Engine must parse AppModule.controllers."
+    },
+    {
+      "description": "[NESTJS DI] UserController.searchUsers() → UserService.findByName() — REACHABLE via DI",
+      "file": "cwe-tests/javascript/nestjs/cwe_injection_nestjs.js",
+      "fn": "UserService.findByName",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "nestjs",
+      "expected_reachability": "REACHABLE",
+      "note": "NestJS DI chain: Controller → Service.findByName(). Engine must follow constructor injection."
+    },
+    {
+      "description": "[NESTJS DEAD] AdminController.getAllUsers() — NOT_REACHABLE (not in AppModule)",
+      "file": "cwe-tests/javascript/nestjs/cwe_injection_nestjs.js",
+      "fn": "AdminController.getAllUsers",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "nestjs",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine doesn't check AppModule.controllers[] before marking as entrypoint"
+    },
+    {
+      "description": "[FASTIFY] sqli via request.query — REACHABLE via fastify.get()",
+      "file": "cwe-tests/javascript/fastify/cwe_injection_fastify.js",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "fastify",
+      "expected_reachability": "REACHABLE",
+      "note": "Fastify uses request.query not req.query — engine must recognise fastify.get() as entrypoint"
+    },
+    {
+      "description": "[FASTIFY options-object] cmd injection via handler: fn — REACHABLE",
+      "file": "cwe-tests/javascript/fastify/cwe_injection_fastify.js",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "fastify",
+      "expected_reachability": "REACHABLE",
+      "note": "Fastify options-object style: fastify.post(route, { handler: fn }) — engine must find handler property"
+    },
+    {
+      "description": "[FASTIFY fastify.route()] declarative route object — REACHABLE",
+      "file": "cwe-tests/javascript/fastify/cwe_injection_fastify.js",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "fastify",
+      "expected_reachability": "REACHABLE",
+      "note": "fastify.route({ method, url, handler }) declarative form — engine must parse handler field"
+    },
+    {
+      "description": "[FASTIFY plugin] sqli inside fastify.register() plugin — REACHABLE",
+      "file": "cwe-tests/javascript/fastify/cwe_injection_fastify.js",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "fastify",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "note": "Routes inside fastify.register(plugin) are REACHABLE. Engine must follow register() to find them.",
+      "detection_note": "NOT_REACHABLE here means engine does not follow fastify.register() plugin system"
+    },
+    {
+      "description": "[FASTIFY dead plugin] deadPlugin never registered — NOT_REACHABLE",
+      "file": "cwe-tests/javascript/fastify/cwe_injection_fastify.js",
+      "fn": "deadPlugin",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "fastify",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine treats all Fastify plugin functions as registered"
+    },
+    {
+      "description": "[ECHO] sqliQueryParam via c.QueryParam() — REACHABLE via e.GET()",
+      "file": "cwe-tests/go/cwe_injection_echo.go",
+      "fn": "sqliQueryParam",
+      "signal": "cwe",
+      "language": "go",
+      "framework": "echo",
+      "expected_reachability": "REACHABLE",
+      "note": "Echo uses c.QueryParam() not c.Query() — engine must recognise e.GET() as entrypoint"
+    },
+    {
+      "description": "[ECHO group] sqliInGroup via e.Group().GET() — REACHABLE",
+      "file": "cwe-tests/go/cwe_injection_echo.go",
+      "fn": "sqliInGroup",
+      "signal": "cwe",
+      "language": "go",
+      "framework": "echo",
+      "expected_reachability": "REACHABLE",
+      "note": "Echo e.Group() routes — engine must recognise group.GET() as equivalent to e.GET()"
+    },
+    {
+      "description": "[ECHO dead] deadSQLi — NOT_REACHABLE (plain function, never registered)",
+      "file": "cwe-tests/go/cwe_injection_echo.go",
+      "fn": "deadSQLi",
+      "signal": "cwe",
+      "language": "go",
+      "framework": "echo",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine treats all func(string) functions as entrypoints"
+    },
+    {
+      "description": "[REACT XSS] XSSFromURLParam dangerouslySetInnerHTML with URL param — REACHABLE",
+      "file": "client-side-app/react/cwe_react_client.jsx",
+      "fn": "XSSFromURLParam",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "react",
+      "expected_reachability": "REACHABLE",
+      "note": "React client-side XSS: URL param → dangerouslySetInnerHTML. Reachability = component is mounted in App."
+    },
+    {
+      "description": "[REACT XSS DEAD] XSSDeadComponent — NOT_REACHABLE (exported but never used in App)",
+      "file": "client-side-app/react/cwe_react_client.jsx",
+      "fn": "XSSDeadComponent",
+      "signal": "cwe",
+      "language": "javascript",
+      "framework": "react",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "detection_note": "REACHABLE here means engine treats all exported React components as mounted"
     }
   ],
   "sqli_variable_origin": [

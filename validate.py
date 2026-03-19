@@ -27,6 +27,7 @@ import glob
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -519,7 +520,44 @@ def main():
         "--update-baseline", action="store_true",
         help="Print a new testbed.json from actual findings (for bootstrapping)",
     )
+    parser.add_argument(
+        "--refresh-cves", action="store_true",
+        dest="refresh_cves",
+        help=(
+            "Run Grype on the testbed and update shifted CVE IDs in testbed.json "
+            "before validating. If testbed.json is updated, prints a git commit "
+            "reminder and continues validation against the refreshed baseline."
+        ),
+    )
+    parser.add_argument(
+        "--grype", metavar="PATH",
+        default=None,
+        help="Path to grype binary for --refresh-cves (default: auto-detect)",
+    )
     args = parser.parse_args()
+
+    # ── CVE baseline refresh (runs Grype, updates testbed.json if needed) ─────
+    if getattr(args, 'refresh_cves', False):
+        refresh_script = Path(__file__).parent / "scripts" / "refresh-cve-baseline.py"
+        if not refresh_script.exists():
+            print(yellow(f"⚠  --refresh-cves: script not found: {refresh_script}"))
+        else:
+            print(f"{cyan('ℹ')} Running CVE baseline refresh (Grype)...")
+            cmd = [sys.executable, str(refresh_script), "--apply", "--quiet"]
+            if getattr(args, 'grype', None):
+                cmd += ["--grype", args.grype]
+            rc = subprocess.run(cmd).returncode
+            if rc == 2:
+                print(yellow(
+                    "\n⚠  testbed.json CVE IDs were updated from Grype DB.\n"
+                    "   Please review and commit:\n"
+                    "     git diff testbed.json\n"
+                    "     git add testbed.json && git commit -m \"chore: refresh CVE IDs\"\n"
+                ))
+            elif rc != 0:
+                print(yellow(f"⚠  CVE refresh exited {rc} — continuing with existing baseline"))
+            else:
+                print(green("✔  CVE baseline is current"))
 
     # Load findings
     if args.sarif:
