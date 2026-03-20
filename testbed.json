@@ -391,47 +391,40 @@
     {
       "description": "CVE in reachable module must be REACHABLE",
       "file": "reachability-states-test/src/cve_reachable.py",
-      "signal": "cve",
       "expected_reachability": "REACHABLE",
       "note": "CVE findings live at requirements.txt not .py — this tests CVE-at-source propagation (future)"
     },
     {
       "description": "CVE in dead code module must be NOT_REACHABLE",
       "file": "reachability-states-test/src/cve_dead_code.py",
-      "signal": "cve",
       "expected_reachability": "NOT_REACHABLE",
       "note": "CVE findings live at requirements.txt not .py — this tests CVE-at-source propagation (future)"
     },
     {
       "description": "Secret in reachable module must be REACHABLE",
       "file": "reachability-states-test/src/secret_reachable.py",
-      "signal": "secret",
       "expected_reachability": "REACHABLE"
     },
     {
       "description": "Secret in dead code must be NOT_REACHABLE",
       "file": "reachability-states-test/src/secret_dead_code.py",
-      "signal": "secret",
       "expected_reachability": "NOT_REACHABLE"
     },
     {
       "description": "Transitive dep (urllib3) called via requests must be REACHABLE",
       "file": "transitive-dep-tests/python/transitive_chains.py",
-      "signal": "cve",
       "expected_reachability": "REACHABLE",
       "note": "CVE findings at requirements.txt — validate checks manifest not source"
     },
     {
       "description": "paramiko in dead code must be NOT_REACHABLE",
       "file": "cve-group-tests/cve_groups.py",
-      "signal": "cve",
       "expected_reachability": "NOT_REACHABLE",
       "note": "CVE findings at requirements.txt — validate checks manifest not source"
     },
     {
       "description": "[JS CALLGRAPH CANARY] node-serialize never required \u2014 must be NOT_REACHABLE",
       "file": "npm-callgraph-test/src/utils/serializer.js",
-      "signal": "cve",
       "cve": "CVE-2017-5941",
       "package": "node-serialize",
       "expected_reachability": "NOT_REACHABLE",
@@ -442,7 +435,6 @@
     {
       "description": "[JS CALLGRAPH CANARY] semver in dead-code file \u2014 must be NOT_REACHABLE",
       "file": "npm-callgraph-test/src/utils/version_check.js",
-      "signal": "cve",
       "cve": "CVE-2022-25883",
       "package": "semver",
       "expected_reachability": "NOT_REACHABLE",
@@ -453,7 +445,6 @@
     {
       "description": "[JAVA CALLGRAPH CANARY] DeadCodeService never instantiated \u2014 commons-text must be NOT_REACHABLE",
       "file": "java-callgraph-test/src/main/java/com/example/DeadCodeService.java",
-      "signal": "cve",
       "cve": "CVE-2022-42889",
       "package": "commons-text",
       "expected_reachability": "NOT_REACHABLE",
@@ -464,7 +455,6 @@
     {
       "description": "[JAVA CALLGRAPH CANARY] log4j in live controller \u2014 must be REACHABLE",
       "file": "java-callgraph-test/src/main/java/com/example/LogController.java",
-      "signal": "cve",
       "cve": "CVE-2021-44228",
       "package": "log4j-core",
       "expected_reachability": "REACHABLE",
