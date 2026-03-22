@@ -141,15 +141,8 @@ def resolve_db(db_path: str) -> str:
     return db_path
 
 
-def _load_from_signals(con) -> list[FindingRecord] | None:
-    """Try loading from unified signals table. Returns None if table missing."""
-    try:
-        count = con.execute("SELECT COUNT(*) FROM signals").fetchone()[0]
-        if count == 0:
-            return None
-    except Exception:
-        return None
-
+def _load_from_signals(con) -> list[FindingRecord]:
+    """Load from unified signals table (primary path)."""
     records = []
     rows = con.execute("""
         SELECT signal_type, finding_id, display_id, cwe_id, secret_type,
@@ -190,25 +183,13 @@ def _load_from_signals(con) -> list[FindingRecord] | None:
                         package=r["package_name"],
                         raw=raw,
                     ))
-    return records if records else None
+    return records
 
 
-def load_db(db_path: str) -> list[FindingRecord]:
-    db_path = resolve_db(db_path)
-    print(f"{INFO_MARK} Loading: {db_path}")
-    con = sqlite3.connect(db_path)
-    con.row_factory = sqlite3.Row
-
-    # Prefer unified signals table when available
-    signals_records = _load_from_signals(con)
-    if signals_records is not None:
-        con.close()
-        print(f"{INFO_MARK} Loaded {len(signals_records)} findings from signals table")
-        return signals_records
-
+def _load_legacy_tables(con) -> list[FindingRecord]:
+    """Legacy 3-table path. Only used when REACHABLE_LEGACY_TABLES=1."""
     records = []
 
-    # Fallback: 3-table legacy path (CVE, CWE, secret, malware)
     rows = con.execute("""
         SELECT finding_type, finding_id, cwe_id, secret_type,
                file_path, app_reachability, package_name,
@@ -286,6 +267,34 @@ def load_db(db_path: str) -> list[FindingRecord]:
             file_path=r["file_path"],
             reachability=r["reach_state"],
         ))
+
+    return records
+
+
+def load_db(db_path: str) -> list[FindingRecord]:
+    """Load findings from DB.
+
+    Primary path: signals table (unified, re-classified).
+    Legacy path:  3 separate tables (findings + ai_findings + dlp_findings).
+                  Activated by REACHABLE_LEGACY_TABLES=1 env var.
+    """
+    db_path = resolve_db(db_path)
+    print(f"{INFO_MARK} Loading: {db_path}")
+    con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row
+
+    use_legacy = os.environ.get("REACHABLE_LEGACY_TABLES", "") == "1"
+
+    if use_legacy:
+        print(f"{INFO_MARK} REACHABLE_LEGACY_TABLES=1 — using 3-table legacy path")
+        records = _load_legacy_tables(con)
+    else:
+        try:
+            records = _load_from_signals(con)
+        except sqlite3.OperationalError:
+            # signals table doesn't exist yet (old DB) — fall back
+            print(f"{INFO_MARK} signals table not found — falling back to legacy tables")
+            records = _load_legacy_tables(con)
 
     con.close()
     print(f"{INFO_MARK} Loaded {len(records)} findings from DB")
