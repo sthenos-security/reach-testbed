@@ -141,14 +141,74 @@ def resolve_db(db_path: str) -> str:
     return db_path
 
 
+def _load_from_signals(con) -> list[FindingRecord] | None:
+    """Try loading from unified signals table. Returns None if table missing."""
+    try:
+        count = con.execute("SELECT COUNT(*) FROM signals").fetchone()[0]
+        if count == 0:
+            return None
+    except Exception:
+        return None
+
+    records = []
+    rows = con.execute("""
+        SELECT signal_type, finding_id, display_id, cwe_id, secret_type,
+               owasp_category, pii_type, file_path, app_reachability,
+               package_name, raw_data
+        FROM signals
+        WHERE scan_id = (SELECT MAX(id) FROM scans)
+    """).fetchall()
+    for r in rows:
+        ftype = r["signal_type"]
+        raw = json.loads(r["raw_data"]) if r["raw_data"] else {}
+        identifier = (
+            r["display_id"] or
+            (r["cwe_id"] if ftype == "cwe" else None) or
+            (r["secret_type"] if ftype == "secret" else None) or
+            (r["owasp_category"] if ftype == "ai" else None) or
+            (r["pii_type"] if ftype == "dlp" else None) or
+            r["finding_id"]
+        )
+        records.append(FindingRecord(
+            finding_type=ftype,
+            identifier=identifier or "",
+            file_path=r["file_path"],
+            reachability=r["app_reachability"],
+            package=r["package_name"],
+            raw=raw,
+        ))
+        # CVE alias records
+        if ftype == "cve":
+            aliases = raw.get("osv_aliases", []) or []
+            for alias in aliases:
+                if alias and alias != identifier:
+                    records.append(FindingRecord(
+                        finding_type="cve",
+                        identifier=alias,
+                        file_path=r["file_path"],
+                        reachability=r["app_reachability"],
+                        package=r["package_name"],
+                        raw=raw,
+                    ))
+    return records if records else None
+
+
 def load_db(db_path: str) -> list[FindingRecord]:
     db_path = resolve_db(db_path)
     print(f"{INFO_MARK} Loading: {db_path}")
     con = sqlite3.connect(db_path)
     con.row_factory = sqlite3.Row
+
+    # Prefer unified signals table when available
+    signals_records = _load_from_signals(con)
+    if signals_records is not None:
+        con.close()
+        print(f"{INFO_MARK} Loaded {len(signals_records)} findings from signals table")
+        return signals_records
+
     records = []
 
-    # Main findings table (CVE, CWE, secret, malware)
+    # Fallback: 3-table legacy path (CVE, CWE, secret, malware)
     rows = con.execute("""
         SELECT finding_type, finding_id, cwe_id, secret_type,
                file_path, app_reachability, package_name,
