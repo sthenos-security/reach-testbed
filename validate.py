@@ -272,30 +272,12 @@ def _load_legacy_tables(con) -> list[FindingRecord]:
 
 
 def load_db(db_path: str) -> list[FindingRecord]:
-    """Load findings from DB.
-
-    Primary path: signals table (unified, re-classified).
-    Legacy path:  3 separate tables (findings + ai_findings + dlp_findings).
-                  Activated by REACHABLE_LEGACY_TABLES=1 env var.
-    """
+    """Load findings from unified signals table."""
     db_path = resolve_db(db_path)
     print(f"{INFO_MARK} Loading: {db_path}")
     con = sqlite3.connect(db_path)
     con.row_factory = sqlite3.Row
-
-    use_legacy = os.environ.get("REACHABLE_LEGACY_TABLES", "") == "1"
-
-    if use_legacy:
-        print(f"{INFO_MARK} REACHABLE_LEGACY_TABLES=1 — using 3-table legacy path")
-        records = _load_legacy_tables(con)
-    else:
-        try:
-            records = _load_from_signals(con)
-        except sqlite3.OperationalError:
-            # signals table doesn't exist yet (old DB) — fall back
-            print(f"{INFO_MARK} signals table not found — falling back to legacy tables")
-            records = _load_legacy_tables(con)
-
+    records = _load_from_signals(con)
     con.close()
     print(f"{INFO_MARK} Loaded {len(records)} findings from DB")
     return records
@@ -500,6 +482,13 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
         else:
             matches = [f for f in findings if file_matches(f.file_path, file_h)]
 
+        # b38 FIX: CVE findings live on manifest files (requirements.txt, pom.xml),
+        # not source files. Check source_files from reachable_functions for source match.
+        if not matches and signal == "cve":
+            matches = [f for f in findings
+                       if f.finding_type == "cve"
+                       and any(file_matches(sf, file_h) for sf in (f.raw.get("source_files") or []))]
+
         if not matches:
             # No finding of the expected signal type in this file = detection gap.
             # WARN only — the scanner doesn't have a rule for this signal+lang yet.
@@ -519,8 +508,12 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
             results.append(ValidationResult("Reachability", desc, "MISS",
                 f"{signal} in {file_h}: got {actual}, expected {expected_reach}"))
         else:
-            results.append(ValidationResult("Reachability", desc, "WARN",
-                f"{signal} findings found but no reachability state set"))
+            # Findings exist for this signal+file but none have a reachability
+            # state set at all (NULL/empty). The scanner found the issue but the
+            # enrichment pipeline produced no verdict — that is a pipeline bug,
+            # not a detection gap. Score as MISS so it doesn't hide from CI.
+            results.append(ValidationResult("Reachability", desc, "MISS",
+                f"{signal} in {file_h}: found but no reachability state set (pipeline gap)"))
     return results
 
 
