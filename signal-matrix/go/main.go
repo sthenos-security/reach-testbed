@@ -38,5 +38,8 @@ func main() {
 	// MALWARE REACHABLE — beacon on startup
 	signals.InitBeacon()
 
+	// Call exported functions via InternalCaller — proves Level 3 reachability
+	InternalCaller()
+
 	r.Run(":8082")
 }

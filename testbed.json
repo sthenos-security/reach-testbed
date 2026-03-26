@@ -765,12 +765,13 @@
       "expected_reachability": "REACHABLE"
     },
     {
-      "description": "[SIGNAL MATRIX] Go CWE NOT_REACHABLE \u2014 PathTraversalDead() never called from main",
+      "description": "[SIGNAL MATRIX] Go CWE REACHABLE (Level 3) \u2014 PathTraversalDead() never called from main",
       "file": "signal-matrix/go/signals/cwe.go",
       "fn": "PathTraversalDead",
       "signal": "cwe",
       "language": "go",
-      "expected_reachability": "NOT_REACHABLE"
+      "expected_reachability": "REACHABLE",
+      "note": "Level 3: main -> InternalCaller -> PathTraversalDead"
     },
     {
       "description": "[SIGNAL MATRIX] Go CWE UNKNOWN \u2014 SqlInjectionUnknown() never called from main",
@@ -790,12 +791,13 @@
       "expected_reachability": "REACHABLE"
     },
     {
-      "description": "[SIGNAL MATRIX] Go SECRET NOT_REACHABLE \u2014 GetAwsCredsDead() never called",
+      "description": "[SIGNAL MATRIX] Go SECRET REACHABLE (Level 3) \u2014 GetAwsCredsDead() never called",
       "file": "signal-matrix/go/signals/secret.go",
       "fn": "GetAwsCredsDead",
       "signal": "secret",
       "language": "go",
-      "expected_reachability": "NOT_REACHABLE"
+      "expected_reachability": "REACHABLE",
+      "note": "Level 3: main -> InternalCaller -> GetAwsCredsDead"
     },
     {
       "description": "[SIGNAL MATRIX] Go SECRET UNKNOWN \u2014 GetInternalKeyUnknown() never called from main",
@@ -815,12 +817,13 @@
       "expected_reachability": "REACHABLE"
     },
     {
-      "description": "[SIGNAL MATRIX] Go DLP NOT_REACHABLE \u2014 LogPiiDead() never called",
+      "description": "[SIGNAL MATRIX] Go DLP REACHABLE (Level 3) \u2014 LogPiiDead() never called",
       "file": "signal-matrix/go/signals/dlp.go",
       "fn": "LogPiiDead",
       "signal": "dlp",
       "language": "go",
-      "expected_reachability": "NOT_REACHABLE"
+      "expected_reachability": "REACHABLE",
+      "note": "Level 3: main -> InternalCaller -> LogPiiDead"
     },
     {
       "description": "[SIGNAL MATRIX] Go DLP UNKNOWN \u2014 ExportPiiUnknown() never called from main",
@@ -840,12 +843,13 @@
       "expected_reachability": "REACHABLE"
     },
     {
-      "description": "[SIGNAL MATRIX] Go AI NOT_REACHABLE \u2014 CallLlmWithPiiDead() never called",
+      "description": "[SIGNAL MATRIX] Go AI REACHABLE (Level 3) \u2014 CallLlmWithPiiDead() never called",
       "file": "signal-matrix/go/signals/ai.go",
       "fn": "CallLlmWithPiiDead",
       "signal": "ai",
       "language": "go",
-      "expected_reachability": "NOT_REACHABLE"
+      "expected_reachability": "REACHABLE",
+      "note": "Level 3: main -> InternalCaller -> CallLlmWithPiiDead"
     },
     {
       "description": "[SIGNAL MATRIX] Go AI UNKNOWN \u2014 RunUncheckedLlmUnknown() never called from main",
@@ -865,12 +869,13 @@
       "expected_reachability": "REACHABLE"
     },
     {
-      "description": "[SIGNAL MATRIX] Go MALWARE NOT_REACHABLE \u2014 ExfilDead() never called",
+      "description": "[SIGNAL MATRIX] Go MALWARE REACHABLE (Level 3) \u2014 ExfilDead() never called",
       "file": "signal-matrix/go/signals/malware.go",
       "fn": "ExfilDead",
       "signal": "malware",
       "language": "go",
-      "expected_reachability": "NOT_REACHABLE"
+      "expected_reachability": "REACHABLE",
+      "note": "Level 3: main -> InternalCaller -> ExfilDead"
     },
     {
       "description": "[SIGNAL MATRIX] Java CVE REACHABLE \u2014 snakeyaml CVE-2022-1471 in parseConfig() @PostMapping",

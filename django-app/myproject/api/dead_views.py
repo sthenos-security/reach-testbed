@@ -11,7 +11,7 @@ from django.http import JsonResponse
 
 
 # SECRET: Dead credential (NOT_REACHABLE — never used from any route)
-DEAD_STRIPE_KEY = "sk_live_deaddeaddeaddeaddeaddeaddead"
+DEAD_STRIPE_KEY = "sk_test_FAKE_dead_NOT_A_REAL_KEY_000"
 
 
 def dead_pdf_parser(request):
