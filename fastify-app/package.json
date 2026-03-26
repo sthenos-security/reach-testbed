@@ -1,0 +1,13 @@
+{
+  "name": "fastify-testbed-app",
+  "version": "1.0.0",
+  "description": "Fastify framework testbed — REACHABLE / NOT_REACHABLE / UNKNOWN validation",
+  "main": "server.js",
+  "dependencies": {
+    "fastify": "^4.24.0",
+    "@fastify/cors": "^8.4.0",
+    "lodash": "4.17.20",
+    "jsonwebtoken": "8.5.0",
+    "node-serialize": "0.0.4"
+  }
+}

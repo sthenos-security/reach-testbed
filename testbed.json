@@ -1,16 +1,18 @@
 {
   "_meta": {
-    "version": "1.5",
+    "version": "1.6",
     "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
-    "updated": "2026-03-18",
+    "updated": "2026-03-26",
     "frameworks_covered": [
       "flask",
       "django",
-      "fastapi",
       "drf",
+      "fastapi",
+      "pyramid",
       "express",
       "fastify",
       "nestjs",
+      "hono",
       "gin",
       "echo",
       "spring-boot",
@@ -1491,6 +1493,247 @@
       "function": "edge_join",
       "expected": "REACHABLE",
       "note": "User-controlled comma-separated list injected into IN clause"
+    }
+  ],
+  "framework_validation": [
+    {
+      "description": "[DJANGO] CVE in urlpatterns FBV — must be REACHABLE",
+      "framework": "django",
+      "file": "django-app/myproject/api/views.py",
+      "function": "parse_pdf",
+      "cve": "CVE-2022-42969",
+      "package": "pypdf",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "django_urlpatterns",
+      "note": "pypdf called from FBV wired via path() in urls.py"
+    },
+    {
+      "description": "[DJANGO] CWE-89 in CBV .as_view() — must be REACHABLE",
+      "framework": "django",
+      "file": "django-app/myproject/api/views.py",
+      "function": "SearchView.get",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "django_cbv",
+      "note": "SQL injection in class-based view wired via .as_view() in urlpatterns"
+    },
+    {
+      "description": "[DRF] CWE-89 in ViewSet @action — must be REACHABLE",
+      "framework": "drf",
+      "file": "django-app/myproject/api/viewsets.py",
+      "function": "UserViewSet.lookup",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "drf_viewset",
+      "note": "SQL injection in DRF @action endpoint wired via router.register()"
+    },
+    {
+      "description": "[DJANGO] Dead views not in urlpatterns — must be NOT_REACHABLE",
+      "framework": "django",
+      "file": "django-app/myproject/api/dead_views.py",
+      "function": "dead_pdf_parser",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "django_dead_code",
+      "note": "View function exists but is NOT wired in any urlpatterns"
+    },
+    {
+      "description": "[DJANGO] Dead app not in INSTALLED_APPS — must be NOT_REACHABLE",
+      "framework": "django",
+      "file": "django-app/dead_app/views.py",
+      "function": "dead_config_loader",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "django_dead_app",
+      "note": "Entire app not in INSTALLED_APPS and not URL-wired"
+    },
+    {
+      "description": "[DJANGO] UNKNOWN — requests imported, only safe .get() called",
+      "framework": "django",
+      "file": "django-app/myproject/api/views.py",
+      "function": "health",
+      "package": "requests",
+      "expected_reachability": "UNKNOWN",
+      "feature": "django_unknown",
+      "note": "requests CVE path not exercised — only safe .get() called"
+    },
+    {
+      "description": "[FASTAPI] CVE in include_router route — must be REACHABLE",
+      "framework": "fastapi",
+      "file": "fastapi-app/routers/parse.py",
+      "function": "parse_document",
+      "cve": "CVE-2022-42969",
+      "package": "pypdf",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "fastapi_router",
+      "note": "pypdf called from @router.post wired via app.include_router()"
+    },
+    {
+      "description": "[FASTAPI] CWE-22 in router endpoint — must be REACHABLE",
+      "framework": "fastapi",
+      "file": "fastapi-app/routers/parse.py",
+      "function": "read_file",
+      "cwe": "CWE-22",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "fastapi_router",
+      "note": "Path traversal via unsanitized Query parameter"
+    },
+    {
+      "description": "[FASTAPI] Dead router not included — must be NOT_REACHABLE",
+      "framework": "fastapi",
+      "file": "fastapi-app/dead/unused_router.py",
+      "function": "dead_parse",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "fastapi_dead_router",
+      "note": "Router defined but never app.include_router()'d in main.py"
+    },
+    {
+      "description": "[PYRAMID] CVE in config.add_view route — must be REACHABLE",
+      "framework": "pyramid",
+      "file": "pyramid-app/views/parse.py",
+      "function": "parse_pdf_view",
+      "cve": "CVE-2022-42969",
+      "package": "pypdf",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "pyramid_add_view",
+      "note": "pypdf called from view wired via config.add_view()"
+    },
+    {
+      "description": "[PYRAMID] Dead view with @view_config but no route — must be NOT_REACHABLE",
+      "framework": "pyramid",
+      "file": "pyramid-app/dead/unused_views.py",
+      "function": "dead_search_view",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "pyramid_dead_view",
+      "note": "@view_config references route_name='dead_search' but no such route added in app.py"
+    },
+    {
+      "description": "[NESTJS] CVE in @Controller @Post route — must be REACHABLE",
+      "framework": "nestjs",
+      "file": "nestjs-app/src/user/user.controller.ts",
+      "function": "mergeData",
+      "cve": "CVE-2021-23337",
+      "package": "lodash",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "nestjs_controller",
+      "note": "lodash _.merge called from @Post route in @Controller listed in AppModule"
+    },
+    {
+      "description": "[NESTJS] CWE-89 in @Injectable service — must be REACHABLE",
+      "framework": "nestjs",
+      "file": "nestjs-app/src/user/user.service.ts",
+      "function": "searchByName",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "nestjs_injectable",
+      "note": "SQL injection in service called from controller route"
+    },
+    {
+      "description": "[NESTJS] Dead controller not in AppModule — must be NOT_REACHABLE",
+      "framework": "nestjs",
+      "file": "nestjs-app/src/dead/dead.controller.ts",
+      "function": "deadMerge",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "nestjs_dead_controller",
+      "note": "@Controller exists but NOT listed in AppModule controllers[]"
+    },
+    {
+      "description": "[NESTJS] Dead service not in AppModule — must be NOT_REACHABLE",
+      "framework": "nestjs",
+      "file": "nestjs-app/src/dead/dead.service.ts",
+      "function": "deadQuery",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "nestjs_dead_service",
+      "note": "@Injectable exists but NOT listed in AppModule providers[]"
+    },
+    {
+      "description": "[FASTIFY] CVE in registered plugin route — must be REACHABLE",
+      "framework": "fastify",
+      "file": "fastify-app/routes/merge.js",
+      "function": "mergeRoutes",
+      "cve": "CVE-2021-23337",
+      "package": "lodash",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "fastify_register",
+      "note": "lodash _.merge called from route in plugin registered via fastify.register()"
+    },
+    {
+      "description": "[FASTIFY] Dead plugin never registered — must be NOT_REACHABLE",
+      "framework": "fastify",
+      "file": "fastify-app/dead/dead-plugin.js",
+      "function": "deadPlugin",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "fastify_dead_plugin",
+      "note": "Plugin defined but never fastify.register()'d in server.js"
+    },
+    {
+      "description": "[HONO] CVE in app.route mounted route — must be REACHABLE",
+      "framework": "hono",
+      "file": "hono-app/src/routes/api.ts",
+      "function": "merge",
+      "cve": "CVE-2021-23337",
+      "package": "lodash",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "hono_route",
+      "note": "lodash _.merge called from route mounted via app.route()"
+    },
+    {
+      "description": "[HONO] Dead routes never mounted — must be NOT_REACHABLE",
+      "framework": "hono",
+      "file": "hono-app/src/dead/unused.ts",
+      "function": "deadRoutes",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "hono_dead_route",
+      "note": "Routes defined but never imported or mounted in index.ts"
+    },
+    {
+      "description": "[ECHO] CVE in e.POST registered handler — must be REACHABLE",
+      "framework": "echo",
+      "file": "echo-app/handlers/translate.go",
+      "function": "Translate",
+      "cve": "CVE-2022-32149",
+      "package": "golang.org/x/text",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "echo_route",
+      "note": "x/text language.Parse called from handler wired via e.POST()"
+    },
+    {
+      "description": "[ECHO] CWE-89 in e.Group route — must be REACHABLE",
+      "framework": "echo",
+      "file": "echo-app/handlers/translate.go",
+      "function": "Search",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "echo_group",
+      "note": "SQL injection in handler wired via api.GET() (Echo group)"
+    },
+    {
+      "description": "[ECHO] Dead handler never registered — must be NOT_REACHABLE",
+      "framework": "echo",
+      "file": "echo-app/dead/unused.go",
+      "function": "DeadTranslate",
+      "expected_reachability": "NOT_REACHABLE",
+      "canary": true,
+      "feature": "echo_dead_handler",
+      "note": "Handler defined in dead/ package but never registered in main.go"
     }
   ],
   "exclusion_validation": [

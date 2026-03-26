@@ -64,12 +64,63 @@ class FindingRecord:
     raw: dict = field(default_factory=dict)
 
 
+# ─── Failure reason enum ─────────────────────────────────────────────────────
+class Reason:
+    """Precise failure categories for reachability validation."""
+    PASS                     = "PASS"
+    # Detection failures
+    FAIL_NOT_DETECTED        = "FAIL_NOT_DETECTED"        # no signal of expected type in file
+    FAIL_NO_STATE            = "FAIL_NO_STATE"            # signal found, reachability NULL (pipeline bug)
+    # Classification failures — directional
+    FAIL_DEMOTED             = "FAIL_DEMOTED"             # expected REACHABLE, got NR (DANGEROUS)
+    FAIL_PROMOTED            = "FAIL_PROMOTED"            # expected NR, got REACHABLE (false positive)
+    FAIL_UNKNOWN_EXP_REACH   = "FAIL_UNKNOWN_EXP_REACH"   # expected REACHABLE, got UNKNOWN
+    FAIL_REACH_EXP_UNKNOWN   = "FAIL_REACH_EXP_UNKNOWN"   # expected UNKNOWN, got REACHABLE
+    FAIL_NR_EXP_UNKNOWN      = "FAIL_NR_EXP_UNKNOWN"      # expected UNKNOWN, got NR
+    FAIL_UNKNOWN_EXP_NR      = "FAIL_UNKNOWN_EXP_NR"      # expected NR, got UNKNOWN
+
+    @staticmethod
+    def classify(expected: str, actual: str) -> str:
+        """Return the precise failure reason for a reachability mismatch."""
+        key = (expected, actual)
+        return {
+            ("REACHABLE", "NOT_REACHABLE"): Reason.FAIL_DEMOTED,
+            ("REACHABLE", "UNKNOWN"):       Reason.FAIL_UNKNOWN_EXP_REACH,
+            ("NOT_REACHABLE", "REACHABLE"): Reason.FAIL_PROMOTED,
+            ("NOT_REACHABLE", "UNKNOWN"):   Reason.FAIL_UNKNOWN_EXP_NR,
+            ("UNKNOWN", "REACHABLE"):       Reason.FAIL_REACH_EXP_UNKNOWN,
+            ("UNKNOWN", "NOT_REACHABLE"):   Reason.FAIL_NR_EXP_UNKNOWN,
+        }.get(key, f"FAIL_{actual}_EXP_{expected}")
+
+    @staticmethod
+    def is_fail(reason: str) -> bool:
+        return reason.startswith("FAIL_")
+
+    @staticmethod
+    def severity(reason: str) -> str:
+        """How bad is this failure? For sorting/prioritization."""
+        if reason == Reason.FAIL_DEMOTED:
+            return "CRITICAL"   # hiding real vulnerabilities
+        if reason == Reason.FAIL_NOT_DETECTED:
+            return "HIGH"       # scanner blind spot
+        if reason == Reason.FAIL_NO_STATE:
+            return "HIGH"       # pipeline bug
+        if reason in (Reason.FAIL_UNKNOWN_EXP_REACH, Reason.FAIL_NR_EXP_UNKNOWN):
+            return "MEDIUM"     # under-classified
+        if reason in (Reason.FAIL_PROMOTED, Reason.FAIL_REACH_EXP_UNKNOWN):
+            return "LOW"        # noise / over-classified
+        if reason == Reason.FAIL_UNKNOWN_EXP_NR:
+            return "LOW"        # conservative, acceptable
+        return "INFO"
+
+
 @dataclass
 class ValidationResult:
     category: str
     description: str
-    status: str   # PASS, MISS, WARN
+    status: str   # PASS, MISS, WARN (legacy) or Reason.* for reachability
     detail: str = ""
+    reason: str = ""  # Reason.* enum value for precise classification
 
 
 # ─── SARIF loader ────────────────────────────────────────────────────────────
@@ -473,7 +524,6 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
         file_h   = e["file"]
         expected_reach = e["expected_reachability"]
         signal   = e.get("signal", "")   # cve, cwe, secret, dlp, ai, malware
-        canary   = e.get("canary", False)
 
         # Filter by signal type when available (fixes cross-type matching bug)
         if signal:
@@ -491,54 +541,85 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
 
         if not matches:
             # No finding of the expected signal type in this file = detection gap.
-            # WARN only — the scanner doesn't have a rule for this signal+lang yet.
-            results.append(ValidationResult("Reachability", desc, "WARN",
-                f"No {signal or 'any'} findings in {file_h}"))
+            reason = Reason.FAIL_NOT_DETECTED
+            results.append(ValidationResult("Reachability", desc, "FAIL",
+                f"No {signal or 'any'} findings in {file_h}",
+                reason=reason))
             continue
 
         correct = [f for f in matches if f.reachability == expected_reach]
         wrong   = [f for f in matches if f.reachability and f.reachability != expected_reach]
+        no_state = [f for f in matches if not f.reachability]
 
         if correct:
             results.append(ValidationResult("Reachability", desc, "PASS",
-                f"{len(correct)} {signal} finding(s) correctly {expected_reach}"))
+                f"{len(correct)} {signal} finding(s) correctly {expected_reach}",
+                reason=Reason.PASS))
         elif wrong:
             actual = wrong[0].reachability
-            # Finding exists with correct signal type but WRONG reachability = hard fail.
-            results.append(ValidationResult("Reachability", desc, "MISS",
-                f"{signal} in {file_h}: got {actual}, expected {expected_reach}"))
+            reason = Reason.classify(expected_reach, actual)
+            sev = Reason.severity(reason)
+            results.append(ValidationResult("Reachability", desc, "FAIL",
+                f"{signal} in {file_h}: got {actual}, expected {expected_reach} [{sev}]",
+                reason=reason))
+        elif no_state:
+            # Signal found but reachability is NULL = pipeline bug.
+            reason = Reason.FAIL_NO_STATE
+            results.append(ValidationResult("Reachability", desc, "FAIL",
+                f"{signal} in {file_h}: found but no reachability state set (pipeline gap)",
+                reason=reason))
         else:
-            # Findings exist for this signal+file but none have a reachability
-            # state set at all (NULL/empty). The scanner found the issue but the
-            # enrichment pipeline produced no verdict — that is a pipeline bug,
-            # not a detection gap. Score as MISS so it doesn't hide from CI.
-            results.append(ValidationResult("Reachability", desc, "MISS",
-                f"{signal} in {file_h}: found but no reachability state set (pipeline gap)"))
+            # Shouldn't happen but be safe
+            results.append(ValidationResult("Reachability", desc, "FAIL",
+                f"{signal} in {file_h}: unexpected state",
+                reason="FAIL_UNEXPECTED"))
     return results
 
 
 # ─── Summary printer ─────────────────────────────────────────────────────────
+
+_REASON_MARKS = {
+    Reason.PASS:                   PASS_MARK,
+    Reason.FAIL_NOT_DETECTED:      red("✘ NOT_DETECTED"),
+    Reason.FAIL_NO_STATE:          red("✘ NO_STATE"),
+    Reason.FAIL_DEMOTED:           red("✘ DEMOTED"),
+    Reason.FAIL_PROMOTED:          yellow("✘ PROMOTED"),
+    Reason.FAIL_UNKNOWN_EXP_REACH: yellow("✘ UNK←REACH"),
+    Reason.FAIL_REACH_EXP_UNKNOWN: yellow("✘ REACH←UNK"),
+    Reason.FAIL_NR_EXP_UNKNOWN:    yellow("✘ NR←UNK"),
+    Reason.FAIL_UNKNOWN_EXP_NR:    yellow("✘ UNK←NR"),
+}
+
 def print_results(all_results: list[ValidationResult], verbose: bool = False) -> int:
-    """Print results table. Returns number of MISSes."""
+    """Print results table. Returns number of failures."""
     categories = {}
     for r in all_results:
         categories.setdefault(r.category, []).append(r)
 
-    total_pass = total_miss = total_warn = 0
+    total_pass = 0
+    total_fail = 0
+    fail_counts: dict[str, int] = {}
 
     for cat, results in categories.items():
         print(f"\n{bold(cat)}")
-        print("─" * 60)
+        print("─" * 72)
         for r in results:
             if r.status == "PASS":
                 mark = PASS_MARK
                 total_pass += 1
+            elif r.status == "FAIL":
+                reason = r.reason or "FAIL_UNKNOWN"
+                mark = _REASON_MARKS.get(reason, red(f"✘ {reason}"))
+                total_fail += 1
+                fail_counts[reason] = fail_counts.get(reason, 0) + 1
             elif r.status == "MISS":
                 mark = FAIL_MARK
-                total_miss += 1
+                total_fail += 1
+                fail_counts["MISS"] = fail_counts.get("MISS", 0) + 1
             else:
                 mark = WARN_MARK
-                total_warn += 1
+                total_fail += 1
+                fail_counts["WARN"] = fail_counts.get("WARN", 0) + 1
 
             show = r.status != "PASS" or verbose
             if show:
@@ -547,18 +628,44 @@ def print_results(all_results: list[ValidationResult], verbose: bool = False) ->
             else:
                 print(f"  {mark}  {r.description}")
 
-    print(f"\n{'═' * 60}")
+    # ─── Summary ───
+    total = total_pass + total_fail
+    print(f"\n{'═' * 72}")
     print(f"  {green(f'{total_pass} passed')}  "
-          f"{(red(f'{total_miss} missing')) if total_miss else green('0 missing')}  "
-          f"{(yellow(f'{total_warn} warnings')) if total_warn else '0 warnings'}")
-    print(f"{'═' * 60}\n")
+          f"{red(f'{total_fail} failed') if total_fail else green('0 failed')}  "
+          f"({total} total)")
 
-    if total_miss == 0:
+    # ─── Failure breakdown ───
+    if fail_counts:
+        print(f"\n  {bold('Failure Breakdown:')}")
+        severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+        sorted_reasons = sorted(fail_counts.keys(),
+            key=lambda r: (
+                severity_order.index(Reason.severity(r))
+                if Reason.severity(r) in severity_order else 99, r
+            ))
+        for reason in sorted_reasons:
+            cnt = fail_counts[reason]
+            sev = Reason.severity(reason)
+            sev_color = red if sev == "CRITICAL" else (
+                yellow if sev in ("HIGH", "MEDIUM") else cyan
+            )
+            label = reason.replace("FAIL_", "") if reason.startswith("FAIL_") else reason
+            print(f"    {sev_color(f'{cnt:3d}')} {label:30s} [{sev}]")
+
+    print(f"{'═' * 72}\n")
+
+    if total_fail == 0:
         print(green("✔ TESTBED VALIDATION PASSED"))
     else:
-        print(red(f"✘ TESTBED VALIDATION FAILED — {total_miss} expected finding(s) not detected"))
+        print(red("✘ TESTBED VALIDATION FAILED"))
+        if Reason.FAIL_DEMOTED in fail_counts:
+            print(red(
+                f"  ⚠ {fail_counts[Reason.FAIL_DEMOTED]} DEMOTED findings "
+                f"(REACHABLE classified as NOT_REACHABLE — hiding real vulnerabilities)"
+            ))
 
-    return total_miss
+    return total_fail
 
 
 # ─── CLI ─────────────────────────────────────────────────────────────────────
