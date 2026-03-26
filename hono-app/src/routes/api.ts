@@ -46,4 +46,16 @@ apiRoutes.get('/profile', (c) => {
   return c.json(_.pick(user, ['name', 'role']));           // UNKNOWN CVE path
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// TYPE B DEAD CODE — function in same file as live routes, never
+// called from any route handler.  Module IS imported (via app.route).
+// ═══════════════════════════════════════════════════════════════════
+
+import { execSync } from 'child_process';
+
+/** NOT_REACHABLE (Type B): in live module but never called. CWE-78. */
+function deadInlineExec(cmd: string): string {
+  return execSync(cmd).toString();                          // CWE-78 NOT_REACHABLE (Type B)
+}
+
 export { apiRoutes };

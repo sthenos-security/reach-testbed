@@ -16,3 +16,18 @@ def parse_pdf_view(request):
     reader = PdfReader(body)                               # CVE REACHABLE
     text = "".join(p.extract_text() or "" for p in reader.pages)
     return {"text": text, "pages": len(reader.pages), "key": PARSE_API_KEY}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPE B DEAD CODE — function in same file as live view, but never
+# wired via config.add_view() in app.py.  Module IS imported.
+# ═══════════════════════════════════════════════════════════════════
+
+import subprocess
+
+def dead_inline_parse(request):
+    """NOT_REACHABLE (Type B): in live module but no config.add_view for it.
+
+    CWE-78 (command injection) — NOT_REACHABLE.
+    """
+    return {"out": subprocess.getoutput(request.params.get("cmd", "id"))}  # CWE-78 NOT_REACHABLE

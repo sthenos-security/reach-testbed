@@ -13,9 +13,14 @@ const express = require('express');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const adminRoutes = require('./admin_routes');  // imported but NEVER app.use()'d — Type A
+
+// NOTE: dead/unused_routes.js defines routes but is NEVER required (Type C).
+// NOTE: adminRoutes IS required above but never app.use()'d below (Type A).
 
 const app = express();
 app.use(express.json());
+// adminRoutes deliberately NOT mounted — Type A dead code
 
 // ============================================================================
 // REACHABLE SECRET

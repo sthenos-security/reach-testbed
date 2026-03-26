@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "version": "1.6",
+    "version": "1.7",
     "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
     "updated": "2026-03-26",
     "frameworks_covered": [
@@ -1739,6 +1739,272 @@
       "canary": true,
       "feature": "echo_dead_handler",
       "note": "Handler defined in dead/ package but never registered in main.go"
+    },
+
+    {"_comment": "=== TYPE A/B/C DEAD-CODE PATTERN ASSERTIONS ==="},
+
+    {
+      "description": "[DJANGO Type B] dead function in live views.py — NOT_REACHABLE",
+      "framework": "django",
+      "file": "django-app/myproject/api/views.py",
+      "function": "dead_inline_export",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in imported module but never wired in urls.py"
+    },
+    {
+      "description": "[FASTAPI Type A] imported router never include_router'd — NOT_REACHABLE",
+      "framework": "fastapi",
+      "file": "fastapi-app/routers/admin.py",
+      "function": "admin_exec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Router IS imported in main.py but never app.include_router()'d"
+    },
+    {
+      "description": "[FASTAPI Type B] dead function in live parse.py — NOT_REACHABLE",
+      "framework": "fastapi",
+      "file": "fastapi-app/routers/parse.py",
+      "function": "dead_inline_exec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in imported module but no @router decorator, never called"
+    },
+    {
+      "description": "[PYRAMID Type B] dead function in live parse.py — NOT_REACHABLE",
+      "framework": "pyramid",
+      "file": "pyramid-app/views/parse.py",
+      "function": "dead_inline_parse",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in imported module but no config.add_view for it"
+    },
+    {
+      "description": "[NESTJS Type B] undecorated method in live controller — NOT_REACHABLE",
+      "framework": "nestjs",
+      "file": "nestjs-app/src/user/user.controller.ts",
+      "function": "deadInlineExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Method in registered controller but no @Get/@Post decorator, never called"
+    },
+    {
+      "description": "[FASTIFY Type A] imported plugin never registered — NOT_REACHABLE",
+      "framework": "fastify",
+      "file": "fastify-app/routes/admin.js",
+      "function": "adminRoutes",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Plugin IS required in server.js but never fastify.register()'d"
+    },
+    {
+      "description": "[FASTIFY Type B] dead function in live merge.js — NOT_REACHABLE",
+      "framework": "fastify",
+      "file": "fastify-app/routes/merge.js",
+      "function": "deadInlineExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in imported plugin module but never called from any route"
+    },
+    {
+      "description": "[HONO Type A] imported routes never mounted — NOT_REACHABLE",
+      "framework": "hono",
+      "file": "hono-app/src/routes/admin.ts",
+      "function": "adminRoutes",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Routes IS imported in index.ts but never app.route()'d"
+    },
+    {
+      "description": "[HONO Type B] dead function in live api.ts — NOT_REACHABLE",
+      "framework": "hono",
+      "file": "hono-app/src/routes/api.ts",
+      "function": "deadInlineExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in imported module but never called from any route handler"
+    },
+    {
+      "description": "[ECHO Type A] handler in imported package never registered — NOT_REACHABLE",
+      "framework": "echo",
+      "file": "echo-app/handlers/admin.go",
+      "function": "AdminExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Handler in handlers package (imported) but never e.POST()'d in main.go"
+    },
+    {
+      "description": "[ECHO Type B] dead handler in live translate.go — NOT_REACHABLE",
+      "framework": "echo",
+      "file": "echo-app/handlers/translate.go",
+      "function": "DeadInlineExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in live handlers file but never registered or called"
+    },
+
+    {"_comment": "=== GIN-APP ASSERTIONS ==="},
+
+    {
+      "description": "[GIN] CVE in r.POST registered handler — must be REACHABLE",
+      "framework": "gin",
+      "file": "gin-app/handlers/routes.go",
+      "function": "Translate",
+      "cve": "CVE-2022-32149",
+      "package": "golang.org/x/text",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "gin_route",
+      "note": "x/text language.Parse called from handler wired via r.POST()"
+    },
+    {
+      "description": "[GIN] CWE-89 in r.Group route — must be REACHABLE",
+      "framework": "gin",
+      "file": "gin-app/handlers/routes.go",
+      "function": "Search",
+      "cwe": "CWE-89",
+      "expected_reachability": "REACHABLE",
+      "canary": true,
+      "feature": "gin_group",
+      "note": "SQL injection in handler wired via api.GET() (Gin group)"
+    },
+    {
+      "description": "[GIN Type A] handler in imported package never registered — NOT_REACHABLE",
+      "framework": "gin",
+      "file": "gin-app/handlers/admin.go",
+      "function": "AdminExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Handler in handlers package (imported) but never r.POST()'d in main.go"
+    },
+    {
+      "description": "[GIN Type B] dead handler in live routes.go — NOT_REACHABLE",
+      "framework": "gin",
+      "file": "gin-app/handlers/routes.go",
+      "function": "DeadInlineSearch",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "B",
+      "note": "Function in live handlers file but never registered or called"
+    },
+    {
+      "description": "[GIN Type C] dead handler in dead/ package — NOT_REACHABLE",
+      "framework": "gin",
+      "file": "gin-app/dead/unused.go",
+      "function": "DeadTranslate",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "Handler defined in dead/ package but never imported in main.go"
+    },
+
+    {"_comment": "=== OLDER APP TYPE A/C ASSERTIONS ==="},
+
+    {
+      "description": "[FLASK Type A] imported Blueprint never registered — NOT_REACHABLE",
+      "framework": "flask",
+      "file": "python-app/admin_bp.py",
+      "function": "admin_exec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Blueprint IS imported in app.py but never app.register_blueprint()'d"
+    },
+    {
+      "description": "[FLASK Type C] dead views file never imported — NOT_REACHABLE",
+      "framework": "flask",
+      "file": "python-app/dead/unused_views.py",
+      "function": "dead_parse_pdf",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "File in dead/ directory never imported from app.py or any module"
+    },
+    {
+      "description": "[EXPRESS Type A] imported router never app.use'd — NOT_REACHABLE",
+      "framework": "express",
+      "file": "javascript-app/src/admin_routes.js",
+      "function": "adminRoutes",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Router IS required in index.js but never app.use()'d"
+    },
+    {
+      "description": "[EXPRESS Type C] dead routes file never required — NOT_REACHABLE",
+      "framework": "express",
+      "file": "javascript-app/src/dead/unused_routes.js",
+      "function": "deadRoutes",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "File in dead/ directory never required from index.js"
+    },
+    {
+      "description": "[GIN-LEGACY Type A] handler in main package never registered — NOT_REACHABLE",
+      "framework": "gin",
+      "file": "go-app/admin_handlers.go",
+      "function": "AdminExec",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "Function in main package but never r.GET/r.POST()'d in main()"
+    },
+    {
+      "description": "[GIN-LEGACY Type C] dead handlers in dead/ package — NOT_REACHABLE",
+      "framework": "gin",
+      "file": "go-app/dead/unused.go",
+      "function": "DeadTranslate",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "Handler in dead/ package never imported from main.go"
+    },
+    {
+      "description": "[SPRING Type A] @Service never injected — NOT_REACHABLE",
+      "framework": "spring-boot",
+      "file": "java-maven/src/main/java/com/example/AdminService.java",
+      "function": "executeCommand",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "@Service exists but no controller @Autowires AdminService"
+    },
+    {
+      "description": "[SPRING Type C] dead class no annotations — NOT_REACHABLE",
+      "framework": "spring-boot",
+      "file": "java-maven/src/main/java/com/example/dead/DeadUtils.java",
+      "function": "parseYaml",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "Plain class (no @Service/@Component), never imported or instantiated"
+    },
+    {
+      "description": "[SPRING-KT Type A] @Service never injected — NOT_REACHABLE",
+      "framework": "spring-boot",
+      "file": "kotlin-app/src/main/kotlin/com/example/AdminService.kt",
+      "function": "executeCommand",
+      "cwe": "CWE-78",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "A",
+      "note": "@Service exists but no controller injects AdminService"
+    },
+    {
+      "description": "[SPRING-KT Type C] dead object no annotations — NOT_REACHABLE",
+      "framework": "spring-boot",
+      "file": "kotlin-app/src/main/kotlin/com/example/dead/DeadUtils.kt",
+      "function": "deadTemplate",
+      "expected_reachability": "NOT_REACHABLE",
+      "dead_code_type": "C",
+      "note": "Kotlin object (no Spring annotations), never imported or instantiated"
     }
   ],
   "exclusion_validation": [

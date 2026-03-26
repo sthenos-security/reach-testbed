@@ -37,7 +37,7 @@ Expected findings that `validate.py` checks for:
 | MALWARE | 6 | `testbed.json` → `malware` |
 | CVE groups | 3 | `testbed.json` → `cve_groups` (Pillow, cryptography, paramiko) |
 
-### Reachability Assertions (134 total)
+### Reachability Assertions (160 total)
 
 Expected reachability states that `validate.py` checks:
 
@@ -45,28 +45,56 @@ Expected reachability states that `validate.py` checks:
 |----------|------:|------:|------:|------:|
 | Signal matrix (6 signals × 4 langs) | 23 | 24 | 19 | 66 |
 | CWE framework tests (Flask/Django/FastAPI/NestJS/Fastify/Echo) | 23 | 10 | 0 | 33 |
-| Framework validation (Django/DRF/FastAPI/Pyramid/NestJS/Fastify/Hono/Echo) | 11 | 11 | 0 | 22 |
+| Framework validation (core — v1.6) | 11 | 11 | 0 | 22 |
+| Dead-code pattern validation (Type A/B/C — v1.7) | 2 | 24 | 0 | 26 |
 | Reachability-states-test | 2 | 2 | 0 | 4 |
 | Callgraph canaries (JS/Java) | 1 | 3 | 0 | 4 |
 | Client-side app (React) | 1 | 1 | 0 | 2 |
 | Transitive deps | 1 | 0 | 0 | 1 |
 | Site-packages exclusion | 1 | 0 | 0 | 1 |
 | CVE group test | 0 | 1 | 0 | 1 |
-| **TOTAL** | **63** | **52** | **19** | **134** |
+| **TOTAL** | **65** | **76** | **19** | **160** |
 
 62 of these are **canary** entries — regressions on canaries are release-blockers.
 
-### Framework Test Apps (new in v1.6)
+### Dead-Code Pattern Coverage (new in v1.7)
+
+Each dead-code type validates a different scanner capability:
+
+| Type | Meaning | What it tests |
+|------|---------|---------------|
+| **A** | Module/class imported but never registered/mounted | Scanner must trace framework registration (include_router, register_blueprint, app.use, etc.) |
+| **B** | Dead function in same file as live code | Scanner must trace call graph within imported modules |
+| **C** | Dead file/package never imported at all | Scanner must trace import graph from entrypoints |
+
+| App | Framework | A | B | C |
+|-----|-----------|:-:|:-:|:-:|
+| django-app | Django | ✅ | ✅ | ✅ |
+| fastapi-app | FastAPI | ✅ | ✅ | ✅ |
+| pyramid-app | Pyramid | ✅ | ✅ | ✅ |
+| nestjs-app | NestJS | ✅ | ✅ | ✅ |
+| fastify-app | Fastify | ✅ | ✅ | ✅ |
+| hono-app | Hono | ✅ | ✅ | ✅ |
+| echo-app | Echo | ✅ | ✅ | ✅ |
+| gin-app | Gin | ✅ | ✅ | ✅ |
+| python-app | Flask | ✅ | ✅ | ✅ |
+| javascript-app | Express | ✅ | ✅ | ✅ |
+| go-app | Gin | ✅ | ✅ | ✅ |
+| java-maven | Spring | ✅ | ✅ | ✅ |
+| kotlin-app | Spring | ✅ | ✅ | ✅ |
+
+### Framework Test Apps (new in v1.6, updated v1.7)
 
 | App | Framework | Language | R | NR | U | Signals |
 |-----|-----------|----------|--:|---:|--:|---------|
-| django-app | Django + DRF | Python | 5 | 4 | 1 | CVE (pypdf, pyyaml), CWE-89, CWE-78, SECRET |
-| fastapi-app | FastAPI | Python | 3 | 2 | 1 | CVE (pypdf, python-jose), CWE-22, SECRET |
-| pyramid-app | Pyramid | Python | 2 | 2 | 0 | CVE (pypdf, pyyaml), CWE-78, SECRET |
-| nestjs-app | NestJS | TypeScript | 3 | 2 | 0 | CVE (lodash, jwt), CWE-89, SECRET |
-| fastify-app | Fastify | JavaScript | 3 | 1 | 1 | CVE (lodash, jwt), CWE-89, SECRET |
-| hono-app | Hono | TypeScript | 2 | 1 | 1 | CVE (lodash, jwt), SECRET |
-| echo-app | Echo | Go | 3 | 1 | 0 | CVE (x/text, yaml.v2), CWE-89, SECRET |
+| django-app | Django + DRF | Python | 5 | 5 | 1 | CVE (pypdf, pyyaml), CWE-89, CWE-78, SECRET |
+| fastapi-app | FastAPI | Python | 3 | 4 | 1 | CVE (pypdf, python-jose), CWE-22, CWE-78, SECRET |
+| pyramid-app | Pyramid | Python | 2 | 3 | 0 | CVE (pypdf, pyyaml), CWE-78, SECRET |
+| nestjs-app | NestJS | TypeScript | 3 | 3 | 0 | CVE (lodash, jwt), CWE-89, CWE-78, SECRET |
+| fastify-app | Fastify | JavaScript | 3 | 3 | 1 | CVE (lodash, jwt), CWE-89, CWE-78, SECRET |
+| hono-app | Hono | TypeScript | 2 | 3 | 1 | CVE (lodash, jwt), CWE-78, SECRET |
+| echo-app | Echo | Go | 3 | 3 | 0 | CVE (x/text, yaml.v2), CWE-89, CWE-78, SECRET |
+| gin-app | Gin | Go | 3 | 3 | 0 | CVE (x/text, yaml.v2), CWE-89, CWE-78, SECRET |
 
 ### AI Reachability Design
 

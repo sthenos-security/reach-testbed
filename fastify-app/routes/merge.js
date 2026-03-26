@@ -35,4 +35,18 @@ async function mergeRoutes(fastify, options) {
   });
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// TYPE B DEAD CODE — function in same file as live plugin routes,
+// but never called from any route handler or exported as a route.
+// Module IS imported (via fastify.register), but this function is dead.
+// ═══════════════════════════════════════════════════════════════════
+
+const { execSync } = require('child_process');
+
+/** NOT_REACHABLE (Type B): helper in live module, never called.
+ *  CWE-78 (command injection) — NOT_REACHABLE. */
+function deadInlineExec(cmd) {
+  return execSync(cmd).toString();                         // CWE-78 NOT_REACHABLE (Type B)
+}
+
 module.exports = mergeRoutes;

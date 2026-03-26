@@ -9,26 +9,28 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"net/http"
 	"os/exec"
 
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/text/language"
 	"gopkg.in/yaml.v2"
 )
 
 // SECRET: Hardcoded API key (REACHABLE — used in Translate handler)
-const TranslationAPIKey = "sk_live_echo_translate_key_testbed"
+const TranslationAPIKey = "sk_live_gin_translate_key_testbed"
 
 // Translate handles POST /api/translate.
 // CVE-2022-32149 (x/text language tag DoS) — REACHABLE.
-func Translate(c echo.Context) error {
-	lang := c.FormValue("lang")
+func Translate(c *gin.Context) {
+	lang := c.PostForm("lang")
 	tag, err := language.Parse(lang) // CVE REACHABLE
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{
+	c.JSON(http.StatusOK, gin.H{
 		"language": tag.String(),
 		"key":      TranslationAPIKey, // SECRET REACHABLE
 	})
@@ -36,52 +38,44 @@ func Translate(c echo.Context) error {
 
 // LoadConfig handles POST /api/config.
 // CVE-2022-28948 (yaml.v2 stack exhaustion) — REACHABLE.
-func LoadConfig(c echo.Context) error {
-	body, _ := io_read(c)
+func LoadConfig(c *gin.Context) {
+	body, _ := io.ReadAll(c.Request.Body)
 	var config map[string]interface{}
-	err := yaml.Unmarshal(body, &config) // CVE REACHABLE
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	if err := yaml.Unmarshal(body, &config); err != nil { // CVE REACHABLE
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	return c.JSON(http.StatusOK, config)
+	c.JSON(http.StatusOK, config)
 }
 
 // Health handles GET /api/health. Safe endpoint.
-func Health(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"status": "ok", "framework": "echo"})
+func Health(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "framework": "gin"})
 }
 
 // Search handles GET /api/v2/search?q=...
 // CWE-89 (SQL injection) — REACHABLE: string concat with user input.
-func Search(c echo.Context) error {
-	q := c.QueryParam("q")
+func Search(c *gin.Context) {
+	q := c.Query("q")
 	db, _ := sql.Open("sqlite3", ":memory:")
 	defer db.Close()
-	// CWE-89: SQL injection via fmt.Sprintf
 	query := fmt.Sprintf("SELECT * FROM items WHERE name = '%s'", q) // CWE REACHABLE
 	rows, _ := db.Query(query)
 	defer rows.Close()
-	return c.JSON(http.StatusOK, map[string]string{"query": query})
-}
-
-// helper to read request body
-func io_read(c echo.Context) ([]byte, error) {
-	buf := make([]byte, 1024*1024)
-	n, err := c.Request().Body.Read(buf)
-	return buf[:n], err
+	c.JSON(http.StatusOK, gin.H{"query": query})
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// TYPE B DEAD CODE — function in same file as live handlers, but
-// never registered via e.GET/e.POST in main.go and never called
-// from any registered handler.  Package IS imported.
+// TYPE B DEAD CODE — function in same package as live handlers, but
+// never registered via r.GET/r.POST in main.go and never called
+// from any registered handler.
 // ═══════════════════════════════════════════════════════════════════
 
-// DeadInlineExec is NOT_REACHABLE (Type B): in live package but
-// never registered or called.
+// DeadInlineSearch is NOT_REACHABLE (Type B): in live package but
+// never registered or called from any route handler.
 // CWE-78 (command injection) — NOT_REACHABLE.
-func DeadInlineExec(c echo.Context) error {
-	cmd := c.QueryParam("cmd")
+func DeadInlineSearch(c *gin.Context) {
+	cmd := c.Query("cmd")
 	out, _ := exec.Command("sh", "-c", cmd).Output() // CWE-78 NOT_REACHABLE (Type B)
-	return c.String(http.StatusOK, string(out))
+	c.String(http.StatusOK, string(out))
 }

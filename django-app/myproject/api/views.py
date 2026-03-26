@@ -83,3 +83,18 @@ class SearchView(View):
         ).fetchall()
         conn.close()
         return JsonResponse({"results": rows})
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPE B DEAD CODE — function in same file, never called from any
+# route or view.  The module IS imported (via urls.py), but this
+# function has no call path from any entrypoint.
+# ═══════════════════════════════════════════════════════════════════
+
+def dead_inline_export(request):
+    """NOT_REACHABLE (Type B): defined in live module but never wired in urls.py.
+
+    CWE-78 (command injection) — NOT_REACHABLE: no URL pattern calls this.
+    """
+    cmd = request.GET.get("cmd", "id")
+    return JsonResponse({"out": subprocess.getoutput(cmd)})  # CWE-78 NOT_REACHABLE

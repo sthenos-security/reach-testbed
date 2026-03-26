@@ -265,3 +265,4 @@ Shipping without testbed validation is a regression risk.
 |------|--------|
 | 2026-03-26 | Initial gap analysis — 7 scanner plugins with zero testbed coverage identified |
 | 2026-03-26 | All 7 gaps closed: django-app, fastapi-app, pyramid-app, nestjs-app, fastify-app, hono-app, echo-app created. 22 framework_validation assertions added to testbed.json v1.6. SIGNAL-INVENTORY.md updated (112 → 134 assertions). |
+| 2026-03-26 | v1.7: gin-app created. Dead-code Type A/B/C coverage added to all 13 framework apps. 26 new dead-code pattern assertions in testbed.json. SIGNAL-INVENTORY.md updated (134 → 160 assertions). |

@@ -10,8 +10,13 @@
 
 from flask import Flask, request, jsonify
 from pypdf import PdfReader  # CVE-2022-42969 - ReDoS vulnerability
+from admin_bp import admin_bp  # imported but NEVER registered — Type A
+
+# NOTE: dead/unused_views.py defines views but is NEVER imported (Type C).
+# NOTE: admin_bp IS imported above but never app.register_blueprint()'d (Type A).
 
 app = Flask(__name__)
+# admin_bp deliberately NOT registered — Type A dead code
 
 # ============================================================================
 # ============================================================================

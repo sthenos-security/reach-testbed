@@ -8,12 +8,15 @@
 const fastify = require('fastify')({ logger: true });
 const mergeRoutes = require('./routes/merge');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');  // imported but NEVER registered — Type A
 
-// NOTE: dead/dead-plugin.js is NEVER registered — NOT_REACHABLE.
+// NOTE: dead/dead-plugin.js is NEVER required or registered — NOT_REACHABLE (Type C).
+// NOTE: adminRoutes IS required above but never fastify.register()'d — NOT_REACHABLE (Type A).
 
 // Register live plugins (REACHABLE)
 fastify.register(mergeRoutes, { prefix: '/api' });
 fastify.register(authRoutes, { prefix: '/api' });
+// adminRoutes deliberately NOT registered — Type A dead code
 
 // Direct route (REACHABLE)
 fastify.get('/api/health', async (request, reply) => {

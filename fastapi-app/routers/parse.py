@@ -27,3 +27,19 @@ async def read_file(path: str = Query(...)):
     """CWE-22 (path traversal) — REACHABLE: unsanitized path from query param."""
     with open(path) as f:                                   # CWE REACHABLE
         return {"content": f.read()}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPE B DEAD CODE — function in same file as live routes, but has
+# no @router decorator and is never called from any route handler.
+# Module IS imported (via include_router), but this function is dead.
+# ═══════════════════════════════════════════════════════════════════
+
+import subprocess
+
+def dead_inline_exec(cmd: str) -> str:
+    """NOT_REACHABLE (Type B): helper in live module, never called.
+
+    CWE-78 (command injection) — NOT_REACHABLE: no route invokes this.
+    """
+    return subprocess.getoutput(cmd)                        # CWE-78 NOT_REACHABLE

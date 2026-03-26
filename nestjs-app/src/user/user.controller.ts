@@ -54,4 +54,20 @@ export class UserController {
      */
     return this.userService.searchByName(name);            // CWE REACHABLE
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TYPE B DEAD CODE — method in live controller, but not decorated
+  // with @Get/@Post so NestJS never registers it as an endpoint.
+  // The class IS instantiated (it's in AppModule), but this method
+  // has no route and is never called from any other method.
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * NOT_REACHABLE (Type B): method in registered controller, no decorator, never called.
+   * CWE-78 (command injection) — NOT_REACHABLE.
+   */
+  deadInlineExec(cmd: string): string {
+    const { execSync } = require('child_process');
+    return execSync(cmd).toString();                       // CWE-78 NOT_REACHABLE (Type B)
+  }
 }
