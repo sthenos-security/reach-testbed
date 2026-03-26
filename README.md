@@ -45,9 +45,9 @@ Both attacks follow the same pattern: install hook → credential theft → exfi
 
 ---
 
-## Scan Baseline (v1.0.0b35)
+## Scan Baseline (v1.0.0b36)
 
-> `reachctl scan ~/src/reach-testbed` · 2026-03-15 · v1.0.0b35
+> `reachctl scan ~/src/reach-testbed` · 2026-03-15 · v1.0.0b36
 
 | Signal | Total | Exploitable | Unverified | Filtered |
 |--------|------:|------------:|-----------:|---------:|
@@ -75,6 +75,79 @@ See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI p
 3. **Demo** - Show customers real scan output
 4. **Documentation** - Examples of all vulnerability types
 
+## Repository Structure
+
+```
+reach-testbed/
+├── testbed.json               # Ground-truth assertions (v1.6, 134 reachability entries)
+├── validate.py                # Validation runner — checks scan output against testbed.json
+├── SIGNAL-INVENTORY.md        # Full signal inventory with R/NR/U counts per test app
+├── docs/
+│   └── FRAMEWORK-COVERAGE-GAPS.md  # Framework coverage analysis and gap closure status
+│
+├── ── Featured Demos ──────────────────────────────────────────────
+├── shai-hulud-simulation/     # 🌟 npm supply chain attack (postinstall → exfil)
+├── muaddib-simulation/        # 🌟 pip supply chain attack (setup.py cmdclass → exfil)
+│
+├── ── Core Language Apps ──────────────────────────────────────────
+├── python-app/                # Python: CVEs, secrets, reachability, malware patterns
+├── javascript-app/            # JS/TS: npm vulns, call graph, entrypoints
+├── go-app/                    # Go: go.mod vulns, FFI detection
+├── java-maven/                # Java: Maven multi-module, Spring entrypoints
+├── java-gradle/               # Java/Kotlin: Gradle Kotlin DSL, Android
+├── kotlin-app/                # Kotlin: coroutines, Android lifecycle
+├── typescript-app/            # TypeScript: TS-specific patterns
+├── ruby-app/                  # Ruby: Bundler vulns
+├── rust-app/                  # Rust: Cargo vulns
+├── scala-app/                 # Scala: SBT/Maven vulns
+├── groovy-app/                # Groovy: Grape/Gradle vulns
+│
+├── ── Framework Test Apps (new in v1.6) ───────────────────────────
+├── django-app/                # Django + DRF: FBV/CBV/ViewSet, urlpatterns wiring
+├── fastapi-app/               # FastAPI: APIRouter, include_router, Depends
+├── pyramid-app/               # Pyramid: config.add_route + config.add_view
+├── nestjs-app/                # NestJS: @Module/@Controller/@Injectable decorators
+├── fastify-app/               # Fastify: fastify.register plugin model
+├── hono-app/                  # Hono: app.route() chaining
+├── echo-app/                  # Echo (Go): e.POST/e.GET/e.Group registration
+│
+├── ── Signal & Reachability Tests ─────────────────────────────────
+├── signal-matrix/             # 🎯 All 6 signals × 4 languages × 3 reachability states
+├── invocation-patterns/       # 🔄 External endpoint vs internal trigger vs dead code
+├── reachability-states-test/  # Basic R/NR state verification
+├── npm-callgraph-test/        # 🔬 JS call graph canary (node-serialize, semver)
+├── java-callgraph-test/       # 🔬 Java call graph canary (Log4Shell vs Text4Shell)
+├── client-side-app/           # React client-side reachability
+├── transitive-dep-tests/      # Transitive dependency resolution
+├── site-packages-test/        # site-packages exclusion validation
+│
+├── ── Signal-Specific Tests ───────────────────────────────────────
+├── cwe-tests/                 # CWE patterns incl. SQL injection variable origin matrix
+├── secret-tests/              # Secret detection patterns
+├── secrets-tests/             # Additional secret patterns
+├── cve-group-tests/           # CVE group detection (Pillow, cryptography, paramiko)
+├── ai-security-test/          # 🤖 AI/LLM security: OWASP LLM Top 10, Garak, Corpus
+├── malware-test-packages/     # GuardDog malware pattern detection
+├── static-malware-tests/      # Static malware analysis patterns
+├── dlp-tests/                 # DLP/PII detection patterns
+├── iac-tests/                 # Infrastructure-as-code misconfigurations
+├── grc-tests/                 # GRC/compliance patterns
+├── signature-tests/           # Custom signature rule tests
+├── osv-enrichment-test/       # OSV database enrichment
+│
+├── ── Infrastructure Tests ────────────────────────────────────────
+├── private-registry/          # Private registry resolution (devpi, Verdaccio, Athens, Reposilite)
+├── polyglot-monorepo/         # Cross-language microservices
+├── noisy-enterprise-app/      # Large noisy repo for noise reduction testing
+├── invalid-encoding-test/     # Non-UTF8 file handling
+│
+├── ── Support ─────────────────────────────────────────────────────
+├── expected-results/          # JSON files with expected scan output per test app
+├── policies/                  # Custom policy files for GRC/compliance testing
+├── scripts/                   # Helper scripts
+└── tests/                     # pytest integration tests (private registry, auth)
+```
+
 ## Test Cases
 
 | Directory | Language | Features Tested |
@@ -91,11 +164,18 @@ See [SIGNAL-INVENTORY.md](SIGNAL-INVENTORY.md) for full breakdown including AI p
 | `java-gradle/` | Java/Kotlin | Gradle Kotlin DSL, Android |
 | `kotlin-app/` | Kotlin | Coroutines, Android lifecycle |
 | `polyglot-monorepo/` | Mixed | Cross-language, microservices |
-| `private-registry/` | Py/JS/Go/Java | 🆕 **Private registry resolution** — PURLResolver + lib_manager |
+| `private-registry/` | Py/JS/Go/Java | **Private registry resolution** — PURLResolver + lib_manager |
 | `malware-test-packages/` | JavaScript | GuardDog malware pattern detection |
 | `signal-matrix/` | Py/JS/Go/Java | 🎯 **Full signal matrix** — all 6 signals × 4 languages × 3 reachability states |
 | `invocation-patterns/` | Py/JS/Go/Java | 🔄 **Invocation patterns** — external endpoint vs internal trigger vs dead code × 4 languages |
 | `cwe-tests/python/cwe_sqli_matrix.py` | Python | 🧪 **SQL injection variable origin matrix** — 7 TP + 8 FP + 3 TN + 4 edge cases |
+| `django-app/` | Python | 🆕 **Django + DRF** — FBV, CBV, ViewSet, dead views not in urlpatterns |
+| `fastapi-app/` | Python | 🆕 **FastAPI** — APIRouter, include_router, dead routers never mounted |
+| `pyramid-app/` | Python | 🆕 **Pyramid** — config.add_route/add_view, @view_config with no matching route |
+| `nestjs-app/` | TypeScript | 🆕 **NestJS** — @Module/@Controller/@Injectable, dead controllers not in AppModule |
+| `fastify-app/` | JavaScript | 🆕 **Fastify** — plugin registration model, dead plugins never registered |
+| `hono-app/` | TypeScript | 🆕 **Hono** — app.route() chaining, dead routes never mounted |
+| `echo-app/` | Go | 🆕 **Echo** — e.POST/e.GET/e.Group, dead handlers never registered |
 
 ## Call Graph Canaries 🔬
 
@@ -554,7 +634,7 @@ pytest tests/test_private_registry_integration.py -v -s
 
 ---
 
-## Reachability Baseline (testbed.json v1.3)
+## Reachability Baseline (testbed.json v1.6)
 
 Ground-truth reachability for all signal types, verified from source code analysis.
 
@@ -569,19 +649,20 @@ Ground-truth reachability for all signal types, verified from source code analys
 | AI | 0 | 8 | 8 | Standalone files — no Flask routes, not imported by any entrypoint |
 | Malware | 6 | 0 | 6 | Install hooks (`setup.py`, `postinstall`) are reachable by definition |
 
-### Reachability validation (`reachability_validation` — 112 entries, 40 canaries)
+### Reachability validation (`reachability_validation` — 134 entries, 40 canaries)
 
 | Category | REACHABLE | NOT_REACHABLE | UNKNOWN | Total |
 |----------|:---------:|:-------------:|:-------:|:-----:|
 | Signal matrix (6 signals × 4 langs) | 23 | 24 | 19 | 66 |
 | CWE framework tests (Flask/Django/FastAPI/NestJS/Fastify/Echo) | 23 | 10 | 0 | 33 |
+| Framework validation (7 frameworks) | 11 | 11 | 0 | 22 |
 | Reachability-states-test | 2 | 2 | 0 | 4 |
 | Callgraph canaries (JS/Java) | 1 | 3 | 0 | 4 |
 | Client-side app (React) | 1 | 1 | 0 | 2 |
 | Transitive deps | 1 | 0 | 0 | 1 |
 | Site-packages exclusion | 1 | 0 | 0 | 1 |
 | CVE group test | 0 | 1 | 0 | 1 |
-| **TOTAL** | **52** | **41** | **19** | **112** |
+| **TOTAL** | **63** | **52** | **19** | **134** |
 
 ### SQL injection matrix (`sqli_variable_origin` — 15 entries)
 
@@ -628,7 +709,8 @@ python validate.py --db ~/.reachable/scans/reach-testbed-*/repo.db --verbose
 The validator checks all assertions in `testbed.json`:
 - 8 CVE + 16 CWE + 6 SECRET + 7 DLP + 8 AI + 6 MALWARE detection assertions
 - 3 CVE group assertions (Pillow, cryptography, paramiko)
-- 112 reachability state assertions (52 REACHABLE, 41 NOT_REACHABLE, 19 UNKNOWN)
+- 134 reachability state assertions (63 REACHABLE, 52 NOT_REACHABLE, 19 UNKNOWN)
+- 22 framework validation assertions (11 REACHABLE, 11 NOT_REACHABLE across 7 frameworks)
 - 40 canary entries (failure = release blocker)
 - 4 site-packages exclusion assertions
 - 15 SQL injection variable origin assertions (FP/TN/EDGE taint cases)
