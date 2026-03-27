@@ -3,7 +3,7 @@ REACHABLE™ PROPRIETARY SOFTWARE LICENSE
 
 Copyright © 2026 Sthenos Security. All rights reserved.
 
-Created by Alain Dazzi
+Created by Alain Dazzi | info@sthenosec.com
 
 NOTICE: This software and its documentation are proprietary to Sthenos Security
 ("Licensor") and are protected by copyright law and international treaties.
@@ -11,29 +11,38 @@ Unauthorized reproduction, distribution, or use of this software, in whole
 or in part, is strictly prohibited and may result in civil and criminal
 penalties.
 
-1. EVALUATION LICENSE
----------------------
+1. LICENSE GRANT
+-----------------
 Subject to the terms of this License, Licensor grants you a limited,
 non-exclusive, non-transferable, revocable license to use this software
-solely for internal evaluation purposes for a period of thirty (30) days
-from the date of first access ("Evaluation Period").
+under one of the following tiers:
+
+  a) COMMUNITY (FREE) — You may use this software at no cost, for an
+     unlimited duration, subject to the usage limits of the Community
+     tier (currently 1 repository). The Community tier includes full
+     scanning and AI remediation capabilities via Bring Your Own Token
+     (BYOT). No credit card or commercial agreement is required.
+
+  b) PAID (TEAM / ENTERPRISE) — You may use this software under the
+     terms of a paid subscription or commercial agreement with Licensor.
+     Paid tiers provide additional repository capacity, cloud dashboard
+     access, priority support, and other features as described on our
+     Pricing page.
 
 2. RESTRICTIONS
 ---------------
 You may NOT:
-  a) Use this software in production environments without a separate
-     commercial license agreement;
-  b) Copy, modify, adapt, translate, or create derivative works of
+  a) Copy, modify, adapt, translate, or create derivative works of
      the software;
-  c) Reverse engineer, disassemble, decompile, or otherwise attempt
+  b) Reverse engineer, disassemble, decompile, or otherwise attempt
      to derive the source code of the software;
-  d) Distribute, sublicense, lease, rent, loan, or otherwise transfer
+  c) Distribute, sublicense, lease, rent, loan, or otherwise transfer
      the software to any third party;
-  e) Remove, alter, or obscure any proprietary notices, labels, or
+  d) Remove, alter, or obscure any proprietary notices, labels, or
      marks on the software;
-  f) Use the software to develop competing products or services;
-  g) Use the software for any purpose other than evaluation without
-     prior written consent from Licensor.
+  e) Use the software to develop competing products or services;
+  f) Exceed the usage limits of your tier (e.g., repository count)
+     without upgrading to an appropriate paid plan.
 
 3. INTELLECTUAL PROPERTY
 ------------------------
@@ -41,6 +50,7 @@ This software contains proprietary algorithms, methods, and trade secrets,
 including but not limited to:
   - Multi-signal security correlation engine
   - Reachability analysis algorithms
+  - Cloud backend infrastructure and APIs
   - Risk assessment and verdict computation methods
   - Compliance mapping frameworks
 
@@ -75,11 +85,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 This License is effective until terminated. Licensor may terminate this
 License immediately upon written notice if you breach any provision of
 this License. Upon termination, you must destroy all copies of the
-software in your possession.
+software in your possession. The Community tier license remains in
+effect indefinitely provided you comply with these terms.
 
 8. COMMERCIAL LICENSING
 -----------------------
-For production use, enterprise deployment, or extended evaluation,
+For paid plans, enterprise deployment, or custom agreements,
 please contact:
 
   Sthenos Security
@@ -104,15 +115,3 @@ understand it, and agree to be bound by its terms and conditions.
 REACHABLE is a trademark of Sthenos Security.
 Patent Pending.
 ================================================================================
-
-DISCLAIMER
-----------
-Reachable aggregates and analyzes data from multiple internal and third-party
-security tools and sources. The accuracy, completeness, and timeliness of its
-outputs are inherently dependent on the quality, coverage, and reliability of
-those sources. Reachable does not guarantee that its findings represent a
-complete or definitive view of security risks or compliance posture.
-Furthermore, compliance frameworks and standards—including, but not limited to,
-SOC 2, ISO 27001, NIST, and CIS—are continuously evolving, and Reachable's
-outputs should be interpreted as risk-informed guidance rather than a
-certification, assurance, or absolute measure of compliance.
