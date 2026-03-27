@@ -1,0 +1,7 @@
+# SECURITY TEST — Simulated malicious .pth file (LiteLLM/TeamPCP pattern)
+# In a real attack, this file is placed in site-packages/ and Python's
+# site.py executes the 'import' line below on EVERY interpreter startup.
+# The imported module bootstraps a multi-stage credential harvester.
+#
+# This is a SAFE simulation — the imported module targets only localhost.
+import litellm_metadata_service

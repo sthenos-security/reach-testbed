@@ -1,0 +1,5 @@
+# Legitimate .pth file — contains only directory paths (no executable code)
+# This SHOULD NOT trigger any alerts (false positive control test)
+/usr/local/lib/python3.11/site-packages
+/home/user/.local/lib/python3.11/site-packages
+./vendor/lib
