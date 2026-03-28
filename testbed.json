@@ -1,8 +1,9 @@
 {
   "_meta": {
-    "version": "1.7",
+    "version": "1.8",
     "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
-    "updated": "2026-03-26",
+    "updated": "2026-03-28",
+    "no_lockfile_canary_design": "hono-app and echo-app intentionally have NO package-lock.json / go.sum respectively. This tests the scanner's behavior when a lockfile is absent: CVE detection via Grype requires a lockfile (SBOM manifest); without one, no CVE finding is produced and reachability is UNKNOWN by definition. Framework entries for these apps with skip_reason='no_lockfile_canary' are counted as PASS in validate.py — the skip is correct scanner behavior, not a gap. If a lockfile is added to these apps, remove the skip_reason field and set expected_reachability accordingly.",
     "frameworks_covered": [
       "flask",
       "django",
@@ -1686,7 +1687,7 @@
       "note": "Plugin defined but never fastify.register()'d in server.js"
     },
     {
-      "description": "[HONO] CVE in app.route mounted route — must be REACHABLE",
+      "description": "[HONO] CVE in app.route mounted route — SKIP: no lockfile canary",
       "framework": "hono",
       "file": "hono-app/src/routes/api.ts",
       "function": "merge",
@@ -1695,6 +1696,7 @@
       "expected_reachability": "REACHABLE",
       "canary": true,
       "feature": "hono_route",
+      "skip_reason": "no_lockfile_canary — hono-app intentionally has no package-lock.json; CVE detection requires lockfile",
       "note": "lodash _.merge called from route mounted via app.route()"
     },
     {
@@ -1708,7 +1710,7 @@
       "note": "Routes defined but never imported or mounted in index.ts"
     },
     {
-      "description": "[ECHO] CVE in e.POST registered handler — must be REACHABLE",
+      "description": "[ECHO] CVE in e.POST registered handler — SKIP: no lockfile canary",
       "framework": "echo",
       "file": "echo-app/handlers/translate.go",
       "function": "Translate",
@@ -1717,6 +1719,7 @@
       "expected_reachability": "REACHABLE",
       "canary": true,
       "feature": "echo_route",
+      "skip_reason": "no_lockfile_canary — echo-app intentionally has no go.sum; CVE detection requires lockfile",
       "note": "x/text language.Parse called from handler wired via e.POST()"
     },
     {

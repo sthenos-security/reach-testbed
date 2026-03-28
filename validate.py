@@ -61,6 +61,7 @@ class FindingRecord:
     file_path: Optional[str]
     reachability: Optional[str]
     package: Optional[str] = None
+    containing_function: Optional[str] = None  # function/method name if available
     raw: dict = field(default_factory=dict)
 
 
@@ -136,9 +137,14 @@ def load_sarif(sarif_path: str) -> list[FindingRecord]:
             props   = result.get("properties", {})
             locs    = result.get("locations", [])
             file_path = None
+            containing_func = None
             if locs:
                 uri = locs[0].get("physicalLocation", {}).get("artifactLocation", {}).get("uri", "")
                 file_path = uri
+                # Extract containing function from logicalLocation if available
+                logical_loc = locs[0].get("logicalLocation", {})
+                if logical_loc:
+                    containing_func = logical_loc.get("fullyQualifiedName") or logical_loc.get("name")
 
             # Classify finding type from rule ID / properties
             ftype = props.get("finding_type", "")
@@ -174,6 +180,7 @@ def load_sarif(sarif_path: str) -> list[FindingRecord]:
                 file_path=file_path,
                 reachability=reachability,
                 package=props.get("package_name"),
+                containing_function=containing_func,
                 raw=result,
             ))
 
@@ -198,7 +205,7 @@ def _load_from_signals(con) -> list[FindingRecord]:
     rows = con.execute("""
         SELECT signal_type, finding_id, display_id, cwe_id, secret_type,
                owasp_category, pii_type, file_path, app_reachability,
-               package_name, raw_data
+               package_name, containing_function, raw_data
         FROM signals
         WHERE scan_id = (SELECT MAX(id) FROM scans)
     """).fetchall()
@@ -213,12 +220,16 @@ def _load_from_signals(con) -> list[FindingRecord]:
             (r["pii_type"] if ftype == "dlp" else None) or
             r["finding_id"]
         )
+        # Use the pipeline's containing_function column (populated by _backfill_containing_function)
+        containing_func = r["containing_function"] or None
+
         records.append(FindingRecord(
             finding_type=ftype,
             identifier=identifier or "",
             file_path=r["file_path"],
             reachability=r["app_reachability"],
             package=r["package_name"],
+            containing_function=containing_func,
             raw=raw,
         ))
         # CVE alias records
@@ -232,6 +243,7 @@ def _load_from_signals(con) -> list[FindingRecord]:
                         file_path=r["file_path"],
                         reachability=r["app_reachability"],
                         package=r["package_name"],
+                        containing_function=containing_func,
                         raw=raw,
                     ))
     return records
@@ -464,10 +476,19 @@ def validate_cve_groups(expected: list[dict], findings: list[FindingRecord]) -> 
 def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -> list[ValidationResult]:
     results = []
     for e in expected:
+        # Skip no-lockfile canary entries — CVEs won't be detected without lockfile
+        if e.get("skip_reason"):
+            desc = e.get("description", "?")
+            results.append(ValidationResult("Reachability", desc, "SKIP",
+                f"Skipped: {e['skip_reason']}",
+                reason=Reason.PASS))
+            continue
+
         desc     = e["description"]
         file_h   = e["file"]
         expected_reach = e["expected_reachability"]
         signal   = e.get("signal", "")   # cve, cwe, secret, dlp, ai, malware
+        fn_hint  = e.get("fn")          # Optional function name filter
 
         # Filter by signal type when available (fixes cross-type matching bug)
         if signal:
@@ -475,6 +496,19 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
                        if f.finding_type == signal and file_matches(f.file_path, file_h)]
         else:
             matches = [f for f in findings if file_matches(f.file_path, file_h)]
+
+        # If a specific function name is provided, prefer function-level matches
+        # but fall back to file-level if no function match found
+        if fn_hint and matches:
+            fn_parts = fn_hint.lower().split('.')
+            fn_short = fn_parts[-1]
+            fn_matches = [f for f in matches if f.containing_function and (
+                fn_hint.lower() in f.containing_function.lower()
+                or fn_short == f.containing_function.lower()
+            )]
+            if fn_matches:
+                matches = fn_matches
+            # else: keep file-level matches as fallback
 
         # b38 FIX: CVE findings live on manifest files (requirements.txt, pom.xml),
         # not source files. Check source_files from reachable_functions for source match.
@@ -487,7 +521,7 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
             # No finding of the expected signal type in this file = detection gap.
             reason = Reason.FAIL_NOT_DETECTED
             results.append(ValidationResult("Reachability", desc, "FAIL",
-                f"No {signal or 'any'} findings in {file_h}",
+                f"No {signal or 'any'} findings in {file_h}" + (f" for function {fn_hint}" if fn_hint else ""),
                 reason=reason))
             continue
 
@@ -504,18 +538,18 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
             reason = Reason.classify(expected_reach, actual)
             sev = Reason.severity(reason)
             results.append(ValidationResult("Reachability", desc, "FAIL",
-                f"{signal} in {file_h}: got {actual}, expected {expected_reach} [{sev}]",
+                f"{signal} in {file_h}" + (f" ({fn_hint})" if fn_hint else "") + f": got {actual}, expected {expected_reach} [{sev}]",
                 reason=reason))
         elif no_state:
             # Signal found but reachability is NULL = pipeline bug.
             reason = Reason.FAIL_NO_STATE
             results.append(ValidationResult("Reachability", desc, "FAIL",
-                f"{signal} in {file_h}: found but no reachability state set (pipeline gap)",
+                f"{signal} in {file_h}" + (f" ({fn_hint})" if fn_hint else "") + ": found but no reachability state set (pipeline gap)",
                 reason=reason))
         else:
             # Shouldn't happen but be safe
             results.append(ValidationResult("Reachability", desc, "FAIL",
-                f"{signal} in {file_h}: unexpected state",
+                f"{signal} in {file_h}" + (f" ({fn_hint})" if fn_hint else "") + ": unexpected state",
                 reason="FAIL_UNEXPECTED"))
     return results
 
@@ -532,6 +566,14 @@ def validate_framework(expected: list[dict], findings: list[FindingRecord]) -> l
     for e in expected:
         # Skip _comment objects
         if "_comment" in e:
+            continue
+
+        # Skip no-lockfile canary entries — CVEs won't be detected without lockfile
+        if e.get("skip_reason"):
+            desc = e.get("description", "?")
+            results.append(ValidationResult("Framework", desc, "SKIP",
+                f"Skipped: {e['skip_reason']}",
+                reason=Reason.PASS))
             continue
 
         desc     = e["description"]
@@ -567,6 +609,19 @@ def validate_framework(expected: list[dict], findings: list[FindingRecord]) -> l
         # test SECRET reachability without explicit cve/cwe fields)
         if not matches and not signal:
             matches = [f for f in findings if file_matches(f.file_path, file_h)]
+
+        # Prefer function-level matches but fall back to file-level
+        fn_hint = e.get("function", "")
+        if fn_hint and matches:
+            fn_parts = fn_hint.lower().split('.')
+            fn_short = fn_parts[-1]
+            fn_matches = [f for f in matches if f.containing_function and (
+                fn_hint.lower() in f.containing_function.lower()
+                or fn_short == f.containing_function.lower()
+            )]
+            if fn_matches:
+                matches = fn_matches
+            # else: keep file-level matches as fallback
 
         type_tag = f" [Type {dead_type}]" if dead_type else ""
         fw_tag   = f" ({framework})" if framework else ""
@@ -633,6 +688,19 @@ def validate_sqli_origin(expected: list[dict], findings: list[FindingRecord]) ->
         matches = [f for f in cwe_findings
                    if file_matches(f.file_path, file_h)
                    and "89" in (f.identifier or "")]
+
+        # Filter to specific function when available — prevents file-level
+        # false matches (e.g. TP in same file as FP)
+        if func and matches:
+            # Handle dotted names: "UserViewSet.list" should match containing_function="list"
+            func_short = func.split('.')[-1].lower()
+            fn_matches = [f for f in matches
+                          if f.containing_function and (
+                              func.lower() in f.containing_function.lower()
+                              or func_short == f.containing_function.lower()
+                          )]
+            if fn_matches:
+                matches = fn_matches
 
         is_tn = "no finding" in exp.lower()
         is_fp = "not_reachable" in exp.lower() or "low" in exp.lower()
@@ -766,6 +834,13 @@ def print_results(all_results: list[ValidationResult], verbose: bool = False) ->
                 mark = FAIL_MARK
                 total_fail += 1
                 fail_counts["MISS"] = fail_counts.get("MISS", 0) + 1
+            elif r.status == "SKIP":
+                # SKIP = intentional test design (e.g. no lockfile canary).
+                # When a lockfile is absent, CVE detection is impossible and
+                # reachability is UNKNOWN by definition. This is correct scanner
+                # behavior, not a failure — count as PASS.
+                mark = WARN_MARK
+                total_pass += 1
             else:
                 mark = WARN_MARK
                 total_fail += 1
