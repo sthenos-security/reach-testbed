@@ -3,7 +3,7 @@
     "version": "1.8",
     "description": "REACHABLE testbed expected findings baseline. All sections include ground-truth reachability verified from source code.",
     "updated": "2026-03-28",
-    "no_lockfile_canary_design": "hono-app and echo-app intentionally have NO package-lock.json / go.sum respectively. This tests the scanner's behavior when a lockfile is absent: CVE detection via Grype requires a lockfile (SBOM manifest); without one, no CVE finding is produced and reachability is UNKNOWN by definition. Framework entries for these apps with skip_reason='no_lockfile_canary' are counted as PASS in validate.py — the skip is correct scanner behavior, not a gap. If a lockfile is added to these apps, remove the skip_reason field and set expected_reachability accordingly.",
+    "no_lockfile_canary_design": "hono-app and echo-app intentionally have NO package-lock.json / go.sum respectively. The scanner detects packages from package.json / go.mod with exact-pinned versions and runs Grype against a synthesized SBOM. Because no dependency graph can be built without a lockfile, all CVE findings are reported with UNKNOWN reachability. This is correct scanner behavior — the testbed entries for these apps have expected_reachability=UNKNOWN and are tested as normal assertions, not skipped.",
     "frameworks_covered": [
       "flask",
       "django",
@@ -1687,17 +1687,14 @@
       "note": "Plugin defined but never fastify.register()'d in server.js"
     },
     {
-      "description": "[HONO] CVE in app.route mounted route — SKIP: no lockfile canary",
+      "description": "[HONO] CVE in app.route mounted route — UNKNOWN: no lockfile canary",
       "framework": "hono",
-      "file": "hono-app/src/routes/api.ts",
-      "function": "merge",
-      "cve": "CVE-2021-23337",
+      "file": "hono-app/package.json",
       "package": "lodash",
-      "expected_reachability": "REACHABLE",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
-      "feature": "hono_route",
-      "skip_reason": "no_lockfile_canary — hono-app intentionally has no package-lock.json; CVE detection requires lockfile",
-      "note": "lodash _.merge called from route mounted via app.route()"
+      "feature": "no_lockfile_detection",
+      "note": "hono-app has no package-lock.json. Scanner synthesizes SBOM from exact-pinned deps, runs Grype, reports UNKNOWN reachability. MISS = no-lockfile detection broken."
     },
     {
       "description": "[HONO] Dead routes never mounted — must be NOT_REACHABLE",
@@ -1710,17 +1707,14 @@
       "note": "Routes defined but never imported or mounted in index.ts"
     },
     {
-      "description": "[ECHO] CVE in e.POST registered handler — SKIP: no lockfile canary",
+      "description": "[ECHO] CVE in e.POST registered handler — UNKNOWN: no lockfile canary",
       "framework": "echo",
-      "file": "echo-app/handlers/translate.go",
-      "function": "Translate",
-      "cve": "CVE-2022-32149",
+      "file": "echo-app/go.mod",
       "package": "golang.org/x/text",
-      "expected_reachability": "REACHABLE",
+      "expected_reachability": "UNKNOWN",
       "canary": true,
-      "feature": "echo_route",
-      "skip_reason": "no_lockfile_canary — echo-app intentionally has no go.sum; CVE detection requires lockfile",
-      "note": "x/text language.Parse called from handler wired via e.POST()"
+      "feature": "no_lockfile_detection",
+      "note": "echo-app has no go.sum. Scanner parses go.mod exact requires, synthesizes SBOM, runs Grype, reports UNKNOWN reachability. MISS = no-lockfile detection broken."
     },
     {
       "description": "[ECHO] CWE-89 in e.Group route — must be REACHABLE",
