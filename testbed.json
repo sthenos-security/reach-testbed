@@ -388,6 +388,18 @@
       "path": "static-malware-tests/fake-typosquat-requests",
       "reachability": "REACHABLE",
       "note": "Typosquat of requests package \u2014 setup.py install hook"
+    },
+    {
+      "path": "plain-crypto-js-simulation",
+      "reachability": "REACHABLE",
+      "detection": "sandbox_dynamic",
+      "note": "Transitive RAT dropper \u2014 mirrors plain-crypto-js@4.2.1 (axios supply chain attack, March 2026). postinstall fires node setup.js which makes raw TCP (net module) + HTTPS + DNS exfil attempts to sfrclak.com. Detected by Node.js network intercept preload (intercept-net.js). All deps pre-loaded in /pkgs/ so any network call = malicious. Expected: SANDBOX_EVENT network_blocked via net.Socket.connect + https.request + dns.resolve."
+    },
+    {
+      "path": "axios-dropper-simulation",
+      "reachability": "REACHABLE",
+      "detection": "sandbox_dynamic",
+      "note": "Two-package supply chain attack \u2014 mirrors axios@1.14.1 (March 2026 compromise). axios-dropper-simulation itself has NO postinstall (clean host pkg). Attack is in transitive dep plain-crypto-js-simulation which has postinstall RAT. Detected via full dep-tree pre-fetch: npm pack --package-lock-only resolves tree, all tarballs COPYd into sandbox image, npm install triggers transitive postinstall with network_disabled=True + intercept-net.js preload."
     }
   ],
   "reachability_validation": [

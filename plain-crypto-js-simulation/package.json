@@ -1,0 +1,14 @@
+{
+  "name": "plain-crypto-js-simulation",
+  "version": "4.2.1",
+  "description": "⚠️ TEST ONLY — Simulates plain-crypto-js@4.2.1 supply chain attack (axios incident, March 2026)",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "node setup.js"
+  },
+  "keywords": ["security-test", "supply-chain", "reachable-demo"],
+  "author": "REACHABLE Security Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "_warning": "DO NOT PUBLISH — simulates malicious transitive dependency"
+}

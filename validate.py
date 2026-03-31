@@ -48,8 +48,6 @@ def cyan(s):   return f"{CYAN}{s}{RESET}"
 def bold(s):   return f"{BOLD}{s}{RESET}"
 
 PASS_MARK = green("✔ PASS")
-FAIL_MARK = red("✘ MISS")
-WARN_MARK = yellow("⚠ WARN")
 INFO_MARK = cyan("ℹ INFO")
 
 # ─── Data model ──────────────────────────────────────────────────────────────
@@ -62,6 +60,7 @@ class FindingRecord:
     reachability: Optional[str]
     package: Optional[str] = None
     containing_function: Optional[str] = None  # function/method name if available
+    function_qname: Optional[str] = None       # fully qualified name from functions table
     raw: dict = field(default_factory=dict)
 
 
@@ -119,7 +118,7 @@ class Reason:
 class ValidationResult:
     category: str
     description: str
-    status: str   # PASS, MISS, WARN (legacy) or Reason.* for reachability
+    status: str   # PASS, MISS, FAIL, or SKIP
     detail: str = ""
     reason: str = ""  # Reason.* enum value for precise classification
 
@@ -203,11 +202,13 @@ def _load_from_signals(con) -> list[FindingRecord]:
     """Load from unified signals table (primary path)."""
     records = []
     rows = con.execute("""
-        SELECT signal_type, finding_id, display_id, cwe_id, secret_type,
-               owasp_category, pii_type, file_path, app_reachability,
-               package_name, containing_function, raw_data
-        FROM signals
-        WHERE scan_id = (SELECT MAX(id) FROM scans)
+        SELECT s.signal_type, s.finding_id, s.display_id, s.cwe_id, s.secret_type,
+               s.owasp_category, s.pii_type, s.file_path, s.app_reachability,
+               s.package_name, s.containing_function, s.raw_data,
+               f.qname AS function_qname
+        FROM signals s
+        LEFT JOIN functions f ON f.id = s.function_id
+        WHERE s.scan_id = (SELECT MAX(id) FROM scans)
     """).fetchall()
     for r in rows:
         ftype = r["signal_type"]
@@ -230,6 +231,7 @@ def _load_from_signals(con) -> list[FindingRecord]:
             reachability=r["app_reachability"],
             package=r["package_name"],
             containing_function=containing_func,
+            function_qname=r["function_qname"],
             raw=raw,
         ))
         # CVE alias records
@@ -322,13 +324,17 @@ def validate_cve(expected: list[dict], findings: list[FindingRecord]) -> list[Va
         match   = find_match(findings, "cve", cve_id, file_h, pkg)
 
         if not match:
-            results.append(ValidationResult("CVE", cve_id, "MISS",
-                f"Not found (package={pkg}, file={file_h})"))
+            results.append(ValidationResult("CVE", cve_id, "FAIL",
+                f"not detected (package={pkg}, file={file_h})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
-                results.append(ValidationResult("CVE", cve_id, "WARN",
-                    f"Found but reachability={match.reachability}, expected={reach}{tag}"))
+                reason = Reason.classify(reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("CVE", cve_id, "FAIL",
+                    f"expected={reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("CVE", cve_id, "PASS",
                     f"pkg={match.package} reach={match.reachability}{tag}"))
@@ -344,13 +350,17 @@ def validate_cwe(expected: list[dict], findings: list[FindingRecord]) -> list[Va
         match  = find_match(findings, "cwe", cwe_id, file_h)
 
         if not match:
-            results.append(ValidationResult("CWE", cwe_id, "MISS",
-                f"Not found (file={file_h})"))
+            results.append(ValidationResult("CWE", cwe_id, "FAIL",
+                f"not detected (file={file_h})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
-                results.append(ValidationResult("CWE", cwe_id, "WARN",
-                    f"Found but reachability={match.reachability}, expected={reach}{tag}"))
+                reason = Reason.classify(reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("CWE", cwe_id, "FAIL",
+                    f"expected={reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("CWE", cwe_id, "PASS",
                     f"file={match.file_path} reach={match.reachability}{tag}"))
@@ -366,13 +376,17 @@ def validate_secrets(expected: list[dict], findings: list[FindingRecord]) -> lis
         match  = find_match(findings, "secret", stype, file_h)
 
         if not match:
-            results.append(ValidationResult("Secret", stype, "MISS",
-                f"Not found (file={file_h})"))
+            results.append(ValidationResult("Secret", stype, "FAIL",
+                f"not detected (file={file_h})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
-                results.append(ValidationResult("Secret", stype, "WARN",
-                    f"Found but reachability={match.reachability}, expected={reach}{tag}"))
+                reason = Reason.classify(reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("Secret", stype, "FAIL",
+                    f"expected={reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("Secret", stype, "PASS",
                     f"file={match.file_path} reach={match.reachability}{tag}"))
@@ -388,13 +402,17 @@ def validate_dlp(expected: list[dict], findings: list[FindingRecord]) -> list[Va
         match  = find_match(findings, "dlp", pii, file_h)
 
         if not match:
-            results.append(ValidationResult("DLP", pii, "MISS",
-                f"Not found (file={file_h})"))
+            results.append(ValidationResult("DLP", pii, "FAIL",
+                f"not detected (file={file_h})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
-                results.append(ValidationResult("DLP", pii, "WARN",
-                    f"Found but reachability={match.reachability}, expected={reach}{tag}"))
+                reason = Reason.classify(reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("DLP", pii, "FAIL",
+                    f"expected={reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("DLP", pii, "PASS",
                     f"file={match.file_path} reach={match.reachability}{tag}"))
@@ -410,13 +428,17 @@ def validate_ai(expected: list[dict], findings: list[FindingRecord]) -> list[Val
         match  = find_match(findings, "ai", cat, file_h)
 
         if not match:
-            results.append(ValidationResult("AI", cat, "MISS",
-                f"Not found (file={file_h})"))
+            results.append(ValidationResult("AI", cat, "FAIL",
+                f"not detected (file={file_h})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
-                results.append(ValidationResult("AI", cat, "WARN",
-                    f"Found but reachability={match.reachability}, expected={reach}{tag}"))
+                reason = Reason.classify(reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("AI", cat, "FAIL",
+                    f"expected={reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("AI", cat, "PASS",
                     f"file={match.file_path} reach={match.reachability}{tag}"))
@@ -437,8 +459,9 @@ def validate_malware(expected: list[dict], findings: list[FindingRecord]) -> lis
             for f in malware_findings
         )
         if not matched:
-            results.append(ValidationResult("Malware", pkg_name, "MISS",
-                f"Not found (path={path})"))
+            results.append(ValidationResult("Malware", pkg_name, "FAIL",
+                f"not detected (path={path})",
+                reason=Reason.FAIL_NOT_DETECTED))
         else:
             results.append(ValidationResult("Malware", pkg_name, "PASS", ""))
     return results
@@ -458,16 +481,20 @@ def validate_cve_groups(expected: list[dict], findings: list[FindingRecord]) -> 
             match = find_match(findings, "cve", cve_id, file_h, pkg)
             desc  = f"{pkg} / {cve_id}"
             if not match:
-                results.append(ValidationResult("CVE Group", desc, "MISS",
-                    f"Not found in group (package={pkg})"))
+                results.append(ValidationResult("CVE Group", desc, "FAIL",
+                    f"not detected in group (package={pkg})",
+                    reason=Reason.FAIL_NOT_DETECTED))
                 continue
 
             # Check reachability
             tag = _relaxed_tag(match)
             expected_reach = mixed.get(cve_id) or all_reach
             if expected_reach and match.reachability and match.reachability != expected_reach:
-                results.append(ValidationResult("CVE Group", desc, "WARN",
-                    f"Found but reachability={match.reachability}, expected={expected_reach}{tag}"))
+                reason = Reason.classify(expected_reach, match.reachability)
+                sev = Reason.severity(reason)
+                results.append(ValidationResult("CVE Group", desc, "FAIL",
+                    f"expected={expected_reach} got={match.reachability}{tag}",
+                    reason=reason))
             else:
                 results.append(ValidationResult("CVE Group", desc, "PASS",
                     f"reach={match.reachability}{tag}"))
@@ -538,7 +565,7 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
             reason = Reason.classify(expected_reach, actual)
             sev = Reason.severity(reason)
             results.append(ValidationResult("Reachability", desc, "FAIL",
-                f"{signal} in {file_h}" + (f" ({fn_hint})" if fn_hint else "") + f": got {actual}, expected {expected_reach} [{sev}]",
+                f"expected={expected_reach} got={actual}  {signal} in {file_h}" + (f" ({fn_hint})" if fn_hint else ""),
                 reason=reason))
         elif no_state:
             # Signal found but reachability is NULL = pipeline bug.
@@ -647,7 +674,7 @@ def validate_framework(expected: list[dict], findings: list[FindingRecord]) -> l
             reason = Reason.classify(expected_reach, actual)
             sev = Reason.severity(reason)
             results.append(ValidationResult(label, desc, "FAIL",
-                f"{signal or 'signal'} in {file_h}: got {actual}, expected {expected_reach} [{sev}]",
+                f"expected={expected_reach} got={actual}  {signal or 'signal'} in {file_h}",
                 reason=reason))
         elif no_state:
             reason = Reason.FAIL_NO_STATE
@@ -741,7 +768,7 @@ def validate_sqli_origin(expected: list[dict], findings: list[FindingRecord]) ->
                 actual = matches[0].reachability or "NULL"
                 reason = Reason.classify("REACHABLE", actual) if actual != "NULL" else Reason.FAIL_NO_STATE
                 results.append(ValidationResult("SQLi Origin", desc, "FAIL",
-                    f"Edge case {func}: got {actual}, expected REACHABLE",
+                    f"expected=REACHABLE got={actual}  edge case {func}",
                     reason=reason))
             else:
                 results.append(ValidationResult("SQLi Origin", desc, "FAIL",
@@ -797,15 +824,15 @@ def validate_exclusions(expected: list[dict], findings: list[FindingRecord]) -> 
 # ─── Summary printer ─────────────────────────────────────────────────────────
 
 _REASON_MARKS = {
-    Reason.PASS:                   PASS_MARK,
-    Reason.FAIL_NOT_DETECTED:      red("✘ NOT_DETECTED"),
-    Reason.FAIL_NO_STATE:          red("✘ NO_STATE"),
-    Reason.FAIL_DEMOTED:           red("✘ DEMOTED"),
-    Reason.FAIL_PROMOTED:          yellow("✘ PROMOTED"),
-    Reason.FAIL_UNKNOWN_EXP_REACH: yellow("✘ UNK←REACH"),
-    Reason.FAIL_REACH_EXP_UNKNOWN: yellow("✘ REACH←UNK"),
-    Reason.FAIL_NR_EXP_UNKNOWN:    yellow("✘ NR←UNK"),
-    Reason.FAIL_UNKNOWN_EXP_NR:    yellow("✘ UNK←NR"),
+    Reason.PASS:                   green("\u2714 PASS"),
+    Reason.FAIL_NOT_DETECTED:      red("\u2718 FAIL [MISS]"),
+    Reason.FAIL_NO_STATE:          red("\u2718 FAIL [NO_STATE]"),
+    Reason.FAIL_DEMOTED:           red("\u2718 FAIL [DEMOTED]"),
+    Reason.FAIL_PROMOTED:          yellow("\u2718 FAIL [PROMOTED]"),
+    Reason.FAIL_UNKNOWN_EXP_REACH: yellow("\u2718 FAIL [WRONG VERDICT]"),
+    Reason.FAIL_REACH_EXP_UNKNOWN: yellow("\u2718 FAIL [WRONG VERDICT]"),
+    Reason.FAIL_NR_EXP_UNKNOWN:    yellow("\u2718 FAIL [WRONG VERDICT]"),
+    Reason.FAIL_UNKNOWN_EXP_NR:    yellow("\u2718 FAIL [WRONG VERDICT]"),
 }
 
 def print_results(all_results: list[ValidationResult], verbose: bool = False) -> int:
@@ -825,33 +852,24 @@ def print_results(all_results: list[ValidationResult], verbose: bool = False) ->
             if r.status == "PASS":
                 mark = PASS_MARK
                 total_pass += 1
-            elif r.status == "FAIL":
-                reason = r.reason or "FAIL_UNKNOWN"
-                mark = _REASON_MARKS.get(reason, red(f"✘ {reason}"))
+            elif r.status in ("FAIL", "MISS"):
+                reason = r.reason or ("FAIL_NOT_DETECTED" if r.status == "MISS" else "FAIL_UNKNOWN")
+                mark = _REASON_MARKS.get(reason, red(f"✘ FAIL [{reason}]"))
                 total_fail += 1
                 fail_counts[reason] = fail_counts.get(reason, 0) + 1
-            elif r.status == "MISS":
-                mark = FAIL_MARK
-                total_fail += 1
-                fail_counts["MISS"] = fail_counts.get("MISS", 0) + 1
             elif r.status == "SKIP":
-                # SKIP = intentional test design (e.g. no lockfile canary).
-                # When a lockfile is absent, CVE detection is impossible and
-                # reachability is UNKNOWN by definition. This is correct scanner
-                # behavior, not a failure — count as PASS.
-                mark = WARN_MARK
-                total_pass += 1
+                continue
             else:
-                mark = WARN_MARK
+                mark = red(f"✘ FAIL [{r.status}]")
                 total_fail += 1
-                fail_counts["WARN"] = fail_counts.get("WARN", 0) + 1
+                reason = r.reason or r.status
+                fail_counts[reason] = fail_counts.get(reason, 0) + 1
 
-            show = r.status != "PASS" or verbose
-            if show:
+            if r.status == "PASS":
+                print(f"  {mark}  {r.description}")
+            else:
                 detail = f"  {r.detail}" if r.detail else ""
                 print(f"  {mark}  {r.description}{detail}")
-            else:
-                print(f"  {mark}  {r.description}")
 
     # ─── Summary ───
     total = total_pass + total_fail
@@ -860,23 +878,59 @@ def print_results(all_results: list[ValidationResult], verbose: bool = False) ->
           f"{red(f'{total_fail} failed') if total_fail else green('0 failed')}  "
           f"({total} total)")
 
-    # ─── Failure breakdown ───
+    # ─── Failure breakdown: two categories ───
     if fail_counts:
-        print(f"\n  {bold('Failure Breakdown:')}")
-        severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
-        sorted_reasons = sorted(fail_counts.keys(),
-            key=lambda r: (
-                severity_order.index(Reason.severity(r))
-                if Reason.severity(r) in severity_order else 99, r
-            ))
-        for reason in sorted_reasons:
-            cnt = fail_counts[reason]
-            sev = Reason.severity(reason)
-            sev_color = red if sev == "CRITICAL" else (
-                yellow if sev in ("HIGH", "MEDIUM") else cyan
-            )
-            label = reason.replace("FAIL_", "") if reason.startswith("FAIL_") else reason
-            print(f"    {sev_color(f'{cnt:3d}')} {label:30s} [{sev}]")
+        # Bucket 1: NOT DETECTED — scanner didn't find the signal at all
+        not_detected_reasons = {Reason.FAIL_NOT_DETECTED}
+        nd_total = sum(fail_counts.get(r, 0) for r in not_detected_reasons)
+
+        # Bucket 2: WRONG VERDICT — detected but wrong reachability
+        wv_reasons = {r: c for r, c in fail_counts.items() if r not in not_detected_reasons}
+        wv_total = sum(wv_reasons.values())
+
+        print()
+        if nd_total:
+            print(f"  {bold('NOT DETECTED')} ({nd_total})  — scanner did not find the expected signal")
+            for r in sorted(not_detected_reasons):
+                if r in fail_counts:
+                    label = r.replace("FAIL_", "") if r.startswith("FAIL_") else r
+                    print(f"    {red(f'{fail_counts[r]:3d}')} {label}")
+
+        if wv_total:
+            print(f"  {bold('WRONG VERDICT')} ({wv_total})")
+            severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+            sorted_reasons = sorted(wv_reasons.keys(),
+                key=lambda r: (
+                    severity_order.index(Reason.severity(r))
+                    if Reason.severity(r) in severity_order else 99, r
+                ))
+            for reason in sorted_reasons:
+                cnt = wv_reasons[reason]
+                sev = Reason.severity(reason)
+                sev_color = red if sev == "CRITICAL" else (
+                    yellow if sev in ("HIGH", "MEDIUM") else cyan
+                )
+                _FAIL_TYPE_LABELS = {
+                    Reason.FAIL_DEMOTED:           "DEMOTED",
+                    Reason.FAIL_PROMOTED:          "PROMOTED",
+                    Reason.FAIL_UNKNOWN_EXP_REACH: "UNDER-CLASSIFIED",
+                    Reason.FAIL_REACH_EXP_UNKNOWN: "OVER-CLASSIFIED",
+                    Reason.FAIL_NR_EXP_UNKNOWN:    "OVER-CLASSIFIED",
+                    Reason.FAIL_UNKNOWN_EXP_NR:    "UNDER-CLASSIFIED",
+                    Reason.FAIL_NO_STATE:          "NO_STATE",
+                }
+                _EXPECTED_GOT = {
+                    Reason.FAIL_DEMOTED:           "(expected REACHABLE -> got NOT_REACHABLE)",
+                    Reason.FAIL_PROMOTED:          "(expected NOT_REACHABLE -> got REACHABLE)",
+                    Reason.FAIL_UNKNOWN_EXP_REACH: "(expected REACHABLE -> got UNKNOWN)",
+                    Reason.FAIL_REACH_EXP_UNKNOWN: "(expected UNKNOWN -> got REACHABLE)",
+                    Reason.FAIL_NR_EXP_UNKNOWN:    "(expected UNKNOWN -> got NOT_REACHABLE)",
+                    Reason.FAIL_UNKNOWN_EXP_NR:    "(expected NOT_REACHABLE -> got UNKNOWN)",
+                    Reason.FAIL_NO_STATE:          "(no reachability set — pipeline bug)",
+                }
+                label = _FAIL_TYPE_LABELS.get(reason, reason.replace("FAIL_", ""))
+                exp_got = _EXPECTED_GOT.get(reason, "")
+                print(f"    {sev_color(f'{cnt:3d}')} {label:20s} {exp_got:45s} [{sev}]")
 
     print(f"{'═' * 72}\n")
 

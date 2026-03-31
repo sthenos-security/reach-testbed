@@ -1,0 +1,15 @@
+{
+  "name": "axios-dropper-simulation",
+  "version": "1.14.1",
+  "description": "⚠️ TEST ONLY — Simulates axios@1.14.1 supply chain attack (March 2026)",
+  "main": "index.js",
+  "dependencies": {
+    "plain-crypto-js-simulation": "file:../plain-crypto-js-simulation"
+  },
+  "keywords": ["security-test", "supply-chain", "reachable-demo"],
+  "author": "REACHABLE Security Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "_warning": "DO NOT PUBLISH — simulates compromised axios package",
+  "_attack_pattern": "Transitive malicious dep: plain-crypto-js-simulation has postinstall RAT"
+}
