@@ -1,0 +1,138 @@
+{
+  "_comment": "Ground-truth expected results for signature-tests/samples — demonstrates REACHABLE reachability filtering vs traditional scanners",
+  "tool": "reachable",
+  "target": "signature-tests/samples",
+  "entry_point": "index.js",
+
+  "traditional_scanner_output": {
+    "_note": "Traditional scanners (Trivy, Snyk, basic YARA) flag everything equally — no reachability context",
+    "total_findings": 6,
+    "critical": 6,
+    "findings": [
+      { "file": "reachable/active_loader.js",   "rule": "EICAR_Test_Signature",    "severity": "CRITICAL" },
+      { "file": "reachable/active_loader.js",   "rule": "Test_Malware_Marker",     "severity": "CRITICAL" },
+      { "file": "reachable/active_loader.js",   "rule": "Test_Obfuscation_Pattern","severity": "CRITICAL" },
+      { "file": "reachable/live_beacon.js",     "rule": "Test_C2_Beacon",          "severity": "CRITICAL" },
+      { "file": "reachable/live_beacon.js",     "rule": "Test_Data_Exfiltration",  "severity": "CRITICAL" },
+      { "file": "unreachable/dead_code.js",     "rule": "EICAR_Test_Signature",    "severity": "CRITICAL" },
+      { "file": "unreachable/dead_code.js",     "rule": "Test_Malware_Marker",     "severity": "CRITICAL" },
+      { "file": "unreachable/unused_module.js", "rule": "Test_Ransomware_Pattern", "severity": "CRITICAL" },
+      { "file": "unreachable/unused_module.js", "rule": "Test_C2_Beacon",          "severity": "CRITICAL" },
+      { "file": "unreachable/unused_module.js", "rule": "Test_Crypto_Miner",       "severity": "CRITICAL" }
+    ],
+    "noise_pct": 50,
+    "_noise_note": "5 of 10 findings are in dead code — half are noise"
+  },
+
+  "reachable_output": {
+    "_note": "REACHABLE filters by call-graph reachability from index.js entrypoint",
+    "total_findings": 10,
+    "actionable_findings": 5,
+    "noise_reduced": 5,
+    "noise_reduction_pct": 50,
+
+    "critical_reachable": [
+      {
+        "file": "reachable/active_loader.js",
+        "function": "init",
+        "rule": "EICAR_Test_Signature",
+        "severity": "CRITICAL",
+        "reachability": "REACHABLE",
+        "call_path": "main() → activeLoader.init()",
+        "action": "BLOCK — signature in live code path"
+      },
+      {
+        "file": "reachable/active_loader.js",
+        "function": "init",
+        "rule": "Test_Malware_Marker",
+        "severity": "CRITICAL",
+        "reachability": "REACHABLE",
+        "call_path": "main() → activeLoader.init()",
+        "action": "BLOCK — signature in live code path"
+      },
+      {
+        "file": "reachable/active_loader.js",
+        "function": "decode",
+        "rule": "Test_Obfuscation_Pattern",
+        "severity": "CRITICAL",
+        "reachability": "REACHABLE",
+        "call_path": "main() → activeLoader.init() [module scope]",
+        "action": "BLOCK — base64 obfuscation in live module"
+      },
+      {
+        "file": "reachable/live_beacon.js",
+        "function": "checkin",
+        "rule": "Test_C2_Beacon",
+        "severity": "CRITICAL",
+        "reachability": "REACHABLE",
+        "call_path": "main() → liveBeacon.checkin()",
+        "action": "BLOCK — C2 beacon in live code path"
+      },
+      {
+        "file": "reachable/live_beacon.js",
+        "function": "exfiltrate",
+        "rule": "Test_Data_Exfiltration",
+        "severity": "CRITICAL",
+        "reachability": "REACHABLE",
+        "call_path": "main() → liveBeacon.checkin() [module scope]",
+        "action": "BLOCK — exfil marker in live module"
+      }
+    ],
+
+    "not_reachable": [
+      {
+        "file": "unreachable/dead_code.js",
+        "function": "neverCalled",
+        "rule": "EICAR_Test_Signature",
+        "severity": "CRITICAL",
+        "reachability": "NOT_REACHABLE",
+        "reason": "Module never required from any entry point",
+        "action": "DEPRIORITISE — not in any live code path"
+      },
+      {
+        "file": "unreachable/dead_code.js",
+        "function": "alsoNeverCalled",
+        "rule": "Test_Malware_Marker",
+        "severity": "CRITICAL",
+        "reachability": "NOT_REACHABLE",
+        "reason": "Module never required from any entry point",
+        "action": "DEPRIORITISE — not in any live code path"
+      },
+      {
+        "file": "unreachable/unused_module.js",
+        "function": "encryptFiles",
+        "rule": "Test_Ransomware_Pattern",
+        "severity": "CRITICAL",
+        "reachability": "NOT_REACHABLE",
+        "reason": "Module never required from any entry point",
+        "action": "DEPRIORITISE — not in any live code path"
+      },
+      {
+        "file": "unreachable/unused_module.js",
+        "function": "callHome",
+        "rule": "Test_C2_Beacon",
+        "severity": "CRITICAL",
+        "reachability": "NOT_REACHABLE",
+        "reason": "Module never required from any entry point",
+        "action": "DEPRIORITISE — not in any live code path"
+      },
+      {
+        "file": "unreachable/unused_module.js",
+        "function": "mineCoins",
+        "rule": "Test_Crypto_Miner",
+        "severity": "CRITICAL",
+        "reachability": "NOT_REACHABLE",
+        "reason": "Module never required from any entry point",
+        "action": "DEPRIORITISE — not in any live code path"
+      }
+    ]
+  },
+
+  "summary": {
+    "traditional_total":      10,
+    "reachable_actionable":    5,
+    "not_reachable_noise":     5,
+    "noise_reduction_pct":    50,
+    "demo_point": "50% noise reduction on a simple two-module app. Real enterprise repos see 60-80% reduction."
+  }
+}

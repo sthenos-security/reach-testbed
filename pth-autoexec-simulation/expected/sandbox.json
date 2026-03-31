@@ -1,0 +1,152 @@
+{
+  "_comment": "Expected sandbox behavioral findings for pth-autoexec-simulation — litellm_init.pth pattern",
+  "tool": "reachable-sandbox",
+  "version": "4.5.x",
+  "target": "pth-autoexec-simulation",
+  "ecosystem": "pip",
+  "install_command": "pip install /work/local-pkg/",
+  "package_source": "local",
+  "verdict": "MALICIOUS",
+  "capability_score": 0.0,
+
+  "_note_detection_mechanism": [
+    "Unlike cmdclass attacks, .pth files are not run during pip install — they are",
+    "placed in site-packages/ and executed by site.py on every subsequent Python start.",
+    "The sandbox detects this via a post-install scan of site-packages/ for .pth files",
+    "containing 'import' lines, then classifies them with pth_autoexec events.",
+    "The imported module (litellm_metadata_service.py) triggers additional events",
+    "if run in a second phase where the new site-packages are active."
+  ],
+
+  "findings": [
+    {
+      "rule": "PTH_AUTOEXEC",
+      "severity": "MEDIUM",
+      "phase": "post_install_scan",
+      "description": ".pth file with bare import detected in site-packages — executes on every Python start",
+      "evidence": {
+        "event": "pth_autoexec",
+        "path": "site-packages/litellm_init.pth",
+        "content": "import litellm_metadata_service",
+        "danger_ops": []
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "pth_execution",
+      "description": "Honeypot file accessed: ~/.aws/credentials (via .pth-imported module)",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.aws/credentials"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "pth_execution",
+      "description": "Honeypot file accessed: ~/.ssh/id_rsa",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.ssh/id_rsa"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "pth_execution",
+      "description": "Honeypot file accessed: ~/.kube/config",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.kube/config"
+      }
+    },
+    {
+      "rule": "CREDENTIAL_ACCESS",
+      "severity": "CRITICAL",
+      "phase": "pth_execution",
+      "description": "Honeypot file accessed: ~/.docker/config.json",
+      "evidence": {
+        "event": "honeypot_access",
+        "path": "/home/sandbox/.docker/config.json"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "pth_execution",
+      "description": "Sensitive environment variable accessed: OPENAI_API_KEY",
+      "evidence": {
+        "event": "env_access",
+        "variable": "OPENAI_API_KEY"
+      }
+    },
+    {
+      "rule": "ENV_ACCESS",
+      "severity": "HIGH",
+      "phase": "pth_execution",
+      "description": "Sensitive environment variable accessed: GITHUB_TOKEN",
+      "evidence": {
+        "event": "env_access",
+        "variable": "GITHUB_TOKEN"
+      }
+    },
+    {
+      "rule": "NETWORK_DURING_INSTALL",
+      "severity": "CRITICAL",
+      "phase": "pth_execution",
+      "description": "Known-bad C2 domain contacted: models.litellm.cloud (TeamPCP IOC)",
+      "evidence": {
+        "event": "network_blocked",
+        "destination": "models.litellm.cloud",
+        "port": 443,
+        "ioc": "TeamPCP March 2026"
+      }
+    }
+  ],
+
+  "exfil_chain_detected": true,
+  "exfil_chain": {
+    "sensitive_read": [
+      "~/.aws/credentials",
+      "~/.ssh/id_rsa",
+      "~/.kube/config",
+      "~/.docker/config.json",
+      "OPENAI_API_KEY",
+      "GITHUB_TOKEN"
+    ],
+    "outbound_attempt": ["models.litellm.cloud:443"]
+  },
+
+  "metrics": {
+    "pth_files_found": 1,
+    "pth_with_import": 1,
+    "pth_with_danger_ops": 0,
+    "install.network_attempt": true,
+    "install.credential_access": true,
+    "install.shell_spawn": 0,
+    "install.fs_escape": false
+  },
+
+  "summary": {
+    "total_findings": 7,
+    "critical": 5,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "honeypot_files_accessed": 4,
+    "env_vars_harvested": 2,
+    "network_attempts": 1,
+    "exfil_chain": true,
+    "pth_autoexec": true
+  },
+
+  "notes": [
+    "litellm_init.pth contains bare 'import litellm_metadata_service' — no inline ops",
+    "pth_autoexec event is MEDIUM alone; verdict escalates to CRITICAL via exfil chain",
+    "The .pth mechanism bypasses install-hook detection: runs on every subsequent Python start",
+    "Real attack: litellm v1.82.7/1.82.8 shipped this exact .pth file in site-packages/",
+    "Models.litellm.cloud is in KNOWN_BAD_DOMAINS → fast-path CRITICAL on contact",
+    "LLM API keys (OPENAI_API_KEY, ANTHROPIC_API_KEY) are a new target class in this campaign"
+  ]
+}

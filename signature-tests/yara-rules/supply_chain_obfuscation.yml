@@ -1,0 +1,442 @@
+rules:
+
+  # ── T1: base64-encoded C2 URL ──────────────────────────────────────────────
+
+  - id: python-malware-b64decode-urlopen
+    languages: [python]
+    severity: ERROR
+    message: base64.b64decode() result passed directly to urlopen — runtime C2 URL decode (LiteLLM/TeamPCP pattern)
+    metadata:
+      technique: T1-base64-url
+      testcase: fake-litellm-b64-c2
+    pattern: urllib.request.urlopen(urllib.request.Request(base64.b64decode(...).decode(...), ...))
+
+  - id: python-malware-b64decode-url-assign-urlopen
+    languages: [python]
+    severity: ERROR
+    message: base64.b64decode().decode() assigned then used in urllib.request.Request — runtime C2 URL decode
+    metadata:
+      technique: T1-base64-url
+      testcase: fake-litellm-b64-c2
+    patterns:
+      - pattern: |
+          $URL = base64.b64decode($ENC).decode()
+          ...
+          urllib.request.Request($URL, ...)
+
+  - id: python-malware-b64decode-url-assign-requests
+    languages: [python]
+    severity: ERROR
+    message: base64.b64decode().decode() assigned then used in requests.post — runtime C2 URL decode
+    metadata:
+      technique: T1-base64-url
+      testcase: fake-litellm-b64-c2
+    patterns:
+      - pattern: |
+          $URL = base64.b64decode($ENC).decode()
+          ...
+          requests.post($URL, ...)
+
+  - id: python-malware-teamPCP-ioc-primary-str
+    languages: [python]
+    severity: ERROR
+    message: "Known TeamPCP IOC: base64 literal decodes to models.litellm.cloud/upload (March 2026 supply chain attack)"
+    metadata:
+      technique: T1-base64-url
+      ioc: models.litellm.cloud
+      testcase: fake-litellm-b64-c2
+    pattern: base64.b64decode("aHR0cHM6Ly9tb2RlbHMubGl0ZWxsbS5jbG91ZC91cGxvYWQ=")
+
+  - id: python-malware-teamPCP-ioc-primary-bytes
+    languages: [python]
+    severity: ERROR
+    message: "Known TeamPCP IOC (bytes form): base64 literal decodes to models.litellm.cloud"
+    metadata:
+      technique: T1-base64-url
+      ioc: models.litellm.cloud
+      testcase: fake-litellm-b64-c2
+    pattern: base64.b64decode(b"aHR0cHM6Ly9tb2RlbHMubGl0ZWxsbS5jbG91ZC91cGxvYWQ=")
+
+  - id: python-malware-double-b64decode
+    languages: [python]
+    severity: ERROR
+    message: Double base64 decode — nested b64 obfuscation hides C2 URL behind two decode layers
+    metadata:
+      technique: T1-base64-url-double
+      testcase: fake-litellm-b64-c2
+    pattern: base64.b64decode(base64.b64decode($X).decode())
+
+  # ── T2: XOR-encoded C2 URL ─────────────────────────────────────────────────
+
+  - id: python-malware-xor-bytes-comprehension
+    languages: [python]
+    severity: ERROR
+    message: "XOR decode via bytes comprehension: bytes(b ^ KEY for b in DATA).decode() — C2 URL never plaintext on disk"
+    metadata:
+      technique: T2-xor-url
+      testcase: fake-xor-c2
+    pattern: bytes($B ^ $KEY for $B in $DATA).decode()
+
+  - id: python-malware-xor-decode-with-args
+    languages: [python]
+    severity: ERROR
+    message: XOR byte-comprehension decode with explicit encoding arg — single-byte XOR C2 URL obfuscation
+    metadata:
+      technique: T2-xor-url
+      testcase: fake-xor-c2
+    pattern: bytes($B ^ $KEY for $B in $DATA).decode(...)
+
+  - id: python-malware-xor-function-return
+    languages: [python]
+    severity: ERROR
+    message: Function returns XOR byte-decode result — XOR C2 decode helper pattern
+    metadata:
+      technique: T2-xor-url
+      testcase: fake-xor-c2
+    pattern: |
+      def $F($DATA, $KEY):
+          return bytes($B ^ $KEY for $B in $DATA).decode(...)
+
+  - id: python-malware-xor-bytes-fromhex
+    languages: [python]
+    severity: ERROR
+    message: bytes.fromhex() then XOR decode — hex-encoded XOR-obfuscated C2 URL
+    metadata:
+      technique: T2-xor-url
+      testcase: fake-xor-c2
+    pattern: bytes($B ^ $KEY for $B in bytes.fromhex($HEX))
+
+  - id: python-malware-xor-then-urlrequest
+    languages: [python]
+    severity: ERROR
+    message: XOR-decoded bytes used as URL in urllib.request.Request — XOR C2 URL decode chain
+    metadata:
+      technique: T2-xor-url
+      testcase: fake-xor-c2
+    patterns:
+      - pattern: |
+          $URL = bytes($B ^ $KEY for $B in $DATA).decode()
+          ...
+          urllib.request.Request($URL, ...)
+
+  # ── T3: chr() sequence URL ─────────────────────────────────────────────────
+
+  - id: python-malware-chr-https-prefix
+    languages: [python]
+    severity: ERROR
+    message: "chr(104)+chr(116)+chr(116)+chr(112)+chr(115) assembles \"https\" — URL from char codes, no string literal"
+    metadata:
+      technique: T3-chr-sequence
+      testcase: fake-chr-sequence-c2
+    pattern: chr(104) + chr(116) + chr(116) + chr(112) + chr(115)
+
+  - id: python-malware-chr-sequence-assign-urlrequest
+    languages: [python]
+    severity: ERROR
+    message: chr()-assembled URL used in urllib.request.Request — no URL literal anywhere in source
+    metadata:
+      technique: T3-chr-sequence
+      testcase: fake-chr-sequence-c2
+    patterns:
+      - pattern: |
+          $URL = chr(...) + chr(...) + chr(...)
+          ...
+          urllib.request.Request($URL, ...)
+
+  # ── T4: AES-encrypted URL ──────────────────────────────────────────────────
+
+  - id: python-malware-aes-ctr-import
+    languages: [python]
+    severity: ERROR
+    message: AES.new() with MODE_CTR — decrypt-then-exfil; hardcoded key is unavoidable and detectable
+    metadata:
+      technique: T4-aes-decrypt
+      testcase: fake-aes-decrypt-c2
+    pattern: AES.new($KEY, AES.MODE_CTR, ...)
+
+  - id: python-malware-crypto-cipher-aes-urlopen
+    languages: [python]
+    severity: ERROR
+    message: Crypto.Cipher AES import alongside urllib.request.urlopen — AES decrypt-then-exfil pattern
+    metadata:
+      technique: T4-aes-decrypt
+      testcase: fake-aes-decrypt-c2
+    patterns:
+      - pattern: from Crypto.Cipher import AES
+      - pattern-inside: |
+          ...
+          urllib.request.urlopen(...)
+
+  - id: python-malware-aes-decrypt-result-to-url
+    languages: [python]
+    severity: ERROR
+    message: AES cipher.decrypt() result decoded and used as URL — encrypted C2 URL decode chain
+    metadata:
+      technique: T4-aes-decrypt
+      testcase: fake-aes-decrypt-c2
+    patterns:
+      - pattern: |
+          $URL = $CIPHER.decrypt($CT).decode(...)
+          ...
+          urllib.request.Request($URL, ...)
+
+  # ── T5: zlib + base64 multi-layer ──────────────────────────────────────────
+
+  - id: python-malware-zlib-decompress-b64decode
+    languages: [python]
+    severity: ERROR
+    message: zlib.decompress(base64.b64decode(...)) — two-layer decode chain; Muad'Dib/PyPI dropper standard
+    metadata:
+      technique: T5-zlib-b64
+      testcase: fake-zlib-b64-c2
+    pattern: zlib.decompress(base64.b64decode(...))
+
+  - id: python-malware-exec-zlib-b64
+    languages: [python]
+    severity: ERROR
+    message: exec(zlib.decompress(base64.b64decode(...))) — execute decompressed blob; classic obfuscated dropper
+    metadata:
+      technique: T5-zlib-b64
+      testcase: fake-zlib-b64-c2
+    pattern: exec(zlib.decompress(base64.b64decode(...)))
+
+  - id: python-malware-zlib-b64-url-to-request
+    languages: [python]
+    severity: ERROR
+    message: zlib+b64 decoded URL used in urllib.request.Request — multi-layer C2 URL obfuscation
+    metadata:
+      technique: T5-zlib-b64
+      testcase: fake-zlib-b64-c2
+    patterns:
+      - pattern: |
+          $URL = zlib.decompress(base64.b64decode($ENC)).decode()
+          ...
+          urllib.request.Request($URL, ...)
+
+  # ── T6: DNS subdomain exfil ────────────────────────────────────────────────
+
+  - id: python-malware-dns-exfil-getaddrinfo-loop
+    languages: [python]
+    severity: ERROR
+    message: socket.getaddrinfo() inside for loop — DNS covert channel; data encoded in subdomain chunks
+    metadata:
+      technique: T6-dns-exfil
+      testcase: fake-dns-subdomain-exfil
+    patterns:
+      - pattern: |
+          for $VAR in $SEQ:
+              ...
+              socket.getaddrinfo($HOST, ...)
+
+  - id: python-malware-b32encode-in-file-with-getaddrinfo
+    languages: [python]
+    severity: ERROR
+    message: base64.b32encode() in function alongside socket.getaddrinfo — DNS subdomain exfil
+    metadata:
+      technique: T6-dns-exfil
+      testcase: fake-dns-subdomain-exfil
+    patterns:
+      - pattern: base64.b32encode(...)
+      - pattern-inside: |
+          def $F(...):
+              ...
+
+  - id: python-malware-getaddrinfo-fstring-chunk
+    languages: [python]
+    severity: ERROR
+    message: socket.getaddrinfo() with f-string hostname containing chunk variable — DNS exfil via subdomain chunks
+    metadata:
+      technique: T6-dns-exfil
+      testcase: fake-dns-subdomain-exfil
+    pattern: socket.getaddrinfo(f"...$CHUNK...", ...)
+
+  # ── T7: Legitimate cloud services as C2 ────────────────────────────────────
+
+  - id: python-malware-github-gist-literal-call
+    languages: [python]
+    severity: ERROR
+    message: Call with api.github.com/gists URL literal — GitHub Gist as C2 dead drop; trusted domain bypasses all blocklists
+    metadata:
+      technique: T7-legit-domain
+      testcase: fake-legit-domain-c2
+    pattern: $FUNC("https://api.github.com/gists", ...)
+
+  - id: python-malware-telegram-metavar
+    languages: [python]
+    severity: ERROR
+    message: Telegram bot API call from install context — exfil via api.telegram.org
+    metadata:
+      technique: T7-legit-domain
+      testcase: fake-legit-domain-c2
+    patterns:
+      - pattern: $F($URL, ...)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: ^"https://api\.telegram\.org/
+
+  - id: python-malware-discord-webhook-metavar
+    languages: [python]
+    severity: ERROR
+    message: Discord webhook POST from install context — exfil via discord.com
+    metadata:
+      technique: T7-legit-domain
+      testcase: fake-legit-domain-c2
+    patterns:
+      - pattern: $F($URL, ...)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: ^"https://discord\.com/api/webhooks/
+
+  - id: python-malware-s3-put-acl
+    languages: [python]
+    severity: ERROR
+    message: PUT to s3.amazonaws.com with public-read ACL — attacker S3 bucket exfil
+    metadata:
+      technique: T7-legit-domain
+      testcase: fake-legit-domain-c2
+    patterns:
+      - pattern: urllib.request.Request($URL, ..., method="PUT")
+      - pattern: |
+          ...
+          "x-amz-acl": "public-read"
+          ...
+
+  # ── T8: Mass credential harvest ────────────────────────────────────────────
+
+  - id: python-malware-credential-dict-aws-ssh
+    languages: [python]
+    severity: ERROR
+    message: Dict contains both .aws/credentials and .ssh/id_rsa path strings — mass file credential harvest
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    pattern: |
+      {..., $K1: ".aws/credentials", ..., $K2: ".ssh/id_rsa", ...}
+
+  - id: python-malware-credential-dict-ssh-npmrc
+    languages: [python]
+    severity: ERROR
+    message: Dict contains SSH key and npmrc path strings — cross-ecosystem credential harvest
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    pattern: |
+      {..., $K1: ".ssh/id_rsa", ..., $K2: ".npmrc", ...}
+
+  - id: python-malware-env-loop-aws-github
+    languages: [python]
+    severity: ERROR
+    message: for loop over env var tuple containing AWS and GitHub tokens — env mass harvest
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    pattern: |
+      for $VAR in (..., "AWS_ACCESS_KEY_ID", ..., "GITHUB_TOKEN", ...):
+          ...
+
+  - id: python-malware-env-loop-llm-keys
+    languages: [python]
+    severity: ERROR
+    message: for loop harvesting LLM API keys — OPENAI_API_KEY or ANTHROPIC_API_KEY in env harvest loop
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    pattern-either:
+      - pattern: |
+          for $VAR in (..., "OPENAI_API_KEY", ...):
+              ...
+      - pattern: |
+          for $VAR in (..., "ANTHROPIC_API_KEY", ...):
+              ...
+
+  - id: python-malware-aws-ssh-npm-harvest
+    languages: [python]
+    severity: ERROR
+    message: AWS credentials + SSH key + npmrc all accessed — cross-ecosystem mass credential harvest
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2, fake-legit-domain-c2
+    patterns:
+      - pattern: Path.home() / ".aws" / "credentials"
+      - pattern: Path.home() / ".ssh" / "id_rsa"
+      - pattern: Path.home() / ".npmrc"
+
+  - id: python-malware-aws-github-npm-env
+    languages: [python]
+    severity: ERROR
+    message: AWS_ACCESS_KEY_ID + GITHUB_TOKEN + NPM_TOKEN all harvested — mass env stealer
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    patterns:
+      - pattern: os.environ.get("AWS_ACCESS_KEY_ID")
+      - pattern: os.environ.get("GITHUB_TOKEN")
+      - pattern: os.environ.get("NPM_TOKEN")
+
+  - id: python-malware-llm-key-with-aws
+    languages: [python]
+    severity: ERROR
+    message: OPENAI_API_KEY harvested alongside AWS creds — LLM keys new high-value target
+    metadata:
+      technique: T8-mass-harvest
+      testcase: fake-litellm-b64-c2
+    patterns:
+      - pattern: os.environ.get("OPENAI_API_KEY")
+      - pattern: os.environ.get("AWS_ACCESS_KEY_ID")
+
+  # ── Install hook ────────────────────────────────────────────────────────────
+
+  - id: python-malware-cmdclass-install-urlopen
+    languages: [python]
+    severity: ERROR
+    message: setup.py cmdclass install override with urlopen — runs automatically during pip install
+    metadata:
+      technique: install-hook
+      testcase: fake-litellm-b64-c2, fake-xor-c2, fake-zlib-b64-c2
+    patterns:
+      - pattern: |
+          class $C(install):
+              def run(self):
+                  ...
+                  urllib.request.urlopen(...)
+
+  - id: python-malware-cmdclass-install-request
+    languages: [python]
+    severity: ERROR
+    message: setup.py cmdclass install override with urllib.request.Request
+    metadata:
+      technique: install-hook
+      testcase: fake-litellm-b64-c2, fake-xor-c2
+    patterns:
+      - pattern: |
+          class $C(install):
+              def run(self):
+                  ...
+                  urllib.request.Request(...)
+
+  - id: python-malware-cmdclass-install-calls-exfil
+    languages: [python]
+    severity: ERROR
+    message: setup.py cmdclass install override calls a function — pip install hook chaining to exfil
+    metadata:
+      technique: install-hook
+      testcase: fake-litellm-b64-c2
+    pattern: |
+      class $C(install):
+          def run(self):
+              ...
+              $FUNC(...)
+
+  - id: python-malware-setuptools-cmdclass-network-file
+    languages: [python]
+    severity: ERROR
+    message: setup() with cmdclass install override in file that imports urllib.request — pip install network exfil
+    metadata:
+      technique: install-hook
+      testcase: fake-litellm-b64-c2, fake-xor-c2, fake-zlib-b64-c2
+    patterns:
+      - pattern: |
+          setup(..., cmdclass={"install": $CLASS}, ...)
+      - pattern-inside: |
+          import urllib.request
+          ...

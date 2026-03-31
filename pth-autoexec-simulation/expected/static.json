@@ -1,0 +1,90 @@
+{
+  "_comment": "Expected static analysis findings for pth-autoexec-simulation",
+  "tool": "reachable-static",
+  "target": "pth-autoexec-simulation",
+
+  "findings": [
+    {
+      "file": "litellm_init.pth",
+      "rule": "PTH_IMPORT_AUTOEXEC",
+      "scanner": "pth-scanner",
+      "severity": "HIGH",
+      "signal_type": "malware",
+      "malware_class": "supply_chain",
+      "description": ".pth file with bare import statement — auto-executes on Python startup via site.py",
+      "expected_reachability": "REACHABLE",
+      "note": "All .pth imports are REACHABLE — site.py runs them unconditionally, no call graph needed"
+    },
+    {
+      "file": "inline_malicious.pth",
+      "rule": "PTH_INLINE_DANGER_OPS",
+      "scanner": "pth-scanner",
+      "severity": "CRITICAL",
+      "signal_type": "malware",
+      "malware_class": "supply_chain",
+      "description": ".pth file with inline os.system() + curl pipe to shell — second-stage dropper",
+      "expected_reachability": "REACHABLE",
+      "danger_ops": ["os.system"],
+      "note": "Inline danger ops (os.system, subprocess, exec) in .pth = immediate CRITICAL"
+    },
+    {
+      "file": "litellm_metadata_service.py",
+      "rule": "MASS_CREDENTIAL_HARVEST",
+      "scanner": "semgrep",
+      "severity": "CRITICAL",
+      "signal_type": "malware",
+      "malware_class": "supply_chain",
+      "description": "5+ credential file paths accessed: .aws/credentials, .ssh/id_rsa, .kube/config, .docker/config.json, .npmrc, .pypirc",
+      "expected_reachability": "REACHABLE",
+      "semgrep_rule": "python-malware-multi-credential-harvest"
+    },
+    {
+      "file": "litellm_metadata_service.py",
+      "rule": "ENCRYPTED_EXFIL",
+      "scanner": "semgrep",
+      "severity": "CRITICAL",
+      "signal_type": "malware",
+      "malware_class": "supply_chain",
+      "description": "RSA.import_key() + PKCS1_OAEP encrypt + HTTP POST — encrypted credential exfiltration",
+      "expected_reachability": "REACHABLE",
+      "semgrep_rule": "python-malware-aes-hardcoded-key-network"
+    },
+    {
+      "file": "litellm_metadata_service.py",
+      "rule": "TEAMCP_IOC",
+      "scanner": "yara",
+      "severity": "CRITICAL",
+      "signal_type": "malware",
+      "malware_class": "supply_chain",
+      "description": "Known TeamPCP C2 domain: models.litellm.cloud",
+      "expected_reachability": "REACHABLE",
+      "yara_rule": "SupplyChain_TeamPCP_IOC_B64",
+      "ioc": "models.litellm.cloud"
+    },
+    {
+      "file": "benign_paths.pth",
+      "rule": null,
+      "scanner": "pth-scanner",
+      "severity": null,
+      "description": "Control: benign .pth with directory paths only — NO findings expected",
+      "expected_findings": 0,
+      "note": "Validates no false positives on legitimate .pth files"
+    }
+  ],
+
+  "false_positive_validation": {
+    "benign_paths.pth": {
+      "expected_findings": 0,
+      "rationale": "Legitimate .pth files contain only directory paths — never import statements"
+    }
+  },
+
+  "summary": {
+    "total_findings": 5,
+    "critical": 4,
+    "high": 1,
+    "false_positives": 0,
+    "pth_files_flagged": 2,
+    "pth_files_clean": 1
+  }
+}
