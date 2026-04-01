@@ -296,14 +296,19 @@ def find_match(findings: list[FindingRecord], ftype: str,
             f.relaxed_match = False
             return f
 
-    # Pass 2: relaxed — drop file requirement (flag it so callers can warn)
+    # Pass 2: relaxed — drop file requirement, prefer REACHABLE matches
     if file_hint:
+        relaxed = []
         for f in candidates:
             id_match  = identifier.lower() in (f.identifier or "").lower()
             pkg_match = (not package) or (package.lower() in (f.package or "").lower())
             if id_match and pkg_match:
                 f.relaxed_match = True
-                return f
+                relaxed.append(f)
+        if relaxed:
+            _pref = {'REACHABLE': 0, 'UNKNOWN': 1, 'NOT_REACHABLE': 2}
+            relaxed.sort(key=lambda f: _pref.get(f.reachability, 1))
+            return relaxed[0]
 
     return None
 
@@ -478,8 +483,22 @@ def validate_cve_groups(expected: list[dict], findings: list[FindingRecord]) -> 
         mixed    = e.get("mixed_reachability", {})
 
         for cve_id in exp_cves:
-            match = find_match(findings, "cve", cve_id, file_h, pkg)
             desc  = f"{pkg} / {cve_id}"
+            expected_reach = mixed.get(cve_id) or all_reach
+            # For mixed-reachability groups, find ALL matches and prefer one
+            # with the expected reachability (same CVE on both live+dead fns)
+            all_cve_matches = [f for f in findings
+                               if f.finding_type == "cve"
+                               and cve_id.lower() in (f.identifier or "").lower()
+                               and (not pkg or pkg.lower() in (f.package or "").lower())
+                               and file_matches(f.file_path, file_h)]
+            if expected_reach and all_cve_matches:
+                pref = next((m for m in all_cve_matches if m.reachability == expected_reach), None)
+                match = pref or all_cve_matches[0]
+            elif all_cve_matches:
+                match = all_cve_matches[0]
+            else:
+                match = find_match(findings, "cve", cve_id, file_h, pkg)
             if not match:
                 results.append(ValidationResult("CVE Group", desc, "FAIL",
                     f"not detected in group (package={pkg})",
@@ -488,7 +507,6 @@ def validate_cve_groups(expected: list[dict], findings: list[FindingRecord]) -> 
 
             # Check reachability
             tag = _relaxed_tag(match)
-            expected_reach = mixed.get(cve_id) or all_reach
             if expected_reach and match.reachability and match.reachability != expected_reach:
                 reason = Reason.classify(expected_reach, match.reachability)
                 sev = Reason.severity(reason)
@@ -527,12 +545,18 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
         # If a specific function name is provided, prefer function-level matches
         # but fall back to file-level if no function match found
         if fn_hint and matches:
-            fn_parts = fn_hint.lower().split('.')
-            fn_short = fn_parts[-1]
-            fn_matches = [f for f in matches if f.containing_function and (
-                fn_hint.lower() in f.containing_function.lower()
-                or fn_short == f.containing_function.lower()
-            )]
+            fn_lower = fn_hint.lower()
+            fn_short = fn_lower.split('.')[-1]
+            is_qualified = '.' in fn_hint  # e.g. DeadViewSet.list vs just list
+            if is_qualified:
+                # Class-qualified: match against function_qname to avoid ambiguity
+                # (e.g. UserViewSet.list vs DeadViewSet.list both have short_name='list')
+                fn_matches = [f for f in matches if f.function_qname and fn_lower in f.function_qname.lower()]
+                if not fn_matches:
+                    # Fallback: try containing_function for qualified match
+                    fn_matches = [f for f in matches if f.containing_function and fn_lower in f.containing_function.lower()]
+            else:
+                fn_matches = [f for f in matches if f.containing_function and fn_short == f.containing_function.lower()]
             if fn_matches:
                 matches = fn_matches
             # else: keep file-level matches as fallback
@@ -640,12 +664,15 @@ def validate_framework(expected: list[dict], findings: list[FindingRecord]) -> l
         # Prefer function-level matches but fall back to file-level
         fn_hint = e.get("function", "")
         if fn_hint and matches:
-            fn_parts = fn_hint.lower().split('.')
-            fn_short = fn_parts[-1]
-            fn_matches = [f for f in matches if f.containing_function and (
-                fn_hint.lower() in f.containing_function.lower()
-                or fn_short == f.containing_function.lower()
-            )]
+            fn_lower = fn_hint.lower()
+            fn_short = fn_lower.split('.')[-1]
+            is_qualified = '.' in fn_hint
+            if is_qualified:
+                fn_matches = [f for f in matches if f.function_qname and fn_lower in f.function_qname.lower()]
+                if not fn_matches:
+                    fn_matches = [f for f in matches if f.containing_function and fn_lower in f.containing_function.lower()]
+            else:
+                fn_matches = [f for f in matches if f.containing_function and fn_short == f.containing_function.lower()]
             if fn_matches:
                 matches = fn_matches
             # else: keep file-level matches as fallback

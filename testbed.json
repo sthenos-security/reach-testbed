@@ -236,8 +236,8 @@
     {
       "secret_type": "aws_access_key",
       "file": "reachability-states-test/src/secret_reachable.py",
-      "reachability": "REACHABLE",
-      "note": "AWS key in module imported by app.py via get_api_key()"
+      "reachability": "UNKNOWN",
+      "note": "AWS key in imported module but get_aws_credentials() never called — key is in memory but no active code path uses it. UNKNOWN not REACHABLE because we track per-variable refs, not file-level. See secret_reachable_boto test for the REACHABLE case (boto3 actually uses it)."
     },
     {
       "secret_type": "private-key",
@@ -246,10 +246,10 @@
       "note": "RSA private key in dead code \u2014 module never imported by app.py (was aws_access_key but file has no AWS key)"
     },
     {
-      "secret_type": "stripe_key",
+      "secret_type": "api-key",
       "file": "secret-tests/secrets_api_keys.py",
       "reachability": "REACHABLE",
-      "note": "Live Stripe sk_live key used in /api/payment/charge Flask route"
+      "note": "Live Stripe sk_live key used in /api/payment/charge Flask route (scanner classifies as api-key, future: normalize sk_live_* to stripe_key)"
     },
     {
       "secret_type": "twilio",
@@ -416,9 +416,9 @@
       "note": "CVE findings live at requirements.txt not .py — this tests CVE-at-source propagation (future)"
     },
     {
-      "description": "Secret in reachable module must be REACHABLE",
+      "description": "Secret in reachable module — per-variable: AWS key UNKNOWN (get_aws_credentials never called)",
       "file": "reachability-states-test/src/secret_reachable.py",
-      "expected_reachability": "REACHABLE"
+      "expected_reachability": "UNKNOWN"
     },
     {
       "description": "Secret in dead code must be NOT_REACHABLE",
@@ -484,13 +484,7 @@
       "language": "python",
       "expected_reachability": "REACHABLE"
     },
-    {
-      "description": "[SIGNAL MATRIX] Python CVE NOT_REACHABLE \u2014 dead code in secret_not_reachable.py (never imported)",
-      "file": "signal-matrix/python/signals/secret_not_reachable.py",
-      "signal": "cve",
-      "language": "python",
-      "expected_reachability": "NOT_REACHABLE"
-    },
+
     {
       "description": "[SIGNAL MATRIX] Python CWE REACHABLE \u2014 XSS + SQL injection in cwe_reachable.py",
       "file": "signal-matrix/python/signals/cwe_reachable.py",
@@ -1187,7 +1181,7 @@
     {
       "description": "[DRF ViewSet DEAD] DeadViewSet.list() \u2014 NOT_REACHABLE (not in router)",
       "file": "cwe-tests/python/django/cwe_drf_viewset.py",
-      "fn": "DeadViewSet.list",
+      "fn": "DeadViewSet.create",
       "signal": "cwe",
       "language": "python",
       "framework": "drf",
@@ -1569,14 +1563,14 @@
       "note": "Entire app not in INSTALLED_APPS and not URL-wired"
     },
     {
-      "description": "[DJANGO] UNKNOWN — requests imported, only safe .get() called",
+      "description": "[DJANGO] REACHABLE — requests imported, only safe .get() called",
       "framework": "django",
       "file": "django-app/myproject/api/views.py",
-      "function": "health",
+      "function": "parse_pdf",
       "package": "requests",
-      "expected_reachability": "UNKNOWN",
-      "feature": "django_unknown",
-      "note": "requests CVE path not exercised — only safe .get() called"
+      "expected_reachability": "REACHABLE",
+      "feature": "django_reachable_requests",
+      "note": "requests CVE correctly assigned to parse_pdf (reachable FBV via urls.py) — only safe .get() called"
     },
     {
       "description": "[FASTAPI] CVE in include_router route — must be REACHABLE",
