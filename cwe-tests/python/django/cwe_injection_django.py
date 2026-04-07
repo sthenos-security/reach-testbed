@@ -22,9 +22,7 @@ Django injection tests. Covers:
   - Raw SQL via cursor.execute with user input (TRUE POSITIVE)
   - Raw SQL via cursor.execute with parameterized query (FALSE POSITIVE)
 """
-import os
 import subprocess
-import sqlite3
 
 from django.db import connection
 from django.http import HttpResponse, JsonResponse

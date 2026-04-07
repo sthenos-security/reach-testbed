@@ -16,7 +16,6 @@ UNKNOWN signals:
   - requests 2.28.0 (CVE-2023-32681): imported, but only safe get() called;
     vulnerable send() path not exercised → UNKNOWN
 """
-import os
 import sqlite3
 import subprocess
 

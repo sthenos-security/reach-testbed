@@ -7,7 +7,6 @@ UNKNOWN: pypdf imported but only metadata read path used (no ReDoS trigger).
 """
 import os
 import yaml
-from pypdf import PdfReader
 
 
 def load_config_view(request):

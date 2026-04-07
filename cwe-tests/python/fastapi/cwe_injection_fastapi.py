@@ -22,14 +22,12 @@
 #   4. APIRouter — sub-router registered with include_router()
 #   5. Depends() — dependency injection chain, user input flows through it
 # ============================================================================
-import os
 import pickle
 import sqlite3
 import subprocess
-from typing import Optional
 
 import httpx
-from fastapi import APIRouter, Depends, FastAPI, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 

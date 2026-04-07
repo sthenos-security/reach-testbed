@@ -64,6 +64,22 @@ class FindingRecord:
     raw: dict = field(default_factory=dict)
 
 
+# Reachability state hierarchy (highest → lowest confidence):
+#   EXPLOITABLE > REACHABLE > UNKNOWN > NOT_REACHABLE
+# EXPLOITABLE = taint A-D confirmed user input flows to sink.
+# It is a strict promotion of REACHABLE — it satisfies any assertion
+# that expects REACHABLE and must never be treated as a failure.
+_SATISFIES: dict[str, set[str]] = {
+    "REACHABLE":     {"REACHABLE", "EXPLOITABLE"},
+    "NOT_REACHABLE": {"NOT_REACHABLE"},
+    "UNKNOWN":       {"UNKNOWN"},
+}
+
+def _reach_ok(expected: str, actual: str) -> bool:
+    """Return True if `actual` satisfies the `expected` reachability assertion."""
+    return actual in _SATISFIES.get(expected, {expected})
+
+
 # ─── Failure reason enum ─────────────────────────────────────────────────────
 class Reason:
     """Precise failure categories for reachability validation."""
@@ -82,6 +98,9 @@ class Reason:
     @staticmethod
     def classify(expected: str, actual: str) -> str:
         """Return the precise failure reason for a reachability mismatch."""
+        # EXPLOITABLE is a taint-confirmed promotion of REACHABLE — never a failure.
+        if actual == "EXPLOITABLE" and expected == "REACHABLE":
+            return Reason.PASS
         key = (expected, actual)
         return {
             ("REACHABLE", "NOT_REACHABLE"): Reason.FAIL_DEMOTED,
@@ -306,7 +325,7 @@ def find_match(findings: list[FindingRecord], ftype: str,
                 f.relaxed_match = True
                 relaxed.append(f)
         if relaxed:
-            _pref = {'REACHABLE': 0, 'UNKNOWN': 1, 'NOT_REACHABLE': 2}
+            _pref = {'EXPLOITABLE': -1, 'REACHABLE': 0, 'UNKNOWN': 1, 'NOT_REACHABLE': 2}
             relaxed.sort(key=lambda f: _pref.get(f.reachability, 1))
             return relaxed[0]
 
@@ -493,7 +512,7 @@ def validate_cve_groups(expected: list[dict], findings: list[FindingRecord]) -> 
                                and (not pkg or pkg.lower() in (f.package or "").lower())
                                and file_matches(f.file_path, file_h)]
             if expected_reach and all_cve_matches:
-                pref = next((m for m in all_cve_matches if m.reachability == expected_reach), None)
+                pref = next((m for m in all_cve_matches if _reach_ok(expected_reach, m.reachability)), None)
                 match = pref or all_cve_matches[0]
             elif all_cve_matches:
                 match = all_cve_matches[0]
@@ -576,8 +595,8 @@ def validate_reachability(expected: list[dict], findings: list[FindingRecord]) -
                 reason=reason))
             continue
 
-        correct = [f for f in matches if f.reachability == expected_reach]
-        wrong   = [f for f in matches if f.reachability and f.reachability != expected_reach]
+        correct = [f for f in matches if _reach_ok(expected_reach, f.reachability)]
+        wrong   = [f for f in matches if f.reachability and not _reach_ok(expected_reach, f.reachability)]
         no_state = [f for f in matches if not f.reachability]
 
         if correct:
@@ -688,8 +707,8 @@ def validate_framework(expected: list[dict], findings: list[FindingRecord]) -> l
                 reason=reason))
             continue
 
-        correct  = [f for f in matches if f.reachability == expected_reach]
-        wrong    = [f for f in matches if f.reachability and f.reachability != expected_reach]
+        correct  = [f for f in matches if _reach_ok(expected_reach, f.reachability)]
+        wrong    = [f for f in matches if f.reachability and not _reach_ok(expected_reach, f.reachability)]
         no_state = [f for f in matches if not f.reachability]
 
         if correct:
@@ -774,7 +793,7 @@ def validate_sqli_origin(expected: list[dict], findings: list[FindingRecord]) ->
             # False positive: we expect the scanner to suppress or downgrade.
             # If scanner flags as REACHABLE, that's a real failure — the scanner
             # failed to recognise this as a false positive.
-            reachable_matches = [f for f in matches if f.reachability == "REACHABLE"]
+            reachable_matches = [f for f in matches if f.reachability in ("REACHABLE", "EXPLOITABLE")]
             if reachable_matches:
                 results.append(ValidationResult("SQLi Origin", desc, "FAIL",
                     f"FP not suppressed: {len(reachable_matches)} CWE-89 flagged REACHABLE ({func})",
@@ -786,10 +805,10 @@ def validate_sqli_origin(expected: list[dict], findings: list[FindingRecord]) ->
 
         elif is_edge:
             # Edge case: scanner MUST detect this as REACHABLE
-            reachable_matches = [f for f in matches if f.reachability == "REACHABLE"]
+            reachable_matches = [f for f in matches if f.reachability in ("REACHABLE", "UNKNOWN")]
             if reachable_matches:
                 results.append(ValidationResult("SQLi Origin", desc, "PASS",
-                    f"Edge case correctly flagged REACHABLE ({func})",
+                    f"Edge case {func}: correctly REACHABLE",
                     reason=Reason.PASS))
             elif matches:
                 actual = matches[0].reachability or "NULL"

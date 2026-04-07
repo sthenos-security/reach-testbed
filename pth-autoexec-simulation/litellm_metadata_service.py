@@ -19,7 +19,6 @@ Detection targets:
 - Semgrep: python-malware-pth-executable-payload (via import chain)
 """
 
-import base64
 import os
 import tarfile
 import tempfile

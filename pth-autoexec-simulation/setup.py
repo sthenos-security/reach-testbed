@@ -4,7 +4,7 @@ This setup.py is intentionally clean — the attack vector is the .pth file,
 not the install hook.
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="fake-proxy-test",

@@ -8,7 +8,6 @@ from fastapi import FastAPI
 
 from routers.parse import router as parse_router
 from routers.auth import router as auth_router
-from routers.admin import router as admin_router  # imported but NEVER included — Type A
 
 # NOTE: dead/unused_router.py defines a router but it is NEVER included here (Type C).
 # NOTE: admin_router IS imported above but never include_router()'d below (Type A).
