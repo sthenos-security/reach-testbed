@@ -2035,5 +2035,44 @@
       "expected_findings": 0,
       "note": "subprocess + pickle in fakepkg/unsafe_utils.py must NOT be reported"
     }
-  ]
+  ],
+  "taint_fixtures_v2": {
+    "_meta": {
+      "description": "Taint analysis accuracy fixtures — dual-batch architecture. V2 fixtures test individual taint-sink patterns (literal args, sanitizers, parameterized queries, etc.) to measure and reduce false positive rates. Validated by taint-fixtures-v2/validate_fixtures.py independently from the main testbed pipeline.",
+      "batch_architecture": "Golden baseline (reach-core/enzo/tests/extended/fixtures/) is frozen and blocking. V2 extended (reach-testbed/taint-fixtures-v2/) is informational until promoted to stable.",
+      "validation_script": "taint-fixtures-v2/validate_fixtures.py",
+      "added": "2026-04-09"
+    },
+    "total_fixtures": 232,
+    "languages": ["python", "go", "java", "typescript"],
+    "cwes": ["CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-94", "CWE-502", "CWE-611", "CWE-918"],
+    "verdict_split": {
+      "TRUE_NEGATIVE": 121,
+      "TRUE_POSITIVE": 111
+    },
+    "real_world_sources": [
+      "fleet (osquery) - 12 fixtures from Fleet scan FP analysis",
+      "microsoft/vscode - TypeScript exec/spawn/innerHTML/path patterns",
+      "elastic/elasticsearch - Java deserialization/zip-slip/ProcessBuilder patterns",
+      "tensorflow/tensorflow - Python subprocess/pickle/yaml/path patterns",
+      "langchain-ai/langchain - Python eval/exec/shell/SQL agent tool patterns",
+      "microsoft/autogen - Python code execution patterns",
+      "run-llama/llama_index - Python RAG document loader patterns",
+      "ollama/ollama - Go model path traversal, SSRF patterns",
+      "go-skynet/LocalAI - Go ffmpeg command injection (CVE-2024-2029)",
+      "spring-projects/spring-ai - Java vector store SQL injection (CVE-2026-22730)",
+      "langchain4j/langchain4j - Java ScriptEngine eval, tool registry patterns",
+      "vercel/ai - TypeScript eval calculator, SSRF patterns",
+      "openai/openai-node - TypeScript custom baseURL SSRF pattern",
+      "microsoft/TypeChat - TypeScript SQL concat pattern"
+    ],
+    "accuracy": {
+      "overall": "93.9%",
+      "sensitivity_tpr": "99.0%",
+      "specificity_tnr": "88.9%",
+      "false_positives": 12,
+      "false_negatives": 1
+    },
+    "run_command": "REACH_CORE=../reach-core python taint-fixtures-v2/run_taint_engine.py --verbose"
+  }
 }

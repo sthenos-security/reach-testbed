@@ -1,0 +1,2350 @@
+{
+  "_meta": {
+    "generated": "2026-04-09",
+    "description": "Taint fixtures v2 manifest - full coverage"
+  },
+  "total_fixtures": 232,
+  "by_language": {
+    "go": 53,
+    "java": 45,
+    "python": 81,
+    "typescript": 53
+  },
+  "by_cwe": {
+    "": 20,
+    "CWE-22": 31,
+    "CWE-502": 17,
+    "CWE-611": 6,
+    "CWE-78": 64,
+    "CWE-79": 26,
+    "CWE-89": 46,
+    "CWE-918": 11,
+    "CWE-94": 11
+  },
+  "by_verdict": {
+    "TRUE_NEGATIVE": 121,
+    "TRUE_POSITIVE": 111
+  },
+  "fixtures": [
+    {
+      "id": "v2-go-tn_model_path_validated",
+      "file": "go/cwe22/tn_model_path_validated.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tn_model_path_validated.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "model_name_validated_path",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_path_clean_and_check",
+      "file": "go/cwe22/tn_path_clean_and_check.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tn_path_clean_and_check.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "filepath_clean_and_prefix_check",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_zip_hasprefix_check",
+      "file": "go/cwe22/tn_zip_hasprefix_check.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tn_zip_hasprefix_check.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "zip_extraction_hasprefix_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_modelfile_path_traversal",
+      "file": "go/cwe22/tp_modelfile_path_traversal.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tp_modelfile_path_traversal.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "model_name_path_traversal",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_path_join_no_check",
+      "file": "go/cwe22/tp_path_join_no_check.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tp_path_join_no_check.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "filepath_join_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_zip_slip_incomplete_check",
+      "file": "go/cwe22/tp_zip_slip_incomplete_check.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tp_zip_slip_incomplete_check.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "zip_slip_incomplete_dotdot_check",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_zip_slip_no_validation",
+      "file": "go/cwe22/tp_zip_slip_no_validation.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe22/tp_zip_slip_no_validation.go",
+      "language": "go",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "zip_slip_no_path_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_json_unmarshal_typed",
+      "file": "go/cwe502/tn_json_unmarshal_typed.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe502/tn_json_unmarshal_typed.go",
+      "language": "go",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "json_unmarshal_typed_struct",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_gob_decode_network",
+      "file": "go/cwe502/tp_gob_decode_network.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe502/tp_gob_decode_network.go",
+      "language": "go",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "gob_decode_untrusted_source",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_yaml_unmarshal_upload",
+      "file": "go/cwe502/tp_yaml_unmarshal_upload.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe502/tp_yaml_unmarshal_upload.go",
+      "language": "go",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "yaml_unmarshal_user_upload",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_allowlist",
+      "file": "go/cwe78/tn_exec_command_allowlist.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_allowlist.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_allowlist_guard",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_array_ffmpeg",
+      "file": "go/cwe78/tn_exec_command_array_ffmpeg.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_array_ffmpeg.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_array_form",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_const_binary",
+      "file": "go/cwe78/tn_exec_command_const_binary.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_const_binary.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_constant_binary_path",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_env_sourced",
+      "file": "go/cwe78/tn_exec_command_env_sourced.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_env_sourced.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_env_sourced",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_literal",
+      "file": "go/cwe78/tn_exec_command_literal.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_literal.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_fully_literal",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_os_executable",
+      "file": "go/cwe78/tn_exec_command_os_executable.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_os_executable.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_self_executable",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_shell_literal",
+      "file": "go/cwe78/tn_exec_command_shell_literal.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_shell_literal.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_shell_wrapper_literal",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_exec_command_user_arg_no_shell",
+      "file": "go/cwe78/tn_exec_command_user_arg_no_shell.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tn_exec_command_user_arg_no_shell.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_user_as_argument_no_shell",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_fmt_sprintf",
+      "file": "go/cwe78/tp_exec_command_fmt_sprintf.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_fmt_sprintf.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_shell_wrapper_sprintf",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_os_args",
+      "file": "go/cwe78/tp_exec_command_os_args.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_os_args.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_cli_args",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_shell_concat",
+      "file": "go/cwe78/tp_exec_command_shell_concat.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_shell_concat.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_shell_wrapper_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_shell_concat_ffmpeg",
+      "file": "go/cwe78/tp_exec_command_shell_concat_ffmpeg.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_shell_concat_ffmpeg.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_shell_sprintf",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_stdin",
+      "file": "go/cwe78/tp_exec_command_stdin.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_stdin.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_stdin_input",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_command_user_var",
+      "file": "go/cwe78/tp_exec_command_user_var.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe78/tp_exec_command_user_var.go",
+      "language": "go",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_user_controlled_binary",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_html_escape_string",
+      "file": "go/cwe79/tn_html_escape_string.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tn_html_escape_string.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "html_escape_string_sanitized",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_html_template_auto_escape",
+      "file": "go/cwe79/tn_html_template_auto_escape.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tn_html_template_auto_escape.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "html_template_auto_escape",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_html_template_contextual",
+      "file": "go/cwe79/tn_html_template_contextual.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tn_html_template_contextual.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "html_template_contextual_escape",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_fmt_fprintf_html",
+      "file": "go/cwe79/tp_fmt_fprintf_html.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tp_fmt_fprintf_html.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "fmt_fprintf_raw_html",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_responsewriter_sprintf",
+      "file": "go/cwe79/tp_responsewriter_sprintf.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tp_responsewriter_sprintf.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "responsewriter_sprintf_html",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_template_html_type",
+      "file": "go/cwe79/tp_template_html_type.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe79/tp_template_html_type.go",
+      "language": "go",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "template_html_type_bypass",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_allowlist_order_by",
+      "file": "go/cwe89/tn_allowlist_order_by.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tn_allowlist_order_by.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_allowlist_order_by",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_fully_static_query",
+      "file": "go/cwe89/tn_fully_static_query.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tn_fully_static_query.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_fully_static_query",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_parameterized_query",
+      "file": "go/cwe89/tn_parameterized_query.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tn_parameterized_query.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_parameterized_query",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_sprintf_constant_table",
+      "file": "go/cwe89/tn_sprintf_constant_table.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tn_sprintf_constant_table.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_sprintf_constant_string_table",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_sprintf_hardcoded_table",
+      "file": "go/cwe89/tn_sprintf_hardcoded_table.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tn_sprintf_hardcoded_table.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_sprintf_hardcoded_table_parameterized_values",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_exec_sprintf_order_by",
+      "file": "go/cwe89/tp_exec_sprintf_order_by.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tp_exec_sprintf_order_by.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_sprintf_order_by_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_query_concat",
+      "file": "go/cwe89/tp_query_concat.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tp_query_concat.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_query_string_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_query_sprintf",
+      "file": "go/cwe89/tp_query_sprintf.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tp_query_sprintf.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_query_sprintf_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_sprintf_table_user_input",
+      "file": "go/cwe89/tp_sprintf_table_user_input.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe89/tp_sprintf_table_user_input.go",
+      "language": "go",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_sprintf_table_name_from_http",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tn_ssrf_url_allowlist",
+      "file": "go/cwe918/tn_ssrf_url_allowlist.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe918/tn_ssrf_url_allowlist.go",
+      "language": "go",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "ssrf_url_allowlist_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-go-tp_ssrf_model_pull_url",
+      "file": "go/cwe918/tp_ssrf_model_pull_url.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/go/cwe918/tp_ssrf_model_pull_url.go",
+      "language": "go",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "ssrf_user_controlled_url",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnCanonicalPathCheck",
+      "file": "java/cwe22/TnCanonicalPathCheck.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TnCanonicalPathCheck.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "canonical_path_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnPathNormalizeCheck",
+      "file": "java/cwe22/TnPathNormalizeCheck.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TnPathNormalizeCheck.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "path_normalize_boundary_check",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnZipExtractValidated",
+      "file": "java/cwe22/TnZipExtractValidated.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TnZipExtractValidated.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "zip_extract_normalize_startswith",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpFileNoValidation",
+      "file": "java/cwe22/TpFileNoValidation.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TpFileNoValidation.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "file_constructor_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpPathResolveDirect",
+      "file": "java/cwe22/TpPathResolveDirect.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TpPathResolveDirect.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "paths_get_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpZipSlipNoValidation",
+      "file": "java/cwe22/TpZipSlipNoValidation.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe22/TpZipSlipNoValidation.java",
+      "language": "java",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "zip_extract_no_path_check",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnClassNameValidation",
+      "file": "java/cwe502/TnClassNameValidation.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe502/TnClassNameValidation.java",
+      "language": "java",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "classname_allowlist_before_deser",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnWhitelistDeserialization",
+      "file": "java/cwe502/TnWhitelistDeserialization.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe502/TnWhitelistDeserialization.java",
+      "language": "java",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "whitelist_resolve_class",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpUnsafeDeserialization",
+      "file": "java/cwe502/TpUnsafeDeserialization.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe502/TpUnsafeDeserialization.java",
+      "language": "java",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "raw_readobject_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnXmlParserSecure",
+      "file": "java/cwe611/TnXmlParserSecure.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe611/TnXmlParserSecure.java",
+      "language": "java",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "xml_parser_xxe_disabled",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnXmlParserSecureShort",
+      "file": "java/cwe611/TnXmlParserSecureShort.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe611/TnXmlParserSecureShort.java",
+      "language": "java",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "xml_parser_disallow_doctype",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpSAXParserDefault",
+      "file": "java/cwe611/TpSAXParserDefault.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe611/TpSAXParserDefault.java",
+      "language": "java",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sax_parser_default_config",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpXmlParserDefault",
+      "file": "java/cwe611/TpXmlParserDefault.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe611/TpXmlParserDefault.java",
+      "language": "java",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "xml_parser_default_config",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnProcessBuilderNoShell",
+      "file": "java/cwe78/TnProcessBuilderNoShell.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnProcessBuilderNoShell.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "processbuilder_array_no_shell",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnProcessBuilderSandboxed",
+      "file": "java/cwe78/TnProcessBuilderSandboxed.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnProcessBuilderSandboxed.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sandboxed_execution_blocked",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnRuntimeExecArrayNoShell",
+      "file": "java/cwe78/TnRuntimeExecArrayNoShell.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnRuntimeExecArrayNoShell.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "runtime_exec_array_no_shell",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnRuntimeExecConfigSourced",
+      "file": "java/cwe78/TnRuntimeExecConfigSourced.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnRuntimeExecConfigSourced.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "runtime_exec_config_sourced",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnRuntimeExecLiteral",
+      "file": "java/cwe78/TnRuntimeExecLiteral.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnRuntimeExecLiteral.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "runtime_exec_fully_literal",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnSwitchCaseWhitelist",
+      "file": "java/cwe78/TnSwitchCaseWhitelist.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TnSwitchCaseWhitelist.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "switch_case_command_whitelist",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpProcessBuilderShellConcat",
+      "file": "java/cwe78/TpProcessBuilderShellConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpProcessBuilderShellConcat.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "processbuilder_shell_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpRuntimeExecArrayShell",
+      "file": "java/cwe78/TpRuntimeExecArrayShell.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpRuntimeExecArrayShell.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "runtime_exec_array_shell_wrapper",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpRuntimeExecConcat",
+      "file": "java/cwe78/TpRuntimeExecConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpRuntimeExecConcat.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "runtime_exec_string_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpRuntimeExecDirectParam",
+      "file": "java/cwe78/TpRuntimeExecDirectParam.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpRuntimeExecDirectParam.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "runtime_exec_direct_user_command",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpRuntimeExecUserInput",
+      "file": "java/cwe78/TpRuntimeExecUserInput.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpRuntimeExecUserInput.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "runtime_exec_shell_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpShellConcatPipe",
+      "file": "java/cwe78/TpShellConcatPipe.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe78/TpShellConcatPipe.java",
+      "language": "java",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "processbuilder_shell_concat_pipe",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnJspElAutoEscape",
+      "file": "java/cwe79/TnJspElAutoEscape.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe79/TnJspElAutoEscape.java",
+      "language": "java",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "spring_thymeleaf_escaped",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnOWASPEncoder",
+      "file": "java/cwe79/TnOWASPEncoder.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe79/TnOWASPEncoder.java",
+      "language": "java",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "owasp_encoder_html_escape",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpServletWriterConcat",
+      "file": "java/cwe79/TpServletWriterConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe79/TpServletWriterConcat.java",
+      "language": "java",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "servlet_writer_html_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpSpringModelAttribute",
+      "file": "java/cwe79/TpSpringModelAttribute.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe79/TpSpringModelAttribute.java",
+      "language": "java",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "spring_response_body_html_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnJpaNamedParam",
+      "file": "java/cwe89/TnJpaNamedParam.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TnJpaNamedParam.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "jpa_named_parameter",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnPreparedStatement",
+      "file": "java/cwe89/TnPreparedStatement.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TnPreparedStatement.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "prepared_statement_parameterized",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnQueryBuilderTypeSafe",
+      "file": "java/cwe89/TnQueryBuilderTypeSafe.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TnQueryBuilderTypeSafe.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "query_builder_type_safe",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnStaticQuery",
+      "file": "java/cwe89/TnStaticQuery.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TnStaticQuery.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "static_query_no_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnVectorStoreParameterized",
+      "file": "java/cwe89/TnVectorStoreParameterized.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TnVectorStoreParameterized.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "vector_store_parameterized_filter",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpNativeQueryConcat",
+      "file": "java/cwe89/TpNativeQueryConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpNativeQueryConcat.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "jpa_native_query_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpPreparedDynamicTable",
+      "file": "java/cwe89/TpPreparedDynamicTable.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpPreparedDynamicTable.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "prepared_statement_dynamic_table_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpSqlStringFormat",
+      "file": "java/cwe89/TpSqlStringFormat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpSqlStringFormat.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "string_format_sql",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpStatementConcat",
+      "file": "java/cwe89/TpStatementConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpStatementConcat.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "statement_string_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpTwoHopStringBuilder",
+      "file": "java/cwe89/TpTwoHopStringBuilder.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpTwoHopStringBuilder.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "multi_hop_stringbuilder_sql",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpVectorStoreSqlConcat",
+      "file": "java/cwe89/TpVectorStoreSqlConcat.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe89/TpVectorStoreSqlConcat.java",
+      "language": "java",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "vector_store_filter_sql_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnHardcodedApiEndpoint",
+      "file": "java/cwe918/TnHardcodedApiEndpoint.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe918/TnHardcodedApiEndpoint.java",
+      "language": "java",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "hardcoded_api_base_url",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpHttpClientUserUrl",
+      "file": "java/cwe918/TpHttpClientUserUrl.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe918/TpHttpClientUserUrl.java",
+      "language": "java",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "httpclient_user_controlled_url",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpRestTemplateUserUrl",
+      "file": "java/cwe918/TpRestTemplateUserUrl.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe918/TpRestTemplateUserUrl.java",
+      "language": "java",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "resttemplate_user_controlled_url",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TnToolRegistryDispatch",
+      "file": "java/cwe94/TnToolRegistryDispatch.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe94/TnToolRegistryDispatch.java",
+      "language": "java",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "tool_registry_allowlist_dispatch",
+      "stable": false
+    },
+    {
+      "id": "v2-java-TpScriptEngineEvalLlm",
+      "file": "java/cwe94/TpScriptEngineEvalLlm.java",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/java/cwe94/TpScriptEngineEvalLlm.java",
+      "language": "java",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "script_engine_eval_llm_output",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_env_fixed_suffix",
+      "file": "python/cwe22/tn_env_fixed_suffix.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_env_fixed_suffix.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "env_var_with_hardcoded_suffix",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_hardcoded_model_path",
+      "file": "python/cwe22/tn_hardcoded_model_path.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_hardcoded_model_path.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "hardcoded_path_no_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_pathlib_resolve",
+      "file": "python/cwe22/tn_pathlib_resolve.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_pathlib_resolve.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "pathlib_resolve_check",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_pathlib_resolve_check",
+      "file": "python/cwe22/tn_pathlib_resolve_check.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_pathlib_resolve_check.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "pathlib_resolve_startswith",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_realpath_check",
+      "file": "python/cwe22/tn_realpath_check.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_realpath_check.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "os_realpath_startswith_check",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_whitelist_model_keys",
+      "file": "python/cwe22/tn_whitelist_model_keys.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tn_whitelist_model_keys.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "whitelist_key_to_fixed_path",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_dataset_id_path",
+      "file": "python/cwe22/tp_dataset_id_path.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tp_dataset_id_path.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "user_dataset_id_in_path",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_path_join_no_check",
+      "file": "python/cwe22/tp_path_join_no_check.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tp_path_join_no_check.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "os_path_join_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_rag_document_path",
+      "file": "python/cwe22/tp_rag_document_path.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tp_rag_document_path.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "rag_document_loader_unvalidated",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_user_input_model_path",
+      "file": "python/cwe22/tp_user_input_model_path.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tp_user_input_model_path.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "os_path_join_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_zip_extract_no_check",
+      "file": "python/cwe22/tp_zip_extract_no_check.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe22/tp_zip_extract_no_check.py",
+      "language": "python",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "zipfile_extractall_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_safetensors_load",
+      "file": "python/cwe502/tn_safetensors_load.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tn_safetensors_load.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "safetensors_format_no_code_exec",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_torch_load_weights_only",
+      "file": "python/cwe502/tn_torch_load_weights_only.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tn_torch_load_weights_only.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "torch_load_weights_only_true",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_yaml_safe_load",
+      "file": "python/cwe502/tn_yaml_safe_load.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tn_yaml_safe_load.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "yaml_safe_load",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_joblib_load",
+      "file": "python/cwe502/tp_joblib_load.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tp_joblib_load.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "joblib_load_untrusted",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_pickle_load_file",
+      "file": "python/cwe502/tp_pickle_load_file.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tp_pickle_load_file.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "pickle_load_untrusted_file",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_pickle_model_untrusted",
+      "file": "python/cwe502/tp_pickle_model_untrusted.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tp_pickle_model_untrusted.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "pickle_load_user_uploaded_model",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_torch_load_default",
+      "file": "python/cwe502/tp_torch_load_default.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tp_torch_load_default.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "torch_load_no_weights_only",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_yaml_unsafe_load",
+      "file": "python/cwe502/tp_yaml_unsafe_load.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe502/tp_yaml_unsafe_load.py",
+      "language": "python",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "yaml_unsafe_load",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_defusedxml_parse",
+      "file": "python/cwe611/tn_defusedxml_parse.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe611/tn_defusedxml_parse.py",
+      "language": "python",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "defusedxml_safe_parser",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_lxml_parse_default",
+      "file": "python/cwe611/tp_lxml_parse_default.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe611/tp_lxml_parse_default.py",
+      "language": "python",
+      "cwe": "CWE-611",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "lxml_etree_parse_default",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_list_form_no_shell",
+      "file": "python/cwe78/tn_list_form_no_shell.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_list_form_no_shell.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_list_form_no_shell",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_os_system_literal",
+      "file": "python/cwe78/tn_os_system_literal.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_os_system_literal.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "os_system_literal_only",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_shell_true_literal",
+      "file": "python/cwe78/tn_shell_true_literal.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_shell_true_literal.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_shell_true_literal_only",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_shlex_quote_sanitized",
+      "file": "python/cwe78/tn_shlex_quote_sanitized.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_shlex_quote_sanitized.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_shlex_quote_sanitized",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_allowlist_guard",
+      "file": "python/cwe78/tn_subprocess_allowlist_guard.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_allowlist_guard.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_allowlist_guard",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_config_sourced",
+      "file": "python/cwe78/tn_subprocess_config_sourced.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_config_sourced.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_config_sourced_command",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_env_separate",
+      "file": "python/cwe78/tn_subprocess_env_separate.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_env_separate.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_env_dict_separate",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_env_sourced",
+      "file": "python/cwe78/tn_subprocess_env_sourced.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_env_sourced.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_env_sourced_command",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_list_bazel",
+      "file": "python/cwe78/tn_subprocess_list_bazel.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_list_bazel.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_list_form_build_tool",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_llm_allowlist",
+      "file": "python/cwe78/tn_subprocess_llm_allowlist.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_llm_allowlist.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_list_form_allowlisted_cmd",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_subprocess_validated_target",
+      "file": "python/cwe78/tn_subprocess_validated_target.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tn_subprocess_validated_target.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "subprocess_validated_format_check",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_2hop_fstring_subprocess",
+      "file": "python/cwe78/tp_2hop_fstring_subprocess.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_2hop_fstring_subprocess.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "multi_hop_fstring_to_subprocess",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_os_system_fstring",
+      "file": "python/cwe78/tp_os_system_fstring.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_os_system_fstring.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "os_system_fstring_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_os_system_user_input",
+      "file": "python/cwe78/tp_os_system_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_os_system_user_input.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "os_system_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_percent_format_shell",
+      "file": "python/cwe78/tp_percent_format_shell.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_percent_format_shell.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "percent_format_shell_true",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_popen_shell_fstring",
+      "file": "python/cwe78/tp_popen_shell_fstring.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_popen_shell_fstring.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "popen_shell_true_fstring",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_popen_shell_user_input",
+      "file": "python/cwe78/tp_popen_shell_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_popen_shell_user_input.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "popen_shell_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_shell_true_fstring",
+      "file": "python/cwe78/tp_shell_true_fstring.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_shell_true_fstring.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "shell_true_fstring_interpolation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_shell_true_user_input",
+      "file": "python/cwe78/tp_shell_true_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_shell_true_user_input.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "subprocess_shell_true_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_subprocess_format_string",
+      "file": "python/cwe78/tp_subprocess_format_string.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_subprocess_format_string.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "subprocess_format_string_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_subprocess_llm_tool",
+      "file": "python/cwe78/tp_subprocess_llm_tool.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_subprocess_llm_tool.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "subprocess_shell_llm_args",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_subprocess_percent_format",
+      "file": "python/cwe78/tp_subprocess_percent_format.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe78/tp_subprocess_percent_format.py",
+      "language": "python",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "subprocess_percent_format_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_django_template_autoescape",
+      "file": "python/cwe79/tn_django_template_autoescape.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tn_django_template_autoescape.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "django_template_default_autoescape",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_flask_render_template_autoescape",
+      "file": "python/cwe79/tn_flask_render_template_autoescape.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tn_flask_render_template_autoescape.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "jinja2_autoescaped_template",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_markupsafe_escape",
+      "file": "python/cwe79/tn_markupsafe_escape.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tn_markupsafe_escape.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "markupsafe_escape_before_render",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_django_httpresponse_html",
+      "file": "python/cwe79/tp_django_httpresponse_html.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tp_django_httpresponse_html.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "django_httpresponse_html_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_flask_make_response_html",
+      "file": "python/cwe79/tp_flask_make_response_html.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tp_flask_make_response_html.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "make_response_html_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_flask_render_string_user",
+      "file": "python/cwe79/tp_flask_render_string_user.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe79/tp_flask_render_string_user.py",
+      "language": "python",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "flask_render_template_string_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_constant_query",
+      "file": "python/cwe89/tn_constant_query.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_constant_query.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_fully_constant_query",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_django_orm_filter",
+      "file": "python/cwe89/tn_django_orm_filter.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_django_orm_filter.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "django_orm_filter",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_hardcoded_table_name",
+      "file": "python/cwe89/tn_hardcoded_table_name.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_hardcoded_table_name.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_hardcoded_table_name_parameterized_values",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_int_cast_user_input",
+      "file": "python/cwe89/tn_int_cast_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_int_cast_user_input.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_int_cast_sanitizes_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_parameterized_query",
+      "file": "python/cwe89/tn_parameterized_query.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_parameterized_query.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_parameterized_query",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_sql_llm_readonly_parameterized",
+      "file": "python/cwe89/tn_sql_llm_readonly_parameterized.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_sql_llm_readonly_parameterized.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_llm_readonly_with_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_sqlalchemy_bound_params",
+      "file": "python/cwe89/tn_sqlalchemy_bound_params.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tn_sqlalchemy_bound_params.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sqlalchemy_text_bound_params",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_2hop_dict_to_query",
+      "file": "python/cwe89/tp_2hop_dict_to_query.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_2hop_dict_to_query.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "multi_hop_dict_extraction_to_sql",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_concat_user_input",
+      "file": "python/cwe89/tp_concat_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_concat_user_input.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_string_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_django_extra_where",
+      "file": "python/cwe89/tp_django_extra_where.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_django_extra_where.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "django_extra_where_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_django_raw_format",
+      "file": "python/cwe89/tp_django_raw_format.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_django_raw_format.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "django_raw_sql_format",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_fstring_user_input",
+      "file": "python/cwe89/tp_fstring_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_fstring_user_input.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_fstring_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_percent_format_user_input",
+      "file": "python/cwe89/tp_percent_format_user_input.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_percent_format_user_input.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_percent_format_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_sql_llm_generated",
+      "file": "python/cwe89/tp_sql_llm_generated.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_sql_llm_generated.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_from_llm_text2sql",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_sqlalchemy_text_fstring",
+      "file": "python/cwe89/tp_sqlalchemy_text_fstring.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe89/tp_sqlalchemy_text_fstring.py",
+      "language": "python",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sqlalchemy_text_fstring",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_requests_hardcoded_base",
+      "file": "python/cwe918/tn_requests_hardcoded_base.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe918/tn_requests_hardcoded_base.py",
+      "language": "python",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "requests_hardcoded_base_url",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_url_allowlist_check",
+      "file": "python/cwe918/tn_url_allowlist_check.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe918/tn_url_allowlist_check.py",
+      "language": "python",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "url_domain_allowlist",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_requests_get_user_url",
+      "file": "python/cwe918/tp_requests_get_user_url.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe918/tp_requests_get_user_url.py",
+      "language": "python",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "requests_get_user_controlled_url",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_urllib_open_user_url",
+      "file": "python/cwe918/tp_urllib_open_user_url.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe918/tp_urllib_open_user_url.py",
+      "language": "python",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "urllib_urlopen_user_controlled",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_exec_sandboxed_restricted",
+      "file": "python/cwe94/tn_exec_sandboxed_restricted.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe94/tn_exec_sandboxed_restricted.py",
+      "language": "python",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_with_restricted_globals",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_tool_allowlist_dispatch",
+      "file": "python/cwe94/tn_tool_allowlist_dispatch.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe94/tn_tool_allowlist_dispatch.py",
+      "language": "python",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "tool_name_allowlist",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_eval_llm_output",
+      "file": "python/cwe94/tp_eval_llm_output.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe94/tp_eval_llm_output.py",
+      "language": "python",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "eval_llm_generated_code",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_exec_agent_code",
+      "file": "python/cwe94/tp_exec_agent_code.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe94/tp_exec_agent_code.py",
+      "language": "python",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_agent_generated_code",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_getattr_llm_tool",
+      "file": "python/cwe94/tp_getattr_llm_tool.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/cwe94/tp_getattr_llm_tool.py",
+      "language": "python",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "dynamic_dispatch_llm_tool_name",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_config_sourced_chain",
+      "file": "python/inter_procedural/tn_config_sourced_chain.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tn_config_sourced_chain.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "inter_proc_config_sourced_no_taint",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_dead_code_path",
+      "file": "python/inter_procedural/tn_dead_code_path.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tn_dead_code_path.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "dead_code_unreachable_sink",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_guard_function",
+      "file": "python/inter_procedural/tn_guard_function.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tn_guard_function.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "inter_proc_guard_function_validates",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tn_sanitizer_breaks_chain",
+      "file": "python/inter_procedural/tn_sanitizer_breaks_chain.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tn_sanitizer_breaks_chain.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "inter_proc_sanitizer_breaks_taint",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_1hop_exec",
+      "file": "python/inter_procedural/tp_1hop_exec.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tp_1hop_exec.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "inter_proc_1hop_taint_propagation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_2hop_exec",
+      "file": "python/inter_procedural/tp_2hop_exec.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tp_2hop_exec.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "inter_proc_2hop_taint_propagation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_field_taint",
+      "file": "python/inter_procedural/tp_field_taint.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tp_field_taint.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "inter_proc_field_taint_propagation",
+      "stable": false
+    },
+    {
+      "id": "v2-python-tp_return_taint",
+      "file": "python/inter_procedural/tp_return_taint.py",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/python/inter_procedural/tp_return_taint.py",
+      "language": "python",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "inter_proc_return_value_taint",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_exec_getHostInfo",
+      "file": "real_world/fleet_fp_exec_getHostInfo.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_exec_getHostInfo.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_static_binary_system_info",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_exec_literal_binary",
+      "file": "real_world/fleet_fp_exec_literal_binary.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_exec_literal_binary.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_hardcoded_binary_path",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_exec_literal_fixed_string",
+      "file": "real_world/fleet_fp_exec_literal_fixed_string.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_exec_literal_fixed_string.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_fixed_string_no_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_exec_os_executable",
+      "file": "real_world/fleet_fp_exec_os_executable.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_exec_os_executable.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_command_os_executable_restart",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_registry_path",
+      "file": "real_world/fleet_fp_registry_path.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_registry_path.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "windows_registry_path_not_credential",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_secret_dev_license",
+      "file": "real_world/fleet_fp_secret_dev_license.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_secret_dev_license.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "hardcoded_dev_license_key",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_sql_hardcoded_sources",
+      "file": "real_world/fleet_fp_sql_hardcoded_sources.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_sql_hardcoded_sources.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_sprintf_hardcoded_source_list",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_sql_seed_data",
+      "file": "real_world/fleet_fp_sql_seed_data.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_sql_seed_data.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_seed_data_infra_script",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_fp_zip_infra_script",
+      "file": "real_world/fleet_fp_zip_infra_script.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_fp_zip_infra_script.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "zip_extract_infra_script_with_dotdot_check",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_tp_exec_cli_bash",
+      "file": "real_world/fleet_tp_exec_cli_bash.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_tp_exec_cli_bash.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_bash_with_variable",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_tp_exec_user_controlled",
+      "file": "real_world/fleet_tp_exec_user_controlled.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_tp_exec_user_controlled.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_command_user_controlled_via_parameter",
+      "stable": false
+    },
+    {
+      "id": "v2-go-fleet_tp_zip_slip_update",
+      "file": "real_world/fleet_tp_zip_slip_update.go",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/real_world/fleet_tp_zip_slip_update.go",
+      "language": "go",
+      "cwe": "",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "zip_slip_update_mechanism",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_path_join_literal_segments",
+      "file": "typescript/cwe22/tn_path_join_literal_segments.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tn_path_join_literal_segments.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "path_join_literal_suffix",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_path_relative_escape_check",
+      "file": "typescript/cwe22/tn_path_relative_escape_check.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tn_path_relative_escape_check.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "path_relative_dotdot_check",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_path_resolve_validated",
+      "file": "typescript/cwe22/tn_path_resolve_validated.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tn_path_resolve_validated.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "path_resolve_startswith_check",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_resolve_startswith",
+      "file": "typescript/cwe22/tn_resolve_startswith.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tn_resolve_startswith.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "path_resolve_startswith_check",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_path_join_no_check",
+      "file": "typescript/cwe22/tp_path_join_no_check.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tp_path_join_no_check.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "path_join_no_validation",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_path_join_no_validation",
+      "file": "typescript/cwe22/tp_path_join_no_validation.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tp_path_join_no_validation.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "path_join_unvalidated_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_symlink_traversal",
+      "file": "typescript/cwe22/tp_symlink_traversal.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe22/tp_symlink_traversal.ts",
+      "language": "typescript",
+      "cwe": "CWE-22",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "symlink_bypass_normalize",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_json_parse_typed",
+      "file": "typescript/cwe502/tn_json_parse_typed.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe502/tn_json_parse_typed.ts",
+      "language": "typescript",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "json_parse_typed",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_deserialize_function_reviver",
+      "file": "typescript/cwe502/tp_deserialize_function_reviver.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe502/tp_deserialize_function_reviver.ts",
+      "language": "typescript",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "json_parse_with_function_reconstruction",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_eval_json_response",
+      "file": "typescript/cwe502/tp_eval_json_response.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe502/tp_eval_json_response.ts",
+      "language": "typescript",
+      "cwe": "CWE-502",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "eval_json_response",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_execFile_user_arg",
+      "file": "typescript/cwe78/tn_execFile_user_arg.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_execFile_user_arg.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "execFile_user_as_argument",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_execSync_literal",
+      "file": "typescript/cwe78/tn_execSync_literal.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_execSync_literal.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "execSync_literal_command",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_exec_config_npm_script",
+      "file": "typescript/cwe78/tn_exec_config_npm_script.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_exec_config_npm_script.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_config_sourced_script",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_exec_env_sourced",
+      "file": "typescript/cwe78/tn_exec_env_sourced.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_exec_env_sourced.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_env_sourced_command",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_exec_hardcoded_git",
+      "file": "typescript/cwe78/tn_exec_hardcoded_git.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_exec_hardcoded_git.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_hardcoded_command",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_exec_literal",
+      "file": "typescript/cwe78/tn_exec_literal.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_exec_literal.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_fully_literal",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_exec_sanitized_input",
+      "file": "typescript/cwe78/tn_exec_sanitized_input.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_exec_sanitized_input.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "exec_sanitized_shell_metachar",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_execsync_checksum_escaped",
+      "file": "typescript/cwe78/tn_execsync_checksum_escaped.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_execsync_checksum_escaped.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "execsync_escaped_arg",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_spawn_array_args",
+      "file": "typescript/cwe78/tn_spawn_array_args.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_spawn_array_args.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "spawn_array_args_no_shell",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_spawn_no_shell",
+      "file": "typescript/cwe78/tn_spawn_no_shell.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tn_spawn_no_shell.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "spawn_no_shell_user_arg",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_2hop_config_exec",
+      "file": "typescript/cwe78/tp_2hop_config_exec.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_2hop_config_exec.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "multi_hop_object_property_to_exec",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_execSync_user_input",
+      "file": "typescript/cwe78/tp_execSync_user_input.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_execSync_user_input.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "execSync_user_controlled",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_exec_concat",
+      "file": "typescript/cwe78/tp_exec_concat.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_exec_concat.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_string_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_exec_template_literal",
+      "file": "typescript/cwe78/tp_exec_template_literal.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_exec_template_literal.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_template_literal_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_exec_user_input",
+      "file": "typescript/cwe78/tp_exec_user_input.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_exec_user_input.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "exec_user_controlled_command",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_spawn_shell_true",
+      "file": "typescript/cwe78/tp_spawn_shell_true.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe78/tp_spawn_shell_true.ts",
+      "language": "typescript",
+      "cwe": "CWE-78",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "spawn_shell_true_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_dompurify_sanitized",
+      "file": "typescript/cwe79/tn_dompurify_sanitized.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tn_dompurify_sanitized.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "dompurify_sanitized_html",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_innerhtml_escaped",
+      "file": "typescript/cwe79/tn_innerhtml_escaped.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tn_innerhtml_escaped.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "innerhtml_html_escaped",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_react_jsx_auto_escape",
+      "file": "typescript/cwe79/tn_react_jsx_auto_escape.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tn_react_jsx_auto_escape.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "react_jsx_auto_escape",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_text_content_safe",
+      "file": "typescript/cwe79/tn_text_content_safe.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tn_text_content_safe.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "dom_text_content_safe",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_textcontent_safe",
+      "file": "typescript/cwe79/tn_textcontent_safe.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tn_textcontent_safe.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "textcontent_auto_escapes",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_dangerously_set_inner_html",
+      "file": "typescript/cwe79/tp_dangerously_set_inner_html.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tp_dangerously_set_inner_html.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "react_dangerously_set_inner_html",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_inner_html_assignment",
+      "file": "typescript/cwe79/tp_inner_html_assignment.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tp_inner_html_assignment.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "dom_inner_html_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_innerhtml_unsanitized",
+      "file": "typescript/cwe79/tp_innerhtml_unsanitized.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tp_innerhtml_unsanitized.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "innerhtml_direct_user_content",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_res_send_html_concat",
+      "file": "typescript/cwe79/tp_res_send_html_concat.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tp_res_send_html_concat.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "express_res_send_html_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_setattribute_event_handler",
+      "file": "typescript/cwe79/tp_setattribute_event_handler.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe79/tp_setattribute_event_handler.ts",
+      "language": "typescript",
+      "cwe": "CWE-79",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "setattribute_user_controlled_attrs",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_knex_query_builder",
+      "file": "typescript/cwe89/tn_knex_query_builder.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_knex_query_builder.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "knex_query_builder",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_parameterized",
+      "file": "typescript/cwe89/tn_parameterized.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_parameterized.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_parameterized_query",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_prisma_orm",
+      "file": "typescript/cwe89/tn_prisma_orm.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_prisma_orm.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "prisma_orm_query",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_sqlite_hardcoded_schema",
+      "file": "typescript/cwe89/tn_sqlite_hardcoded_schema.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_sqlite_hardcoded_schema.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "hardcoded_schema_insert",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_sqlite_parameterized",
+      "file": "typescript/cwe89/tn_sqlite_parameterized.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_sqlite_parameterized.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "parameterized_query",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_sqlite_validated_key",
+      "file": "typescript/cwe89/tn_sqlite_validated_key.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_sqlite_validated_key.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "validated_input_parameterized",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_static_query",
+      "file": "typescript/cwe89/tn_static_query.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tn_static_query.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "sql_fully_static_query",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_sql_insert_concat_api",
+      "file": "typescript/cwe89/tp_sql_insert_concat_api.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tp_sql_insert_concat_api.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_insert_string_concat_api_data",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_string_concat",
+      "file": "typescript/cwe89/tp_string_concat.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tp_string_concat.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_string_concat_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_template_literal",
+      "file": "typescript/cwe89/tp_template_literal.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tp_template_literal.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "sql_template_literal_user_input",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_typeorm_raw_query",
+      "file": "typescript/cwe89/tp_typeorm_raw_query.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe89/tp_typeorm_raw_query.ts",
+      "language": "typescript",
+      "cwe": "CWE-89",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "typeorm_raw_query_concat",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_ssrf_hardcoded_endpoint",
+      "file": "typescript/cwe918/tn_ssrf_hardcoded_endpoint.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe918/tn_ssrf_hardcoded_endpoint.ts",
+      "language": "typescript",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "hardcoded_api_endpoint",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_ssrf_custom_baseurl",
+      "file": "typescript/cwe918/tp_ssrf_custom_baseurl.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe918/tp_ssrf_custom_baseurl.ts",
+      "language": "typescript",
+      "cwe": "CWE-918",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "ssrf_user_controlled_baseurl",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_mathjs_safe_eval",
+      "file": "typescript/cwe94/tn_mathjs_safe_eval.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe94/tn_mathjs_safe_eval.ts",
+      "language": "typescript",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "mathjs_evaluate_safe",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tn_vm_runinsandbox",
+      "file": "typescript/cwe94/tn_vm_runinsandbox.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe94/tn_vm_runinsandbox.ts",
+      "language": "typescript",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_NEGATIVE",
+      "pattern": "vm2_sandbox_execution",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_eval_llm_calculator",
+      "file": "typescript/cwe94/tp_eval_llm_calculator.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe94/tp_eval_llm_calculator.ts",
+      "language": "typescript",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "eval_llm_expression",
+      "stable": false
+    },
+    {
+      "id": "v2-typescript-tp_new_function_user_input",
+      "file": "typescript/cwe94/tp_new_function_user_input.ts",
+      "full_path": "/sessions/vigilant-pensive-maxwell/mnt/src/reach-testbed/taint-fixtures-v2/typescript/cwe94/tp_new_function_user_input.ts",
+      "language": "typescript",
+      "cwe": "CWE-94",
+      "verdict": "TRUE_POSITIVE",
+      "pattern": "new_function_constructor_user_input",
+      "stable": false
+    }
+  ]
+}

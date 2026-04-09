@@ -1,0 +1,216 @@
+{
+  "total": 168,
+  "tested": 148,
+  "passed": 139,
+  "failed": 9,
+  "skipped": 20,
+  "errors": 0,
+  "accuracy": 0.9392,
+  "by_cwe": {
+    "CWE-22": {
+      "pass": 24,
+      "fail": 4,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-78": {
+      "pass": 54,
+      "fail": 4,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-79": {
+      "pass": 14,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-89": {
+      "pass": 38,
+      "fail": 1,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-502": {
+      "pass": 9,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "unknown": {
+      "pass": 0,
+      "fail": 0,
+      "skip": 20,
+      "error": 0
+    }
+  },
+  "by_language": {
+    "go": {
+      "pass": 27,
+      "fail": 3,
+      "skip": 0,
+      "error": 0
+    },
+    "java": {
+      "pass": 26,
+      "fail": 3,
+      "skip": 0,
+      "error": 0
+    },
+    "python": {
+      "pass": 45,
+      "fail": 2,
+      "skip": 0,
+      "error": 0
+    },
+    "unknown": {
+      "pass": 0,
+      "fail": 0,
+      "skip": 20,
+      "error": 0
+    },
+    "javascript": {
+      "pass": 41,
+      "fail": 1,
+      "skip": 0,
+      "error": 0
+    }
+  },
+  "failures": [
+    {
+      "status": "fail",
+      "fixture": "tn_path_clean_and_check.go",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "ServeFileSafe",
+      "cwe": "CWE-22",
+      "language": "go",
+      "file": "go/cwe22/tn_path_clean_and_check.go"
+    },
+    {
+      "status": "fail",
+      "fixture": "tn_exec_command_allowlist.go",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "RunTool",
+      "cwe": "CWE-78",
+      "language": "go",
+      "file": "go/cwe78/tn_exec_command_allowlist.go"
+    },
+    {
+      "status": "fail",
+      "fixture": "tn_allowlist_order_by.go",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "ListUsersSafe",
+      "cwe": "CWE-89",
+      "language": "go",
+      "file": "go/cwe89/tn_allowlist_order_by.go"
+    },
+    {
+      "status": "fail",
+      "fixture": "TnCanonicalPathCheck.java",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "File",
+      "cwe": "CWE-22",
+      "language": "java",
+      "file": "java/cwe22/TnCanonicalPathCheck.java"
+    },
+    {
+      "status": "fail",
+      "fixture": "TnRuntimeExecArrayNoShell.java",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "doGet",
+      "cwe": "CWE-78",
+      "language": "java",
+      "file": "java/cwe78/TnRuntimeExecArrayNoShell.java"
+    },
+    {
+      "status": "fail",
+      "fixture": "TnRuntimeExecConfigSourced.java",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "runTool",
+      "cwe": "CWE-78",
+      "language": "java",
+      "file": "java/cwe78/TnRuntimeExecConfigSourced.java"
+    },
+    {
+      "status": "fail",
+      "fixture": "tn_realpath_check.py",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "download_file",
+      "cwe": "CWE-22",
+      "language": "python",
+      "file": "python/cwe22/tn_realpath_check.py"
+    },
+    {
+      "status": "fail",
+      "fixture": "tn_subprocess_allowlist_guard.py",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "run_tool",
+      "cwe": "CWE-78",
+      "language": "python",
+      "file": "python/cwe78/tn_subprocess_allowlist_guard.py"
+    },
+    {
+      "status": "fail",
+      "fixture": "tn_path_join_literal_segments.ts",
+      "expected": "TRUE_NEGATIVE",
+      "actual_reachability": "REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": "taint_intra",
+      "is_final": 1,
+      "was_suppressed": false,
+      "was_exploitable": true,
+      "function": "getExtensionManifest",
+      "cwe": "CWE-22",
+      "language": "javascript",
+      "file": "typescript/cwe22/tn_path_join_literal_segments.ts"
+    }
+  ]
+}
