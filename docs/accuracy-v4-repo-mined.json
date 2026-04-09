@@ -1,0 +1,120 @@
+{
+  "total": 248,
+  "tested": 228,
+  "passed": 227,
+  "failed": 1,
+  "skipped": 20,
+  "errors": 0,
+  "accuracy": 0.9956,
+  "by_cwe": {
+    "CWE-22": {
+      "pass": 33,
+      "fail": 1,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-502": {
+      "pass": 17,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-78": {
+      "pass": 66,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-79": {
+      "pass": 31,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-89": {
+      "pass": 46,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-918": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-611": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-94": {
+      "pass": 12,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "CWE-601": {
+      "pass": 2,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "unknown": {
+      "pass": 0,
+      "fail": 0,
+      "skip": 20,
+      "error": 0
+    }
+  },
+  "by_language": {
+    "go": {
+      "pass": 42,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "java": {
+      "pass": 49,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    },
+    "python": {
+      "pass": 78,
+      "fail": 1,
+      "skip": 0,
+      "error": 0
+    },
+    "unknown": {
+      "pass": 0,
+      "fail": 0,
+      "skip": 20,
+      "error": 0
+    },
+    "javascript": {
+      "pass": 58,
+      "fail": 0,
+      "skip": 0,
+      "error": 0
+    }
+  },
+  "failures": [
+    {
+      "status": "fail",
+      "fixture": "tp_dataset_id_path.py",
+      "expected": "TRUE_POSITIVE",
+      "actual_reachability": "NOT_REACHABLE",
+      "taint_phase": "intra",
+      "finalized_by": null,
+      "is_final": 0,
+      "was_suppressed": true,
+      "was_exploitable": false,
+      "function": "load_dataset_cache",
+      "cwe": "CWE-22",
+      "language": "python",
+      "file": "python/cwe22/tp_dataset_id_path.py"
+    }
+  ]
+}

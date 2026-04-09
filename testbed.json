@@ -2043,12 +2043,12 @@
       "validation_script": "taint-fixtures-v2/validate_fixtures.py",
       "added": "2026-04-09"
     },
-    "total_fixtures": 232,
+    "total_fixtures": 248,
     "languages": ["python", "go", "java", "typescript"],
-    "cwes": ["CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-94", "CWE-502", "CWE-611", "CWE-918"],
+    "cwes": ["CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-94", "CWE-502", "CWE-601", "CWE-611", "CWE-918"],
     "verdict_split": {
-      "TRUE_NEGATIVE": 121,
-      "TRUE_POSITIVE": 111
+      "TRUE_NEGATIVE": 125,
+      "TRUE_POSITIVE": 123
     },
     "real_world_sources": [
       "fleet (osquery) - 12 fixtures from Fleet scan FP analysis",
@@ -2067,10 +2067,10 @@
       "microsoft/TypeChat - TypeScript SQL concat pattern"
     ],
     "accuracy": {
-      "overall": "93.9%",
-      "sensitivity_tpr": "99.0%",
-      "specificity_tnr": "88.9%",
-      "false_positives": 12,
+      "overall": "99.6%",
+      "sensitivity_tpr": "99.1%",
+      "specificity_tnr": "100%",
+      "false_positives": 0,
       "false_negatives": 1
     },
     "run_command": "REACH_CORE=../reach-core python taint-fixtures-v2/run_taint_engine.py --verbose"
