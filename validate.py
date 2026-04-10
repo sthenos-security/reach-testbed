@@ -1010,6 +1010,8 @@ def main():
         help="Path to testbed.json baseline (default: ./testbed.json)",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Show all findings including passes")
+    parser.add_argument("--no-taint", action="store_true", dest="no_taint",
+                        help="Skip taint engine fixture tests")
     parser.add_argument(
         "--update-baseline", action="store_true",
         help="Print a new testbed.json from actual findings (for bootstrapping)",
@@ -1098,7 +1100,39 @@ def main():
     all_results += validate_exclusions(baseline.get("exclusion_validation", []), findings)
 
     misses = print_results(all_results, verbose=args.verbose)
-    sys.exit(1 if misses > 0 else 0)
+
+    # ── Taint engine fixture tests (auto-detected) ──────────────────────
+    taint_failures = 0
+    if not getattr(args, 'no_taint', False):
+        testbed_dir = Path(__file__).parent
+        taint_dir = testbed_dir / "taint-fixtures-v2"
+        taint_runner = taint_dir / "run_taint_engine.py"
+        reach_core = os.environ.get("REACH_CORE", "")
+
+        # Auto-detect reach-core if not set
+        if not reach_core:
+            candidate = testbed_dir.parent / "reach-core"
+            if (candidate / "reachable" / "v2" / "src" / "taint_intra.py").exists():
+                reach_core = str(candidate)
+
+        if taint_dir.exists() and taint_runner.exists() and reach_core:
+            print()
+            print(bold("═" * 72))
+            print(bold("  TAINT ENGINE FIXTURES"))
+            print(bold("═" * 72))
+            env = os.environ.copy()
+            env["REACH_CORE"] = reach_core
+            result = subprocess.run(
+                [sys.executable, str(taint_runner), "--verbose"],
+                cwd=str(taint_dir),
+                env=env,
+            )
+            taint_failures = result.returncode
+        elif taint_dir.exists() and not reach_core:
+            print(yellow("\n  Taint fixtures found but REACH_CORE not set — skipping."))
+            print(yellow("  Set REACH_CORE=~/src/reach-core or place reach-core next to reach-testbed."))
+
+    sys.exit(1 if (misses > 0 or taint_failures > 0) else 0)
 
 
 if __name__ == "__main__":

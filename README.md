@@ -762,6 +762,135 @@ All DLP findings should have `is_reachable` set from the call graph, not hardcod
 
 ---
 
+## Taint Analysis Fixtures (taint-fixtures-v2/)
+
+Standalone fixture files for measuring and improving `taint_intra.py` accuracy. Each fixture is a single-function code snippet with header metadata declaring the expected verdict (TRUE_POSITIVE or TRUE_NEGATIVE).
+
+**Current stats:** 248 fixtures, 9 CWEs, 4 languages, 99.6% engine accuracy.
+
+| CWE | Description | Fixtures |
+|-----|-------------|----------|
+| CWE-22 | Path Traversal | 34 |
+| CWE-78 | Command Injection | 66 |
+| CWE-79 | Cross-Site Scripting | 31 |
+| CWE-89 | SQL Injection | 46 |
+| CWE-94 | Code Injection | 12 |
+| CWE-502 | Deserialization | 17 |
+| CWE-601 | Open Redirect | 2 |
+| CWE-611 | XXE | 7 |
+| CWE-918 | SSRF | 13 |
+
+### Running the tests
+
+```bash
+cd ~/src/reach-testbed/taint-fixtures-v2
+
+# Structural validation (checks headers, file format, verdict labels)
+REACH_CORE=~/src/reach-core python validate_fixtures.py --v2-only --verbose
+
+# Taint engine accuracy (exercises taint_intra.py against each fixture)
+REACH_CORE=~/src/reach-core python run_taint_engine.py --verbose
+
+# Save JSON baseline for comparison
+REACH_CORE=~/src/reach-core python run_taint_engine.py --json -o accuracy-next.json
+```
+
+### Fixture format
+
+Each fixture file has header comments with metadata:
+
+```python
+# Fixture: CWE-78 Command Injection - Python
+# VERDICT: TRUE_POSITIVE
+# PATTERN: subprocess_shell_user_input
+# SOURCE: request.args
+# SINK: subprocess.run
+# TAINT_HOPS: 1
+# NOTES: User input passed to subprocess with shell=True
+# REAL_WORLD: langchain-ai/langchain ShellTool pattern
+```
+
+- `VERDICT` is the ground truth: `TRUE_POSITIVE` means the code IS vulnerable and the engine SHOULD flag it. `TRUE_NEGATIVE` means the code is safe and the engine should NOT flag it.
+- `PATTERN` describes the specific coding pattern being tested.
+- `REAL_WORLD` links to the repo/file the pattern was mined from.
+
+### Dual-batch architecture
+
+The testbed uses two separate batches:
+
+- **Golden baseline** (`reach-core/enzo/tests/extended/fixtures/`) — 24 fixtures, frozen, blocking for CI. Never modify these.
+- **V2 extended** (`reach-testbed/taint-fixtures-v2/`) — 248 fixtures, informational, used for accuracy measurement and improvement. This is where new fixtures go.
+
+### Weekly pattern harvester
+
+New taint patterns are mined weekly from popular open-source repos via GitHub API. The harvester runs as a scheduled Claude task every Monday at 9am.
+
+**Automated harvest workflow:**
+
+```bash
+cd ~/src/reach-testbed/taint-fixtures-v2
+
+# 1. Run the harvester (mines 30+ repos across Python/Go/Java/TypeScript)
+python harvest_patterns.py
+
+# 2. Review staged candidates
+ls staging/
+# Check each candidate's VERDICT label, delete bad ones
+
+# 3. Promote approved candidates to the testbed
+python harvest_patterns.py --promote
+
+# 4. Regenerate manifest and validate
+REACH_CORE=~/src/reach-core python run_taint_engine.py --verbose
+
+# 5. Commit
+git add taint-fixtures-v2/ testbed.json
+git commit -m "taint-fixtures-v2: add harvested patterns"
+```
+
+**What the harvester does:**
+1. Searches 30+ repos (django, flask, kubernetes, grafana, elasticsearch, vscode, langchain, ollama, spring-ai, etc.) for known sink patterns
+2. Extracts the function containing each match
+3. Deduplicates against all existing 248+ fixtures using content signatures
+4. Classifies by CWE and guesses TP/TN verdict based on sanitizer presence
+5. Writes candidates to `staging/` for human review
+
+**Repos mined (by language):**
+
+- Python: django, flask, requests, langchain, llama_index, autogen, fastapi, airflow, celery
+- Go: kubernetes, grafana, ollama, LocalAI, terraform, vault, moby, containerd
+- Java: elasticsearch, spring-framework, spring-ai, kafka, flink, langchain4j, keycloak
+- TypeScript: vscode, vercel/ai, openai-node, TypeChat, node, nestjs, prisma, trpc
+
+**Options:**
+- `--lang python` — harvest only one language
+- `--dry-run` — show what would be searched without fetching
+- `--max-per-repo 10` — adjust candidates per repo (default 5)
+- `--promote` — move reviewed staging candidates into the main testbed
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `validate_fixtures.py` | Structural validation (headers, format, language detection) |
+| `run_taint_engine.py` | Exercises actual `taint_intra.py` against each fixture |
+| `harvest_patterns.py` | Weekly pattern miner from GitHub repos |
+| `manifest.json` | Full fixture inventory with metadata |
+| `ACCURACY_REPORT.md` | Detailed accuracy breakdown and failure analysis |
+| `TAINT_INTRA_FP_FIXES.md` | Handoff doc for taint engine improvements |
+| `accuracy-v4-repo-mined.json` | Latest engine accuracy baseline |
+
+### Adding fixtures manually
+
+1. Create a file in the appropriate `{language}/{cwe}/` directory
+2. Use naming convention: `tp_` prefix for true positives, `tn_` prefix for true negatives
+3. Add header comments with VERDICT, PATTERN, SOURCE, SINK, TAINT_HOPS
+4. Run `python validate_fixtures.py --v2-only` to check structure
+5. Run `REACH_CORE=~/src/reach-core python run_taint_engine.py --verbose` to check engine accuracy
+6. If the engine gets your fixture wrong, document it in TAINT_INTRA_FP_FIXES.md
+
+---
+
 ## Adding New Test Cases
 
 1. Create directory with vulnerable code
