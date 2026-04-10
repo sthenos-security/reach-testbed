@@ -9,3 +9,13 @@ __pycache__/
 venv/
 .pytest_cache/
 *.log
+.reachable/
+results/
+ANALYSIS_SUMMARY.txt
+sast_analysis.md
+sast_patterns.json
+SAST_*.md
+TAINT_PATTERNS_*.md
+TAINT_PATTERNS_*.txt
+GITHUB_TAINT_PATTERNS_SAST.md
+reach-testbed
