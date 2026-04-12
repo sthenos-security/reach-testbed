@@ -267,6 +267,184 @@ def _load_from_signals(con) -> list[FindingRecord]:
                         containing_function=containing_func,
                         raw=raw,
                     ))
+    # v7 architecture: CVE signals have ONE row per (advisory, package).
+    # The signal's app_reachability is the PROJECT-LEVEL verdict (REACHABLE if
+    # ANY import site is live).  For per-FILE reachability (needed by framework
+    # tests), we override CVE signals' reachability based on their own file's
+    # functions, and create virtual records for each import site.
+    scan_id = con.execute("SELECT MAX(id) FROM scans").fetchone()[0]
+
+    # Step 1: For CVE signals with import sites, override the signal's
+    # reachability to per-file (based on the signal's own file_path).
+    #
+    # IMPORTANT: Only override UNKNOWN signals.  If the pipeline explicitly
+    # classified a signal (NOT_REACHABLE from language classifiers, vulnerable
+    # symbols, or dead-class analysis), that verdict is more precise than
+    # simple per-file function reachability.  Overriding it would lose the
+    # nuance of "file is live but this specific CVE's functions are dead."
+    try:
+        cve_overrides = con.execute("""
+            SELECT s.id, s.file_path, s.file_id, s.app_reachability,
+                   COALESCE(
+                       (SELECT MAX(CASE WHEN f2.is_reachable = 1 OR f2.is_entrypoint = 1
+                                        THEN 1 ELSE 0 END)
+                        FROM functions f2
+                        WHERE f2.scan_id = s.scan_id AND f2.file_id = s.file_id),
+                       0
+                   ) AS own_file_reachable
+            FROM signals s
+            WHERE s.scan_id = ? AND s.signal_type = 'cve'
+              AND EXISTS (SELECT 1 FROM cve_import_sites cs
+                          WHERE cs.signal_id = s.id AND cs.scan_id = s.scan_id)
+        """, (scan_id,)).fetchall()
+        # Build map: file_path → per-file reachability, but only for UNKNOWN signals
+        cve_file_reach = {}
+        for ov in cve_overrides:
+            fp = ov["file_path"] or ""
+            cve_file_reach[fp] = "REACHABLE" if ov["own_file_reachable"] else "NOT_REACHABLE"
+        # Build set of file_paths where the pipeline gave an explicit verdict
+        # (non-UNKNOWN) — these should NOT be overridden by per-file heuristic
+        pipeline_decided_files = set()
+        for ov in cve_overrides:
+            if ov["app_reachability"] != "UNKNOWN":
+                pipeline_decided_files.add(ov["file_path"] or "")
+        # Override records — only UNKNOWN pipeline verdicts
+        for rec in records:
+            if rec.finding_type == "cve" and rec.file_path in cve_file_reach:
+                if rec.file_path not in pipeline_decided_files:
+                    rec.reachability = cve_file_reach[rec.file_path]
+    except Exception:
+        pass
+
+    # Step 2: Create per-FUNCTION virtual FindingRecords for each import site.
+    # v7 architecture: ONE signal per (advisory, package) in signals table.
+    # Import sites are in cve_import_sites.  The validator must create virtual
+    # records for each function in each import site so fn_hint filtering works.
+    # Example: cve.go has TranslateHandler (reachable) + ParseLangUnknown (dead).
+    # Old code created one file-level record → fn filter failed for ParseLangUnknown.
+    try:
+        # 2a: Per-function records — one record per (import_site × function)
+        site_fns = con.execute("""
+            SELECT cs.file_path AS site_path, cs.file_id AS site_file_id,
+                   s.signal_type, s.finding_id, s.display_id, s.cwe_id,
+                   s.package_name, s.app_reachability, s.raw_data,
+                   f2.short_name AS fn_name, f2.qname AS fn_qname,
+                   f2.is_reachable AS fn_reachable, f2.is_entrypoint AS fn_entrypoint,
+                   COALESCE(
+                       (SELECT MAX(CASE WHEN f3.is_reachable = 1 OR f3.is_entrypoint = 1
+                                        THEN 1 ELSE 0 END)
+                        FROM functions f3
+                        WHERE f3.scan_id = cs.scan_id AND f3.file_id = cs.file_id),
+                       0
+                   ) AS file_has_reachable
+            FROM cve_import_sites cs
+            JOIN signals s ON s.id = cs.signal_id AND s.scan_id = cs.scan_id
+            JOIN functions f2 ON f2.scan_id = cs.scan_id AND f2.file_id = cs.file_id
+            WHERE cs.scan_id = ?
+        """, (scan_id,)).fetchall()
+        for r in site_fns:
+            raw = json.loads(r["raw_data"]) if r["raw_data"] else {}
+            identifier = r["display_id"] or r["finding_id"]
+            # Three-way reachability:
+            #   Function reachable/entrypoint → REACHABLE
+            #   Function dead but file has other reachable fns → UNKNOWN (live file, fn not called)
+            #   Function dead and file all-dead → NOT_REACHABLE
+            if r["fn_reachable"] or r["fn_entrypoint"]:
+                fn_reach = "REACHABLE"
+            elif r["file_has_reachable"]:
+                fn_reach = "UNKNOWN"
+            else:
+                fn_reach = "NOT_REACHABLE"
+            records.append(FindingRecord(
+                finding_type="cve",
+                identifier=identifier or "",
+                file_path=r["site_path"],
+                reachability=fn_reach,
+                package=r["package_name"],
+                containing_function=r["fn_name"],
+                function_qname=r["fn_qname"],
+                raw=raw,
+            ))
+            aliases = raw.get("osv_aliases", []) or []
+            for alias in aliases:
+                if alias and alias != identifier:
+                    records.append(FindingRecord(
+                        finding_type="cve",
+                        identifier=alias,
+                        file_path=r["site_path"],
+                        reachability=fn_reach,
+                        package=r["package_name"],
+                        containing_function=r["fn_name"],
+                        function_qname=r["fn_qname"],
+                        raw=raw,
+                    ))
+
+        # 2b: File-level fallback for import site files with NO functions.
+        # These files (e.g. JS route handlers) may have no function entries
+        # but are still reachable if imported by a reachable module.
+        # Check import_names: if a reachable file imports from this module,
+        # the site is reachable.
+        no_fn_sites = con.execute("""
+            SELECT cs.file_path AS site_path, cs.file_id AS site_file_id,
+                   s.signal_type, s.finding_id, s.display_id, s.cwe_id,
+                   s.package_name, s.app_reachability, s.raw_data,
+                   s.containing_function, f.qname AS function_qname
+            FROM cve_import_sites cs
+            JOIN signals s ON s.id = cs.signal_id AND s.scan_id = cs.scan_id
+            LEFT JOIN functions f ON f.id = s.function_id
+            WHERE cs.scan_id = ?
+              AND NOT EXISTS (
+                  SELECT 1 FROM functions f3
+                  WHERE f3.scan_id = cs.scan_id AND f3.file_id = cs.file_id
+              )
+        """, (scan_id,)).fetchall()
+        for r in no_fn_sites:
+            raw = json.loads(r["raw_data"]) if r["raw_data"] else {}
+            identifier = r["display_id"] or r["finding_id"]
+            # Check if any reachable module imports from this file's path
+            site_path = r["site_path"] or ""
+            site_basename = os.path.splitext(os.path.basename(site_path))[0]
+            is_imported_by_reachable = False
+            if site_basename:
+                importers = con.execute("""
+                    SELECT 1 FROM import_names iname
+                    JOIN functions f4 ON f4.scan_id = iname.scan_id
+                                     AND f4.file_id = iname.file_id
+                    WHERE iname.scan_id = ?
+                      AND (iname.short_name = ? OR iname.source_module = ?
+                           OR iname.source_module LIKE '%/' || ?
+                           OR iname.source_module LIKE '%.' || ?)
+                      AND (f4.is_reachable = 1 OR f4.is_entrypoint = 1)
+                    LIMIT 1
+                """, (scan_id, site_basename, site_basename,
+                      site_basename, site_basename)).fetchone()
+                is_imported_by_reachable = importers is not None
+            site_reach = "REACHABLE" if is_imported_by_reachable else "NOT_REACHABLE"
+            records.append(FindingRecord(
+                finding_type="cve",
+                identifier=identifier or "",
+                file_path=r["site_path"],
+                reachability=site_reach,
+                package=r["package_name"],
+                containing_function=r["containing_function"],
+                function_qname=r["function_qname"],
+                raw=raw,
+            ))
+            aliases = raw.get("osv_aliases", []) or []
+            for alias in aliases:
+                if alias and alias != identifier:
+                    records.append(FindingRecord(
+                        finding_type="cve",
+                        identifier=alias,
+                        file_path=r["site_path"],
+                        reachability=site_reach,
+                        package=r["package_name"],
+                        containing_function=r["containing_function"],
+                        raw=raw,
+                    ))
+    except Exception:
+        pass  # cve_import_sites may not exist in older DBs
+
     return records
 
 
@@ -306,6 +484,10 @@ def find_match(findings: list[FindingRecord], ftype: str,
     candidates = [f for f in findings if f.finding_type == ftype]
 
     # Pass 1: strict — require identifier + package + file
+    # Collect ALL strict matches so we can prefer REACHABLE over UNKNOWN/NOT_REACHABLE.
+    # v7 creates per-function virtual records, so a single file may have both
+    # REACHABLE and UNKNOWN/NOT_REACHABLE records for different functions.
+    strict = []
     for f in candidates:
         id_match   = identifier.lower() in (f.identifier or "").lower()
         pkg_match  = (not package) or (package.lower() in (f.package or "").lower())
@@ -313,7 +495,11 @@ def find_match(findings: list[FindingRecord], ftype: str,
 
         if id_match and pkg_match and file_match:
             f.relaxed_match = False
-            return f
+            strict.append(f)
+    if strict:
+        _pref = {'EXPLOITABLE': -1, 'REACHABLE': 0, 'UNKNOWN': 1, 'NOT_REACHABLE': 2}
+        strict.sort(key=lambda f: _pref.get(f.reachability, 1))
+        return strict[0]
 
     # Pass 2: relaxed — drop file requirement, prefer REACHABLE matches
     if file_hint:
