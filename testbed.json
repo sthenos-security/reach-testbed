@@ -224,6 +224,41 @@
       "file": "cwe-tests/python/cwe_crypto.py",
       "reachability": "REACHABLE",
       "note": "Weak cryptography (MD5/SHA1)"
+    },
+    {
+      "cwe_id": "CWE-327",
+      "file": "cwe-tests/go/cwe_fp_false_positives.go",
+      "function": "scheduleRenewal",
+      "reachability": "NOT_REACHABLE",
+      "note": "FP: math/rand/v2 for timer jitter — not a security use, different package from math/rand v1"
+    },
+    {
+      "cwe_id": "CWE-78",
+      "file": "cwe-tests/go/cwe_fp_false_positives.go",
+      "function": "execManagedScript",
+      "reachability": "NOT_REACHABLE",
+      "note": "FP: exec.Command path validated via validateScript() before execution — not user-controlled injection"
+    },
+    {
+      "cwe_id": "CWE-327",
+      "file": "cwe-tests/ruby/cwe_fp_md5_comparison.rb",
+      "function": "profile_changed?",
+      "reachability": "NOT_REACHABLE",
+      "note": "FP: MD5 used only for equality comparison (change detection), not for passwords or authentication"
+    },
+    {
+      "cwe_id": "CWE-327",
+      "file": "cwe-tests/ruby/cwe_fp_md5_comparison.rb",
+      "function": "find_matching_profile",
+      "reachability": "NOT_REACHABLE",
+      "note": "FP: MD5 used only in .any? equality check for profile matching, not a security use"
+    },
+    {
+      "cwe_id": "CWE-327",
+      "file": "cwe-tests/ruby/cwe_fp_md5_comparison.rb",
+      "function": "password_hash",
+      "reachability": "REACHABLE",
+      "note": "TP: MD5 used for password storage — real CWE-327, reachable from POST /auth/login"
     }
   ],
   "secrets": [
@@ -262,6 +297,12 @@
       "file": "secret-tests/secrets_api_keys.py",
       "reachability": "REACHABLE",
       "note": "SendGrid API key used in /api/email/send Flask route"
+    },
+    {
+      "secret_type": "private_key",
+      "file": "secret-tests/secret_fp_localhost_tls.go",
+      "reachability": "UNKNOWN",
+      "note": "FP: private key in Go source for localhost-only TLS IPC — code_file_secret hint, Enzo reasons about context"
     }
   ],
   "dlp": [
