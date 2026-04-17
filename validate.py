@@ -473,27 +473,73 @@ def file_matches(actual_path: Optional[str], expected_file: Optional[str]) -> bo
     return actual.endswith(expected) or expected in actual
 
 
+def _function_matches(actual_fn: Optional[str], actual_qname: Optional[str],
+                      expected_fn: Optional[str]) -> bool:
+    """Fuzzy function match. Compares short name, qname tail, and the raw
+    containing_function field against the expected function (case-insensitive).
+    Returns True if expected_fn is unspecified (any function OK).
+    """
+    if not expected_fn:
+        return True
+    exp = expected_fn.lower().rstrip("?!").strip()
+    for candidate in (actual_fn, actual_qname):
+        if not candidate:
+            continue
+        cand = candidate.lower()
+        # Compare full, tail after '.'/':', and with ?/! stripped for Ruby
+        cand_stripped = cand.rstrip("?!")
+        tail = cand_stripped.rsplit(".", 1)[-1].rsplit("::", 1)[-1]
+        if exp == cand_stripped or exp == tail:
+            return True
+        # Also allow substring match (e.g. expected "tp_concat" in qname)
+        if exp == cand_stripped.split("(")[0]:
+            return True
+    return False
+
+
 def find_match(findings: list[FindingRecord], ftype: str,
                identifier: str, file_hint: Optional[str] = None,
-               package: Optional[str] = None) -> Optional[FindingRecord]:
+               package: Optional[str] = None,
+               function_hint: Optional[str] = None,
+               exclude_ids: Optional[set] = None,
+               expected_reachability: Optional[str] = None) -> Optional[FindingRecord]:
     """Find the best matching finding for a baseline entry.
 
-    Returns a FindingRecord with `relaxed_match` attribute set to True if the
-    match was found only by dropping the file requirement (second pass).
-    """
-    candidates = [f for f in findings if f.finding_type == ftype]
+    When ``function_hint`` is supplied (e.g. testbed.json CWE entry has
+    ``"function": "password_hash"``), the strict pass REQUIRES the finding's
+    containing_function (or function_qname) to match. This prevents the
+    validator from collapsing multiple per-function signals in the same file
+    onto a single "best" record, which caused all three Ruby CWE-327
+    entries in cwe_fp_md5_comparison.rb to match the same finding.
 
-    # Pass 1: strict — require identifier + package + file
+    When ``exclude_ids`` is supplied, findings whose ``id()`` is in the set
+    are skipped — this lets callers iterate multiple baseline entries against
+    the same file and distribute findings (one-per-baseline) rather than
+    collapsing. Used when function-less findings (e.g. Ruby before function
+    extraction is available) need to map 1:1 to per-function baseline rows.
+
+    When ``expected_reachability`` is supplied and Pass 1b (file-only fallback)
+    produces multiple candidates with no function discriminator, candidates
+    matching the expected reachability are preferred. This lets a
+    REACHABLE-expected baseline claim a REACHABLE finding first, leaving the
+    NOT_REACHABLE findings for the NOT_REACHABLE-expected baseline rows.
+
+    Returns a FindingRecord with ``relaxed_match`` attribute set to True if
+    the match was found only by dropping the file requirement (second pass).
+    """
+    excl = exclude_ids or set()
+    candidates = [f for f in findings if f.finding_type == ftype and id(f) not in excl]
+
+    # Pass 1: strict — require identifier + package + file (+ function if given).
     # Collect ALL strict matches so we can prefer REACHABLE over UNKNOWN/NOT_REACHABLE.
-    # v7 creates per-function virtual records, so a single file may have both
-    # REACHABLE and UNKNOWN/NOT_REACHABLE records for different functions.
     strict = []
     for f in candidates:
         id_match   = identifier.lower() in (f.identifier or "").lower()
         pkg_match  = (not package) or (package.lower() in (f.package or "").lower())
         file_match = file_matches(f.file_path, file_hint)
+        fn_match   = _function_matches(f.containing_function, f.function_qname, function_hint)
 
-        if id_match and pkg_match and file_match:
+        if id_match and pkg_match and file_match and fn_match:
             f.relaxed_match = False
             strict.append(f)
     if strict:
@@ -501,13 +547,39 @@ def find_match(findings: list[FindingRecord], ftype: str,
         strict.sort(key=lambda f: _pref.get(f.reachability, 1))
         return strict[0]
 
+    # Pass 1b: strict file match ignoring function — when function_hint
+    # didn't hit (e.g. Ruby function extraction is missing so
+    # containing_function is NULL), fall through to file-level match
+    # before relaxing file. Still safer than cross-file relaxed match.
+    if function_hint:
+        file_only = []
+        for f in candidates:
+            id_match   = identifier.lower() in (f.identifier or "").lower()
+            pkg_match  = (not package) or (package.lower() in (f.package or "").lower())
+            file_match = file_matches(f.file_path, file_hint)
+            if id_match and pkg_match and file_match:
+                f.relaxed_match = False
+                file_only.append(f)
+        if file_only:
+            # When expected_reachability is known, prefer findings whose
+            # reachability already matches. This prevents cross-collapse when
+            # three per-function baseline entries share the same file but
+            # expect different verdicts (e.g. Ruby MD5 case: two NR + one R).
+            def _sort_key(f):
+                _pref = {'EXPLOITABLE': -1, 'REACHABLE': 0, 'UNKNOWN': 1, 'NOT_REACHABLE': 2}
+                match_bonus = 0 if expected_reachability and f.reachability == expected_reachability else 1
+                return (match_bonus, _pref.get(f.reachability, 1))
+            file_only.sort(key=_sort_key)
+            return file_only[0]
+
     # Pass 2: relaxed — drop file requirement, prefer REACHABLE matches
     if file_hint:
         relaxed = []
         for f in candidates:
             id_match  = identifier.lower() in (f.identifier or "").lower()
             pkg_match = (not package) or (package.lower() in (f.package or "").lower())
-            if id_match and pkg_match:
+            fn_match  = _function_matches(f.containing_function, f.function_qname, function_hint)
+            if id_match and pkg_match and fn_match:
                 f.relaxed_match = True
                 relaxed.append(f)
         if relaxed:
@@ -553,27 +625,46 @@ def validate_cve(expected: list[dict], findings: list[FindingRecord]) -> list[Va
 
 def validate_cwe(expected: list[dict], findings: list[FindingRecord]) -> list[ValidationResult]:
     results = []
-    for e in expected:
+    # When multiple baseline entries target the same (cwe_id, file), the
+    # findings should be distributed 1:1 rather than collapsed — especially
+    # for languages where function extraction is missing (Ruby) and Pass 1b
+    # would otherwise map every baseline row to the same best-preferred
+    # finding. Track matched findings per (cwe_id, file) group.
+    matched_by_group: dict[tuple, set] = {}
+    # Process baseline rows whose reachability is R before NR, so that the
+    # REACHABLE-expected row claims a REACHABLE finding first (if one exists),
+    # leaving the NOT_REACHABLE findings for the NR-expected rows.
+    _order = {"REACHABLE": 0, "EXPLOITABLE": 0, "UNKNOWN": 1, "NOT_REACHABLE": 2}
+    indexed = list(enumerate(expected))
+    indexed.sort(key=lambda p: _order.get((p[1].get("reachability") or "").upper(), 3))
+    staged = [None] * len(expected)  # preserve original baseline order in output
+    for orig_idx, e in indexed:
         cwe_id = e["cwe_id"]
         reach  = e.get("reachability")
         file_h = e.get("file")
-        match  = find_match(findings, "cwe", cwe_id, file_h)
+        fn_h   = e.get("function")
+        group_key = (cwe_id, file_h)
+        excl = matched_by_group.setdefault(group_key, set())
+        match = find_match(findings, "cwe", cwe_id, file_h, function_hint=fn_h,
+                           exclude_ids=excl, expected_reachability=reach)
 
         if not match:
-            results.append(ValidationResult("CWE", cwe_id, "FAIL",
+            staged[orig_idx] = ValidationResult("CWE", cwe_id, "FAIL",
                 f"not detected (file={file_h})",
-                reason=Reason.FAIL_NOT_DETECTED))
+                reason=Reason.FAIL_NOT_DETECTED)
         else:
+            excl.add(id(match))
             tag = _relaxed_tag(match)
             if reach and match.reachability and match.reachability != reach:
                 reason = Reason.classify(reach, match.reachability)
                 sev = Reason.severity(reason)
-                results.append(ValidationResult("CWE", cwe_id, "FAIL",
+                staged[orig_idx] = ValidationResult("CWE", cwe_id, "FAIL",
                     f"expected={reach} got={match.reachability}{tag}",
-                    reason=reason))
+                    reason=reason)
             else:
-                results.append(ValidationResult("CWE", cwe_id, "PASS",
-                    f"file={match.file_path} reach={match.reachability}{tag}"))
+                staged[orig_idx] = ValidationResult("CWE", cwe_id, "PASS",
+                    f"file={match.file_path} reach={match.reachability}{tag}")
+    results = [r for r in staged if r is not None]
     return results
 
 

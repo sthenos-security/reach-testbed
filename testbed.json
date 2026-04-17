@@ -226,11 +226,11 @@
       "note": "Weak cryptography (MD5/SHA1)"
     },
     {
-      "cwe_id": "CWE-327",
+      "cwe_id": "CWE-338",
       "file": "cwe-tests/go/cwe_fp_false_positives.go",
       "function": "scheduleRenewal",
       "reachability": "NOT_REACHABLE",
-      "note": "FP: math/rand/v2 for timer jitter — not a security use, different package from math/rand v1"
+      "note": "FP: math/rand/v2 for timer jitter — not a security use, different package from math/rand v1 (CWE-338 weak PRNG, not CWE-327 broken crypto)"
     },
     {
       "cwe_id": "CWE-78",
@@ -299,7 +299,7 @@
       "note": "SendGrid API key used in /api/email/send Flask route"
     },
     {
-      "secret_type": "private_key",
+      "secret_type": "private-key",
       "file": "secret-tests/secret_fp_localhost_tls.go",
       "reachability": "UNKNOWN",
       "note": "FP: private key in Go source for localhost-only TLS IPC — code_file_secret hint, Enzo reasons about context"
